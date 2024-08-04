@@ -1,0 +1,18 @@
+{
+  "codes": [
+    {
+      "uuid": "rPVgpmpTD7Wzg6HRAD8Ge7",
+      "IdArticulo": 80618,
+      "FullCode": "C360-EC06-3-BLA",
+      "Cantidad": 10,
+      "timestamp": "2024-08-03T09:47:36.234Z"
+    },
+    {
+      "uuid": "afjviBetvVj3vBfahbxMQY",
+      "IdArticulo": 80618,
+      "FullCode": "C360-EC06-3-BLA",
+      "Cantidad": 28,
+      "timestamp": "2024-08-03T10:39:40.664Z"
+    }
+  ]
+}
