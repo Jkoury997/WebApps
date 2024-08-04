@@ -2,15 +2,17 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { Button } from "@/components/ui/button";
 import ListTable from '@/components/component/list-table';
+import { Alert } from "@/components/ui/alert";
 
 export default function QrScannerComponent() {
   const [scanResults, setScanResults] = useState([]);
   const [scanning, setScanning] = useState(false);
   const [error, setError] = useState(null);
   const [scannedCodes, setScannedCodes] = useState(new Set());
+  const [alert, setAlert] = useState({ show: false, type: '', title: '', message: '' });
   const scannerId = 'html5qr-code-full-region';
   const html5QrCodeRef = useRef(null);
-  const lastScanTimeRef = useRef(0); // Referencia para almacenar el tiempo del último escaneo
+  const lastScanTimeRef = useRef(0);
 
   useEffect(() => {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -76,14 +78,13 @@ export default function QrScannerComponent() {
 
   const handleScan = async (data) => {
     const currentTime = Date.now();
-    if (data && currentTime - lastScanTimeRef.current > 1000) { // Verifica si han pasado 1 segundos desde el último escaneo
+    if (data && currentTime - lastScanTimeRef.current > 1000) {
       lastScanTimeRef.current = currentTime;
 
       const parsedData = JSON.parse(data);
 
-
       if (scannedCodes.has(parsedData.uuid)) {
-        setError('El código QR ya ha sido escaneado.', scannedCodes.NameEmployed );
+        showAlert('error', 'Error', 'El código QR ya ha sido escaneado.');
         return;
       }
 
@@ -97,11 +98,11 @@ export default function QrScannerComponent() {
       if (response.status === 200) {
         setScannedCodes(new Set([...scannedCodes, parsedData.uuid]));
 
-        // Agrega el nuevo objeto a la lista de resultados de escaneo
         setScanResults(prevResults => [...prevResults, parsedData]);
-        setError(null); // Limpiar el mensaje de error
+        setError(null);
+        showAlert('success', 'Success', 'Código QR escaneado con éxito.');
       } else {
-        setError(result.message);
+        showAlert('error', 'Error', result.message);
       }
     }
   };
@@ -109,7 +110,7 @@ export default function QrScannerComponent() {
   const handleError = (err) => {
     if (!err.message.includes("No MultiFormat Readers were able to detect the code")) {
       console.error(err);
-      setError('Ocurrió un error al intentar escanear el código QR. Por favor, inténtalo de nuevo.');
+      showAlert('error', 'Error', 'Ocurrió un error al intentar escanear el código QR. Por favor, inténtalo de nuevo.');
     }
   };
 
@@ -133,13 +134,14 @@ export default function QrScannerComponent() {
         const updatedScannedCodes = new Set(scannedCodes);
         updatedScannedCodes.delete(uuidToDelete);
         setScannedCodes(updatedScannedCodes);
-        setError(null); // Limpiar el mensaje de error
+        setError(null);
+        showAlert('success', 'Success', 'Código QR eliminado con éxito.');
       } else {
-        setError(result.message);
+        showAlert('error', 'Error', result.message);
       }
     } catch (error) {
       console.error('Error al eliminar el código:', error);
-      setError('Ocurrió un error al eliminar el código.');
+      showAlert('error', 'Error', 'Ocurrió un error al eliminar el código.');
     }
   };
 
@@ -164,18 +166,24 @@ export default function QrScannerComponent() {
 
       if (response.status === 200) {
         console.log('Datos enviados correctamente:', result);
-        // Puedes agregar lógica adicional aquí, como vaciar la lista después de enviar
         setScanResults([]);
         setScannedCodes(new Set());
-        setError(null); // Limpiar el mensaje de error
-        console.log('Datos Limpiados:', result);
+        setError(null);
+        showAlert('success', 'Success', 'Datos enviados correctamente.');
       } else {
-        setError(result.message);
+        showAlert('error', 'Error', result.message);
       }
     } catch (error) {
       console.error('Error al enviar los datos:', error);
-      setError('Ocurrió un error al enviar los datos.');
+      showAlert('error', 'Error', 'Ocurrió un error al enviar los datos.');
     }
+  };
+
+  const showAlert = (type, title, message) => {
+    setAlert({ show: true, type, title, message });
+    setTimeout(() => {
+      setAlert({ show: false, type: '', title: '', message: '' });
+    }, 5000);
   };
 
   return (
@@ -192,9 +200,9 @@ export default function QrScannerComponent() {
           {scanning && (
             <div id={scannerId} style={{ width: '100%' }} />
           )}
-          {error && (
-            <div className="mt-4 text-center text-red-600">
-              {error}
+          {alert.show && (
+            <div className="mt-4">
+              <Alert type={alert.type} title={alert.title} message={alert.message} />
             </div>
           )}
           {scanResults.length > 0 && (

@@ -19,9 +19,9 @@ export default function Page() {
       const result = await response.json();
 
       if (response.status === 200 && result.Estado) {
-        // Transformar los datos de la respuesta de la API
         const transformedData = result.List.map(pallet => ({
-          id: pallet.Numero,
+          IdPallet: pallet.IdPallet,
+          Numero: pallet.Numero,
           location: pallet.Almacen.trim(),
           date: pallet.Fecha
         }));
