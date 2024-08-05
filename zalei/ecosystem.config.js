@@ -6,7 +6,10 @@ module.exports = {
         args: 'start',            // Argumentos para iniciar Next.js
         instances: 'max',         // Número de instancias a ejecutar, 'max' usa todos los cores disponibles
         exec_mode: 'cluster',     // Modo de ejecución 'cluster' para balancear carga
-        PORT: 5000
+        env: {
+            NODE_ENV: 'production', // Variables de entorno para producción
+            PORT: 5000
+          },
       }
     ]
   };
