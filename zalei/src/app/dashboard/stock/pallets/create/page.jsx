@@ -1,10 +1,10 @@
 "use client"
 
-import QrScanner from "@/components/component/qr-scanner"
+import QrScannerComponent from "@/components/component/qr-scanner"
 
 
 export default function Page(){
     return(
-        <QrScanner></QrScanner>
+        <QrScannerComponent></QrScannerComponent>
     )
 }

@@ -10,9 +10,12 @@ export default function QrScannerComponent() {
   const [error, setError] = useState(null);
   const [scannedCodes, setScannedCodes] = useState(new Set());
   const [alert, setAlert] = useState({ show: false, type: '', title: '', message: '' });
+  const [cameraPermissionDenied, setCameraPermissionDenied] = useState(false);
+  const [scannerStarted, setScannerStarted] = useState(false);
   const scannerId = 'html5qr-code-full-region';
   const html5QrCodeRef = useRef(null);
   const lastScanTimeRef = useRef(0);
+  const isComponentMounted = useRef(true);
 
   useEffect(() => {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -30,14 +33,13 @@ export default function QrScannerComponent() {
 
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
+      isComponentMounted.current = false;
     };
   }, [scanResults]);
 
   useEffect(() => {
     if (scanning) {
       startScanning();
-    } else {
-      stopScanning();
     }
 
     return () => stopScanning();
@@ -45,6 +47,7 @@ export default function QrScannerComponent() {
 
   const startScanning = () => {
     setError(null);
+    setCameraPermissionDenied(false);
 
     if (!html5QrCodeRef.current) {
       html5QrCodeRef.current = new Html5Qrcode(scannerId);
@@ -58,9 +61,12 @@ export default function QrScannerComponent() {
       },
       handleScan,
       handleError
-    ).catch(err => {
+    ).then(() => {
+      setScannerStarted(true);
+    }).catch(err => {
       console.error(err);
       setError('Ocurrió un error al intentar iniciar el escaneo. Por favor, inténtalo de nuevo.');
+      setCameraPermissionDenied(true);
       setScanning(false);
     });
   };
@@ -68,10 +74,14 @@ export default function QrScannerComponent() {
   const stopScanning = () => {
     if (html5QrCodeRef.current) {
       html5QrCodeRef.current.stop().then(() => {
-        html5QrCodeRef.current.clear();
+        if (isComponentMounted.current) {
+          html5QrCodeRef.current.clear();
+        }
       }).catch(err => {
         console.error(err);
-        setError('Ocurrió un error al intentar detener el escaneo. Por favor, inténtalo de nuevo.');
+        if (isComponentMounted.current) {
+          setError('Ocurrió un error al intentar detener el escaneo. Por favor, inténtalo de nuevo.');
+        }
       });
     }
   };
@@ -194,11 +204,23 @@ export default function QrScannerComponent() {
             <h1 className="text-3xl font-bold tracking-tight">Escáner de Códigos QR</h1>
             <p className="mt-2 text-muted-foreground">Escanea códigos QR con tu dispositivo móvil.</p>
           </div>
-          <Button size="lg" className="w-full" onClick={() => setScanning(!scanning)}>
-            {scanning ? 'Detener Escáner' : 'Iniciar Escáner'}
-          </Button>
+          {!scannerStarted && (
+            <Button size="lg" className="w-full" onClick={() => setScanning(true)}>
+              Iniciar Escáner
+            </Button>
+          )}
+          {scannerStarted && (
+            <Button size="lg" className="w-full mt-4" onClick={() => window.location.href = '/dashboard/stock/pallets'}>
+              Ir a enlace
+            </Button>
+          )}
           {scanning && (
             <div id={scannerId} style={{ width: '100%' }} />
+          )}
+          {cameraPermissionDenied && (
+            <Button size="lg" className="w-full mt-4" onClick={() => startScanning()}>
+              Permitir Cámara
+            </Button>
           )}
           {alert.show && (
             <div className="mt-4">
