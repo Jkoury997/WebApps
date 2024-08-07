@@ -4,8 +4,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "MK-Revendedoras",
-  description: "App Creada unica y exclusivamente para revendedoras",
+  title: "Zalei - Fichaqui",
+  description: "App Creada unica y exclusivamente para fichar en Zaeli",
 };
 
 export default function RootLayout({ children }) {
