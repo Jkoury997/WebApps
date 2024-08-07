@@ -40,6 +40,7 @@ const checkUserApi = async (dni, Token) => {
     }
 
     const data = await response.json();
+    console.log(data)
     return data;
 };
 

@@ -13,18 +13,18 @@ const register = async (req, res) => {
   
       // Realizar login y obtener la clave de acceso
       const accessKeyApi = await utilsApi.loginJinx();
-      if (!accessKeyApi) {
+      if (!accessKeyApi.AccessKey) {
         throw new Error('Login failed');
       }
   
       // Obtener el token de acceso
       const TokenApi = await utilsApi.userAccess(accessKeyApi.AccessKey);
-      if (!TokenApi) {
+      if (!TokenApi.Token) {
         throw new Error('User access failed');
       }
   
       // Verificar si el usuario ya existe
-      const existEmployerApi = await utilsApi.checkUserApi(dni, TokenApi);
+      const existEmployerApi = await utilsApi.checkUserApi(dni, TokenApi.Token);
       if (!existEmployerApi) {
         throw new Error('No se encontro el dni en el sistema');
       }
