@@ -6,13 +6,13 @@ import 'react-toastify/dist/ReactToastify.css';
 // Definir la URL del WebSocket desde las variables de entorno
 const NEXT_PUBLIC_URL_WEBSOCKET = process.env.NEXT_PUBLIC_URL_WEBSOCKET;
 
-const useSocket = (userID) => {
+const useSocket = (useruuid) => {
     useEffect(() => {
         const socket = io(NEXT_PUBLIC_URL_WEBSOCKET); // Cambia esto a la URL de tu servidor
 
-        // Registra el userID con el servidor
-        if (userID) {
-            socket.emit('register', userID);
+        // Registra el useruuid con el servidor
+        if (useruuid) {
+            socket.emit('join', useruuid);
         }
 
         // Escucha el evento de notificación
@@ -33,7 +33,7 @@ const useSocket = (userID) => {
         return () => {
             socket.disconnect();
         };
-    }, [userID]);
+    }, [useruuid]);
 };
 
 export default useSocket;
