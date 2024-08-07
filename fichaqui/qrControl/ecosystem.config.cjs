@@ -1,7 +1,7 @@
 module.exports = {
     apps: [
       {
-        name: 'PresentismoQR',
+        name: 'Fichaqui-QR-Zalei',
         script: 'bun',
         args: 'run src/app.js',
         interpreter: 'none',  // Esto le dice a PM2 que no use el intérprete de Node.js
