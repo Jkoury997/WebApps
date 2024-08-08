@@ -17,9 +17,11 @@ export default function Page() {
   const router = useRouter();
   const scannerRef = useRef(null); // Referencia al componente QRScanner
 
-  const successSound = new Audio('/sounds/success.mp3'); // Cargar el sonido de éxito
+  const successSound = useRef(null);
 
   useEffect(() => {
+    successSound.current = new Audio('/sounds/success.mp3'); // Cargar el sonido de éxito
+
     const checkZoneUUID = async () => {
       const zoneUUID = localStorage.getItem('zoneUUID');
       if (!zoneUUID) {
@@ -30,14 +32,14 @@ export default function Page() {
       try {
         const response = await fetch(`/api/presentismo/zones/find?uuid=${zoneUUID}`);
         if (!response.ok) {
-          throw new Error('Zone not found');
+          throw new Error('Zona no encontrada');
         }
         const data = await response.json();
         if (data.error) {
           throw new Error(data.error);
         }
       } catch (error) {
-        console.error('Error fetching zone:', error);
+        console.error('Error al obtener la zona:', error);
         localStorage.removeItem('zoneUUID');
         sessionStorage.removeItem('zoneUUID');
         router.push('/zone/configure');
@@ -65,7 +67,7 @@ export default function Page() {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to check in employee');
+      throw new Error(errorData.error || 'Error al fichar al empleado');
     }
 
     return await response.json();
@@ -75,7 +77,7 @@ export default function Page() {
     const response = await fetch(`/api/auth/user?useruuid=${useruuid}`);
 
     if (!response.ok) {
-      throw new Error('Failed to fetch employee details');
+      throw new Error('Error al obtener los detalles del empleado');
     }
 
     return await response.json();
@@ -88,16 +90,16 @@ export default function Page() {
       try {
         const location = localStorage.getItem('zoneUUID');
         if (!location) {
-          setMessage('Zone not configured. Please configure the zone first.');
+          setMessage('Zona no configurada. Por favor configure la zona primero.');
           setScanning(false);
           return;
         }
 
-        console.log(`Sending scanned code: ${scannedCode} and location: ${location}`);
+        console.log(`Enviando código escaneado: ${scannedCode} y ubicación: ${location}`);
         
         const attendanceResponse = await registerAttendance(scannedCode, location);
 
-        // Fetch employee details from Auth API
+        // Obtener detalles del empleado desde la API de autenticación
         const employeeDetails = await fetchEmployeeDetails(attendanceResponse.useruuid);
 
         setEmployeeDetails(attendanceResponse);
@@ -105,13 +107,13 @@ export default function Page() {
         setMessage(` ${employeeDetails.firstName} ${employeeDetails.lastName} fichada correcta`);
 
         // Reproducir el sonido de éxito
-        successSound.play();
+        successSound.current.play();
 
-        // Set last scanned code
+        // Establecer el último código escaneado
         setLastScannedCode(scannedCode);
       } catch (error) {
-        console.error('Error checking in employee:', error);
-        setMessage(error.message || 'Error checking in employee');
+        console.error('Error al fichar al empleado:', error);
+        setMessage(error.message || 'Error al fichar al empleado');
       } finally {
         setScanning(false); // Permitir nuevos escaneos
         if (scannerRef.current && scannerRef.current.resetScanner) {
@@ -123,7 +125,7 @@ export default function Page() {
 
   const handleError = (err) => {
     console.error(err);
-    setError("Error al escanear el codigo QR. Intentelo nuevamente.");
+    setError("Error al escanear el código QR. Inténtelo nuevamente.");
   };
 
   return (
