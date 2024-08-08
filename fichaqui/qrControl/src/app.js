@@ -7,7 +7,8 @@ require('./utils/cronJobs');
 const { errorHandler } = require('./middlewares/errorMiddleware');
 const socketIO = require("socket.io");
 const http = require("http");
-const { socketHandler } = require('./utils/socketHandler');
+const { socketHandler,sendNotification } = require('./utils/socketHandler');
+
 
 const app = express();
 const PORT = process.env.PORT || 3004;
@@ -48,4 +49,12 @@ connectDB().then(() => {
 }).catch((error) => {
     console.error('Failed to connect to MongoDB:', error);
     process.exit(1);
+});
+
+
+app.get('/send-notification', (req, res) => {
+    const { useruuid, message } = req.query;
+    const io = app.get('socketio');
+    sendNotification(useruuid, { message }, io);
+    res.send('Notification sent');
 });
