@@ -1,3 +1,4 @@
+// client/hooks/useSocket.js
 import { useEffect } from 'react';
 import io from 'socket.io-client';
 import { toast } from 'react-toastify';
@@ -8,15 +9,13 @@ const NEXT_PUBLIC_URL_WEBSOCKET = process.env.NEXT_PUBLIC_URL_WEBSOCKET;
 
 const useSocket = (useruuid) => {
     useEffect(() => {
-        const socket = io(NEXT_PUBLIC_URL_WEBSOCKET); // Asegúrate de que esta URL coincide con la de tu servidor API
+        if (!useruuid) return;
 
-        // Registra el useruuid con el servidor
-        if (useruuid) {
-            console.log(`Connecting with useruuid: ${useruuid}`);
-            socket.emit('join', useruuid);
-        }
+        const socket = io(NEXT_PUBLIC_URL_WEBSOCKET);
 
-        // Escucha el evento de notificación
+        console.log(`Connecting with useruuid: ${useruuid}`);
+        socket.emit('join', useruuid);
+
         socket.on('notification', (data) => {
             console.log('Notificación recibida:', data);
             toast.success(data.message, {
