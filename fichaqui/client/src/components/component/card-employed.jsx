@@ -14,10 +14,10 @@ export default function CardEmployed({ employee, employeeDetails }) {
           <h1 className="text-2xl font-bold mb-2 dark:text-gray-200">{`${employee.firstName} ${employee.lastName}`}</h1>
           <div className="text-gray-500 dark:text-gray-400">{employee.email}</div>
           <div className="text-gray-500 dark:text-gray-400">{employee.dni}</div>
-          <div className="text-gray-500 dark:text-gray-400">Clocked in at {new Date(employeeDetails.entryTime).toLocaleTimeString()}</div>
-          {employeeDetails.exitTime && <div className="text-gray-500 dark:text-gray-400">Clocked out at {new Date(employeeDetails.exitTime).toLocaleTimeString()}</div>}
+          <div className="text-gray-500 dark:text-gray-400">Hora de entrada {new Date(employeeDetails.entryTime).toLocaleTimeString()}</div>
+          {employeeDetails.exitTime && <div className="text-gray-500 dark:text-gray-400">Hora de salida {new Date(employeeDetails.exitTime).toLocaleTimeString()}</div>}
           <div className="text-gray-500 dark:text-gray-400">
-            You need to scan the QR code in your app to clock in and out.
+          Necesitas escanear tu codigo QR de tu app para marcar la hora de entrada y salida.
           </div>
         </div>
       </div>

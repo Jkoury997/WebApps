@@ -7,7 +7,7 @@ import QRScanner from "@/components/component/QRScanner";
 const NEXT_PUBLIC_URL_API_AUTH = process.env.NEXT_PUBLIC_URL_API_AUTH;
 const NEXT_PUBLIC_URL_API_PRESENTISMO = process.env.NEXT_PUBLIC_URL_API_PRESENTISMO;
 
-export default function Reader() {
+export default function Page() {
   const [employeeDetails, setEmployeeDetails] = useState(null);
   const [employee, setEmployee] = useState(null);
   const [message, setMessage] = useState('');
