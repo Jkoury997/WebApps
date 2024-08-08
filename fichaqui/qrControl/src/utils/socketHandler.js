@@ -2,7 +2,7 @@ const users = {};
 
 const socketHandler = (io) => {
     io.on('connection', (socket) => {
-        console.log('New client connected');
+        console.log(`New client connected: ${socket.id}`);
 
         socket.on('join', (useruuid) => {
             users[useruuid] = socket.id;
@@ -10,7 +10,7 @@ const socketHandler = (io) => {
         });
 
         socket.on('disconnect', () => {
-            console.log('Client disconnected');
+            console.log(`Client disconnected: ${socket.id}`);
             for (const useruuid in users) {
                 if (users[useruuid] === socket.id) {
                     delete users[useruuid];

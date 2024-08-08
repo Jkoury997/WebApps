@@ -8,7 +8,10 @@ const NEXT_PUBLIC_URL_WEBSOCKET = process.env.NEXT_PUBLIC_URL_WEBSOCKET;
 
 const useSocket = (useruuid) => {
     useEffect(() => {
-        const socket = io(NEXT_PUBLIC_URL_WEBSOCKET); // Cambia esto a la URL de tu servidor
+        const socket = io(NEXT_PUBLIC_URL_WEBSOCKET, {
+            secure: true,
+            rejectUnauthorized: false // Esto es importante si estás usando certificados auto-firmados
+        });
 
         // Registra el useruuid con el servidor
         if (useruuid) {
