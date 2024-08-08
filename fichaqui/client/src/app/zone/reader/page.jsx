@@ -17,6 +17,8 @@ export default function Reader() {
   const router = useRouter();
   const scannerRef = useRef(null); // Referencia al componente QRScanner
 
+  const successSound = new Audio('/sounds/success.mp3'); // Cargar el sonido de éxito
+
   useEffect(() => {
     const checkZoneUUID = async () => {
       const zoneUUID = localStorage.getItem('zoneUUID');
@@ -100,7 +102,10 @@ export default function Reader() {
 
         setEmployeeDetails(attendanceResponse);
         setEmployee(employeeDetails);
-        setMessage(`Employee ${employeeDetails.firstName} ${employeeDetails.lastName} checked in successfully`);
+        setMessage(` ${employeeDetails.firstName} ${employeeDetails.lastName} fichada correcta`);
+
+        // Reproducir el sonido de éxito
+        successSound.play();
 
         // Set last scanned code
         setLastScannedCode(scannedCode);
@@ -118,14 +123,14 @@ export default function Reader() {
 
   const handleError = (err) => {
     console.error(err);
-    setError("Error scanning the QR code. Please try again.");
+    setError("Error al escanear el codigo QR. Intentelo nuevamente.");
   };
 
   return (
     <div className="flex flex-col md:flex-row items-center justify-center h-screen bg-gray-100 dark:bg-gray-900 p-4">
       <div className="max-w-md w-full p-6 bg-white rounded-lg shadow-md dark:bg-gray-800 space-y-4 md:mr-4">
-        <h1 className="text-2xl font-bold">Employee Check-In</h1>
-        <p className="text-gray-500 dark:text-gray-400">Scan the QR code to check in.</p>
+        <h1 className="text-2xl font-bold">Fichada</h1>
+        <p className="text-gray-500 dark:text-gray-400">Escanea tu QR para poder fichar.</p>
         <div className="flex items-center justify-center p-1 bg-gray-100 rounded-lg dark:bg-gray-700">
           <QRScanner
             ref={scannerRef} // Referencia al componente QRScanner
