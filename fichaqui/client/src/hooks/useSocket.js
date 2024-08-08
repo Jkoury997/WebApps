@@ -1,15 +1,17 @@
-// client/hooks/useSocket.js
+// hooks/useSocket.js
 import { useEffect } from 'react';
 import io from 'socket.io-client';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-// Definir la URL del WebSocket desde las variables de entorno
 const NEXT_PUBLIC_URL_WEBSOCKET = process.env.NEXT_PUBLIC_URL_WEBSOCKET;
 
 const useSocket = (useruuid) => {
     useEffect(() => {
-        if (!useruuid) return;
+        if (!useruuid) {
+            console.warn('No useruuid provided');
+            return;
+        }
 
         const socket = io(NEXT_PUBLIC_URL_WEBSOCKET);
 
@@ -18,8 +20,14 @@ const useSocket = (useruuid) => {
 
         socket.on('notification', (data) => {
             console.log('Notificación recibida:', data);
+
+            // Hacer vibrar el dispositivo por 200 milisegundos
+            if ('vibrate' in navigator) {
+                navigator.vibrate(200);
+            }
+
             toast.success(data.message, {
-                position: toast.POSITION.TOP_RIGHT,
+                position: "top-center",
                 autoClose: 5000,
                 hideProgressBar: false,
                 closeOnClick: true,

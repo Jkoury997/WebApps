@@ -55,8 +55,8 @@ const registerAttendance = async (code, location, io) => { // Agregamos io como 
       console.log(`Exit registered successfully for useruuid=${useruuid} at ${currentTime}`);
       
       // Enviar notificación de salida
-      const message = `Salida registrada: ${currentTime}`;
-      sendNotification(useruuid, message, io);
+      const message = `Salida registrada correctamente`;
+      sendNotification(useruuid, {message}, io);
 
       return { message: 'Exit registered successfully', useruuid, entryTime: existingAttendance.entryTime, exitTime: currentTime };
     } else {
@@ -75,8 +75,8 @@ const registerAttendance = async (code, location, io) => { // Agregamos io como 
       console.log(`Entry registered successfully for useruuid=${useruuid} at ${currentTime}`);
       
       // Enviar notificación de entrada
-      const message = `Entrada registrada: ${currentTime}`;
-      sendNotification(useruuid, message, io);
+      const message = `Entrada registrada correctamente`;
+      sendNotification(useruuid, {message}, io);
 
       return { message: 'Entry registered successfully', useruuid, entryTime: currentTime };
     }
