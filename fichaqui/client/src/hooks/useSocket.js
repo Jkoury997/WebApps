@@ -8,10 +8,7 @@ const NEXT_PUBLIC_URL_WEBSOCKET = process.env.NEXT_PUBLIC_URL_WEBSOCKET;
 
 const useSocket = (useruuid) => {
     useEffect(() => {
-        const socket = io(NEXT_PUBLIC_URL_WEBSOCKET, {
-            secure: true,
-            rejectUnauthorized: false // Esto es importante si estás usando certificados auto-firmados
-        });
+        const socket = io(NEXT_PUBLIC_URL_WEBSOCKET); // Asegúrate de que este puerto coincide con el de tu servidor
 
         // Registra el useruuid con el servidor
         if (useruuid) {
