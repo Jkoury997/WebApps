@@ -175,3 +175,5 @@ dist
 .DS_Store
 
 combined.log
+
+error.log
