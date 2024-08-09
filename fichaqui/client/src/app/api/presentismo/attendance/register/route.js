@@ -19,10 +19,7 @@ export async function POST(request) {
       body: JSON.stringify({ code, location }),
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      return NextResponse.json({ error: `Network response was not ok: ${errorData.message}` }, { status: response.status });
-    }
+
 
     const responseData = await response.json();
     return NextResponse.json(responseData, { status: 200 });

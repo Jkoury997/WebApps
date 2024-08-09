@@ -57,20 +57,26 @@ export default function Page() {
   }, []);
 
   async function registerAttendance(code, location) {
-    const response = await fetch('/api/presentismo/attendance/register', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ code, location }),
-    });
+    try {
+      const response = await fetch('/api/presentismo/attendance/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code, location }),
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Error al fichar al empleado');
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.log(errorData.message)
+        throw new Error(errorData.error || 'Error al fichar');
+      }
+
+      return await response.json();
+    } catch (error) {
+      setError(error.message);  // Captura el error aquí
+      throw error;
     }
-
-    return await response.json();
   }
 
   async function fetchEmployeeDetails(useruuid) {
@@ -83,9 +89,9 @@ export default function Page() {
     return await response.json();
   }
 
-  const handleScan = async (data) => {
+ const handleScan = async (data) => {
     if (data && data.text !== lastScannedCode && !scanning) {
-      setScanning(true); // Prevenir múltiples escaneos simultáneos
+      setScanning(true);
       const scannedCode = data.text;
       try {
         const location = localStorage.getItem('zoneUUID');
@@ -95,29 +101,25 @@ export default function Page() {
           return;
         }
 
-        console.log(`Enviando código escaneado: ${scannedCode} y ubicación: ${location}`);
-        
         const attendanceResponse = await registerAttendance(scannedCode, location);
 
-        // Obtener detalles del empleado desde la API de autenticación
         const employeeDetails = await fetchEmployeeDetails(attendanceResponse.useruuid);
+
 
         setEmployeeDetails(attendanceResponse);
         setEmployee(employeeDetails);
         setMessage(` ${employeeDetails.firstName} ${employeeDetails.lastName} fichada correcta`);
 
-        // Reproducir el sonido de éxito
         successSound.current.play();
 
-        // Establecer el último código escaneado
         setLastScannedCode(scannedCode);
       } catch (error) {
         console.error('Error al fichar al empleado:', error);
         setMessage(error.message || 'Error al fichar al empleado');
       } finally {
-        setScanning(false); // Permitir nuevos escaneos
+        setScanning(false);
         if (scannerRef.current && scannerRef.current.resetScanner) {
-          scannerRef.current.resetScanner(); // Reiniciar el escáner
+          scannerRef.current.resetScanner();
         }
       }
     }

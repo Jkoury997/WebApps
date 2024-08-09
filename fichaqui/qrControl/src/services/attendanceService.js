@@ -6,61 +6,47 @@ const { sendNotification } = require('../utils/socketHandler'); // Asegúrate de
 
 const TIME_INTERVAL = 1 * 60 * 1000; // 1 minuto
 
-const registerAttendance = async (code, location, io) => { // Agregamos io como parámetro
+const registerAttendance = async (code, location, io) => {
   try {
     const currentTime = new Date();
-
-    // Verificar si el código QR es válido y obtener el useruuid
     const qrCode = await QRCode.findOne({ code });
+
     if (!qrCode) {
       console.error(`Invalid QR code: ${code}`);
-      throw new Error('Invalid QR code');
+      throw new Error('Código QR inválido');
     }
 
-    //login
-    const responseLogin = await utilsApi.loginJinx()
-    const responseUserAccess = await utilsApi.userAccess(responseLogin.AccessKey)
-    const Token = responseUserAccess.Token
+    const responseLogin = await utilsApi.loginJinx();
+    const responseUserAccess = await utilsApi.userAccess(responseLogin.AccessKey);
+    const Token = responseUserAccess.Token;
 
-    const { useruuid, deviceUUID,dni,sex } = qrCode;
-    console.log(`QR code valid: useruuid=${useruuid}, deviceUUID=${deviceUUID}, dni=${dni}`);
+    const { useruuid, deviceUUID, dni, sex } = qrCode;
 
-    // Creación de un objeto dataUser con id y sex
     const dataUser = {
       id: dni.toString(),
-      sex
+      sex,
     };
 
-    // Verificar si el usuario ya tiene una sesión abierta
     const existingAttendance = await Attendance.findOne({ useruuid, deviceUUID, exitTime: null });
 
     if (existingAttendance) {
       const lastEntryTime = new Date(existingAttendance.entryTime);
-      console.log(`Existing attendance found: useruuid=${useruuid}, entryTime=${lastEntryTime}`);
 
-      // Verificar el intervalo de tiempo mínimo entre las lecturas
       if (currentTime - lastEntryTime < TIME_INTERVAL) {
         console.error(`Cannot register another entry/exit within 1 minute for useruuid=${useruuid}`);
-        throw new Error('Cannot register another entry/exit within 1 minute');
+        throw new Error('No se puede registrar otra entrada/salida dentro de 1 minuto');
       }
-
-      // Registrar la salida
 
       existingAttendance.exitTime = currentTime;
       await existingAttendance.save();
 
-      await utilsApi.fichadaApi(dataUser,Token,currentTime)
+      await utilsApi.fichadaApi(dataUser, Token, currentTime);
 
-
-      console.log(`Exit registered successfully for useruuid=${useruuid} at ${currentTime}`);
-      
-      // Enviar notificación de salida
       const message = `Salida registrada correctamente`;
-      sendNotification(useruuid, {message}, io);
+      sendNotification(useruuid, { message }, io);
 
-      return { message: 'Exit registered successfully', useruuid, entryTime: existingAttendance.entryTime, exitTime: currentTime };
+      return { message: 'Salida registrada correctamente', useruuid, entryTime: existingAttendance.entryTime, exitTime: currentTime };
     } else {
-      // Registrar la entrada
       const attendance = new Attendance({
         useruuid,
         deviceUUID,
@@ -68,23 +54,21 @@ const registerAttendance = async (code, location, io) => { // Agregamos io como 
         location,
       });
 
-
       await attendance.save();
 
-      await utilsApi.fichadaApi(dataUser,Token,currentTime)
-      console.log(`Entry registered successfully for useruuid=${useruuid} at ${currentTime}`);
-      
-      // Enviar notificación de entrada
-      const message = `Entrada registrada correctamente`;
-      sendNotification(useruuid, {message}, io);
+      await utilsApi.fichadaApi(dataUser, Token, currentTime);
 
-      return { message: 'Entry registered successfully', useruuid, entryTime: currentTime };
+      const message = `Entrada registrada correctamente`;
+      sendNotification(useruuid, { message }, io);
+
+      return { message: 'Entrada registrada correctamente', useruuid, entryTime: currentTime };
     }
   } catch (error) {
-    console.error('Error registering attendance:', error);
-    throw error;
+    console.error('Error registrando la asistencia:', error.message);
+    throw new Error(error.message); // Asegúrate de lanzar el error con un mensaje claro
   }
 };
+
 
 // Cerrar sesiones abiertas automáticamente después de 14 horas
 const closeAutomaticSessions = async () => {

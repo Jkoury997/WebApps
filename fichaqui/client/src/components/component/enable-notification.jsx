@@ -66,16 +66,15 @@ export function EnableNotification({ setIsEnabled }) {
       style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}
     >
       <div className="space-y-4">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Activa tus notificaciones</h1>
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Estado de actividad</h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Mantente al tanto de las últimas novedades y actualizaciones de nuestra aplicación. Activa las
-          notificaciones para recibir alertas importantes y no perderte nada.
+          Necesitamos saber que estas activo.
         </p>
         <Button
           className="w-full"
           onClick={enableNotifications}
         >
-          Activar Notificaciones
+          Estoy aqui
         </Button>
         <ToastContainer />
       </div>
