@@ -69,8 +69,9 @@ export default function Page() {
       });
 
       if (!response.ok) {
-        throw new Error("Error al restablecer la contraseña.");
-      }
+        const data = await response.json(); // Obtener detalles del error
+        throw new Error(data.error || "Error al restablecer la contraseña.");
+    }
 
       const data = await response.json();
       // Manejar respuesta exitosa
