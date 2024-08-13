@@ -75,8 +75,9 @@ export default function Page() {
       const data = await response.json();
       console.log(data)
       // Manejar respuesta exitosa
-      if(data){
-        await login(formData.email, formData.password);
+      if (data) {
+        const datosLogin = { email: formData.email, password: formData.password };
+        await login(datosLogin);
         router.push("/auth/login");
       }
       

@@ -53,12 +53,12 @@ export default function LoginPage() {
   
     try {
       const data = await login({ email, password });
-      console.log("Login successful:", data);
       
       Cookies.set('accessToken', data.accessToken);  // Asegúrate de que estás guardando el token
       Cookies.set('refreshToken', data.refreshToken);  // Asegúrate de que estás guardando el token
-  
-      router.push("/dashboard");  // Redirección manual
+      if(data.accessToken){
+        router.push("/dashboard");  // Redirección manual
+      }
     } catch (error) {
       console.error("Error during login:", error);
       setError(error.message || "Error al iniciar sesión");
