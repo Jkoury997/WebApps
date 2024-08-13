@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { EyeIcon, EyeOffIcon, LoaderIcon } from "lucide-react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { login } from "@/utils/authUtils";
 
 export default function Page() {
   const [formData, setFormData] = useState({
@@ -73,13 +72,8 @@ export default function Page() {
     }
 
       const data = await response.json();
-      console.log(data)
       // Manejar respuesta exitosa
-      if (data) {
-        const datosLogin = { email: formData.email, password: formData.password };
-        await login(datosLogin);
         router.push("/auth/login");
-      }
       
     } catch (error) {
       setError("Error al restablecer la contraseña.");
