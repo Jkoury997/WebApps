@@ -29,7 +29,9 @@ export async function POST(request) {
       return NextResponse.json({ error: errorDetails.message || 'Error al enviar el correo de recuperación' }, { status: response.status });
     }
 
-    return NextResponse.json({ message: 'Correo de recuperación enviado' }, { status: 200 });
+    const data =  await response.json();
+
+    return NextResponse.json({ message: 'Correo de recuperación enviado' ,data}, { status: 200 });
   } catch (error) {
     console.error('Error al enviar el correo de recuperación:', error);
     return NextResponse.json({ error: 'Error al enviar el correo de recuperación' }, { status: 500 });

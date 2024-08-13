@@ -69,16 +69,15 @@ export default function Page() {
       });
 
       if (!response.ok) {
-        const data = await response.json(); // Obtener detalles del error
         throw new Error(data.error || "Error al restablecer la contraseña.");
     }
 
       const data = await response.json();
-      console.log(data)
+      
       // Manejar respuesta exitosa
       await login(formData.email, formData.password);
       router.push("/auth/login");
-
+      
     } catch (error) {
       setError("Error al restablecer la contraseña.");
       console.error(error);

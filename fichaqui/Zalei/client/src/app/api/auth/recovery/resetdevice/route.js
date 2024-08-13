@@ -27,6 +27,7 @@ export async function POST(request) {
       const errorDetails = await response.json();
       return NextResponse.json({ error: errorDetails.message || 'Error al enviar el correo de recuperación' }, { status: response.status });
     }
+    
     const data =  await response.json();
 
     
