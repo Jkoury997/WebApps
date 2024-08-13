@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { AlertDescription, Alert } from "@/components/ui/alert";
-import { EyeIcon, EyeOffIcon, FlagIcon, LoaderIcon, TriangleAlertIcon, AlarmClock } from "lucide-react";
+import { EyeIcon, EyeOffIcon, LoaderIcon, TriangleAlertIcon, AlarmClock } from "lucide-react";
 import { login } from "@/utils/authUtils";
 import Cookies from 'js-cookie';
 
@@ -21,6 +21,9 @@ export default function LoginPage() {
 
   useEffect(() => {
     const checkTokensAndRedirect = () => {
+      // No realizar la redirección si isLoading es true
+      if (isLoading) return;
+
       const accessToken = Cookies.get('accessToken');
       const refreshToken = Cookies.get('refreshToken');
       const deviceUUID = Cookies.get('deviceUUID');
@@ -32,7 +35,7 @@ export default function LoginPage() {
         if (localDeviceUUID) {
           Cookies.set('deviceUUID', localDeviceUUID, { path: '/' });
           sessionStorage.setItem('deviceUUID', localDeviceUUID);
-          router.push("/dashboard"); // Intenta redirigir de nuevo aquí
+          router.push("/dashboard");
         } else {
           router.push("/auth/register");
         }
@@ -40,7 +43,7 @@ export default function LoginPage() {
     };
   
     checkTokensAndRedirect();
-  }, [router, isLoading]); // Agregué isLoading aquí como dependencia adiciona
+  }, [router, isLoading]);
 
   const handleTogglePassword = () => {
     setShowPassword(!showPassword);
