@@ -73,10 +73,12 @@ export default function Page() {
     }
 
       const data = await response.json();
-      
+      console.log(data)
       // Manejar respuesta exitosa
-      await login(formData.email, formData.password);
-      router.push("/auth/login");
+      if(data){
+        await login(formData.email, formData.password);
+        router.push("/auth/login");
+      }
       
     } catch (error) {
       setError("Error al restablecer la contraseña.");

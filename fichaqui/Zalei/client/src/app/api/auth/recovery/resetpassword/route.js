@@ -31,7 +31,7 @@ export async function POST(request) {
 
     const data =  await response.json();
 
-    return NextResponse.json({ message: 'Correo de recuperación enviado' ,data}, { status: 200 });
+    return NextResponse.json({data}, { status: 200 });
   } catch (error) {
     console.error('Error al enviar el correo de recuperación:', error);
     return NextResponse.json({ error: 'Error al enviar el correo de recuperación' }, { status: 500 });
