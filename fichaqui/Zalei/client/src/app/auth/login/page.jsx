@@ -20,25 +20,27 @@ export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const accessToken = Cookies.get('accessToken');
-    const refreshToken = Cookies.get('refreshToken');
-    const deviceUUID = Cookies.get('deviceUUID');
-
-    if (accessToken && refreshToken && deviceUUID) {
-      // Si existen el accessToken, refreshToken y deviceUUID, redirigir al dashboard
-      router.push("/dashboard");
-    } else {
-      const localDeviceUUID = localStorage.getItem('deviceUUID');
-      if (localDeviceUUID) {
-        // Si existe deviceUUID en localStorage, guardarlo en cookies y sessionStorage y redirigir al dashboard
-        Cookies.set('deviceUUID', localDeviceUUID, { path: '/' });
-        sessionStorage.setItem('deviceUUID', localDeviceUUID);
+    const checkTokensAndRedirect = () => {
+      const accessToken = Cookies.get('accessToken');
+      const refreshToken = Cookies.get('refreshToken');
+      const deviceUUID = Cookies.get('deviceUUID');
+  
+      if (accessToken && refreshToken && deviceUUID) {
+        router.push("/dashboard");
       } else {
-        // Si no existe nada, redirigir al register
-        router.push("/auth/register");
+        const localDeviceUUID = localStorage.getItem('deviceUUID');
+        if (localDeviceUUID) {
+          Cookies.set('deviceUUID', localDeviceUUID, { path: '/' });
+          sessionStorage.setItem('deviceUUID', localDeviceUUID);
+          router.push("/dashboard"); // Intenta redirigir de nuevo aquí
+        } else {
+          router.push("/auth/register");
+        }
       }
-    }
-  }, [router]);
+    };
+  
+    checkTokensAndRedirect();
+  }, [router, isLoading]); // Agregué isLoading aquí como dependencia adiciona
 
   const handleTogglePassword = () => {
     setShowPassword(!showPassword);
@@ -48,16 +50,15 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
     setShowError(false);
-    
+  
     try {
       const data = await login({ email, password });
       console.log("Login successful:", data);
       
-      // Redirigir al dashboard después de un pequeño retraso para asegurar que las cookies están establecidas
-      setTimeout(() => {
-        router.push("/dashboard");
-      }, 1000);
-
+      Cookies.set('accessToken', data.accessToken);  // Asegúrate de que estás guardando el token
+      Cookies.set('refreshToken', data.refreshToken);  // Asegúrate de que estás guardando el token
+  
+      router.push("/dashboard");  // Redirección manual
     } catch (error) {
       console.error("Error during login:", error);
       setError(error.message || "Error al iniciar sesión");
