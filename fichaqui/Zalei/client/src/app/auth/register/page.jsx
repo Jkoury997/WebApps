@@ -209,9 +209,13 @@ export default function Page() {
             </div>
           </form>
           <div className="text-center text-sm text-gray-500 dark:text-gray-400">
-            Ya tengo cuenta. 
             <Link className="font-medium underline" href="/auth/login">
-              Iniciar sesion
+            Ya tengo cuenta. Iniciar sesion
+            </Link>
+          </div>
+          <div className="text-center text-sm text-gray-500 dark:text-gray-400"> 
+            <Link className="font-medium underline" href="/auth/login">
+              Recuperar contraseña o Dispositivo
             </Link>
           </div>
         </div>

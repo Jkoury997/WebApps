@@ -1,14 +1,14 @@
-"use client";
+"use client"
 
 import { useState } from "react";
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CreateCajon } from "@/utils/cajonUtils";
-import { Alert } from "@/components/ui/alert"; // Usamos el componente de alerta existente
+import { Alert } from "@/components/ui/alert";
 import { StepIndicator } from "@/components/component/step-indicartor";
 import { StepContent } from "@/components/component/step-content";
-import shortUUID from 'short-uuid'; // Importa la librería short-uuid
+import shortUUID from 'short-uuid';
 
 export function CargaCajon() {
   const [activeStep, setActiveStep] = useState(1);
@@ -16,7 +16,9 @@ export function CargaCajon() {
   const [Cantidad, setCantidad] = useState("");
   const [apiResponse, setApiResponse] = useState(null);
   const [IdArticulo, setIdArticulo] = useState(null);
+  const [IdPaquete, setIdPaquete] = useState(null);
   const [FullCode, setFullCode] = useState(null);
+  const [Galpon, setGalpon] = useState(null); // Estado para el galpón
   const [alert, setAlert] = useState({ visible: false, type: '', title: '', message: '' });
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const [qrData, setQrData] = useState(null);
@@ -29,35 +31,42 @@ export function CargaCajon() {
       setIdArticulo(response.Articulo.IdArticulo);
       setFullCode(response.Articulo.FullCode);
       setActiveStep(2);
+    } else if (activeStep === 2 && Galpon) { // Verificamos que Galpon esté definido antes de avanzar
+      setActiveStep(3);
     }
-  };
-
-  const handlePrevStep = () => {
-    setActiveStep((prev) => prev - 1);
   };
 
   const handleCreate = async () => {
     try {
       setIsButtonDisabled(true);
       const responseCreateCajon = await CreateCajon({ IdArticulo, Cantidad });
+      setIdPaquete(responseCreateCajon.IdPaquete);
       setAlert({
         visible: true,
         type: 'success',
         title: 'Éxito',
         message: 'El cajón ha sido creado correctamente.'
       });
-      // Genera un UUID corto
+      
       const uuid = shortUUID.generate();
 
-      // Almacena los datos del QR incluyendo el UUID corto en formato JSON
       const qrDataObject = {
         uuid,
         IdArticulo,
+        IdPaquete,
         Cantidad,
-        FullCode
+        FullCode,
+        Galpon,
+        Fecha: new Date().toLocaleDateString('es-AR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+      })
       };
+
+      console.log(qrDataObject)
       setQrData(JSON.stringify(qrDataObject));
-      setActiveStep(3);
+      setActiveStep(4);
     } catch (error) {
       setAlert({
         visible: true,
@@ -73,6 +82,7 @@ export function CargaCajon() {
     setActiveStep(1);
     setBarcode("");
     setCantidad("");
+    setGalpon(null); // Reinicia el valor de Galpon
     setApiResponse(null);
     setIdArticulo(null);
     setFullCode(null);
@@ -105,20 +115,27 @@ export function CargaCajon() {
               setCantidad={setCantidad}
               apiResponse={apiResponse}
               qrData={qrData}
+              Galpon={Galpon} // Añadimos Galpon al paso
+              setGalpon={setGalpon} // Pasamos el setter de Galpon
             />
           </CardContent>
           <CardFooter className="flex justify-between">
-            {activeStep > 1 && activeStep < 3 && (
-              <Button variant="outline" onClick={handlePrevStep} disabled={isButtonDisabled}>
+            {activeStep > 1 && activeStep < 4 && (
+              <Button variant="outline" onClick={() => setActiveStep((prev) => prev - 1)} disabled={isButtonDisabled}>
                 Anterior
               </Button>
             )}
-            {activeStep === 2 && (
-              <Button onClick={handleCreate} className="ml-auto" disabled={isButtonDisabled}>
-                Cargar
+            {activeStep === 2 && Galpon && ( // Habilitamos el botón "Siguiente" si Galpon está definido
+              <Button onClick={() => setActiveStep(3)} className="ml-auto" disabled={isButtonDisabled}>
+                Siguiente
               </Button>
             )}
             {activeStep === 3 && (
+              <Button onClick={handleCreate} className="ml-auto" disabled={isButtonDisabled}>
+                Crear
+              </Button>
+            )}
+            {activeStep === 4 && (
               <>
                 <Button onClick={handleCreateAnother} className="mx-auto bg-white text-gray-800 border border-gray-800 hover:bg-gray-600 hover:text-white">
                   Crear otro cajón

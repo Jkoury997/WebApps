@@ -1,26 +1,10 @@
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select"; // Asegúrate de que exista un componente de Select o utiliza un select HTML
 
-export function EnterQuantity({ Cantidad, setCantidad, apiResponse,Galpon }) {
+export function EnterGalpon({ Galpon, setGalpon, apiResponse }) {
   const handleChange = (e) => {
-    let value = parseFloat(e.target.value);
-    
-    if (isNaN(value)) {
-      setCantidad("");
-      return;
-    }
-
-    if (value < 0) {
-      value = 0;
-    } else if (value > 30) {
-      value = 30;
-    }
-
-    if (value % 0.5 !== 0) {
-      value = Math.floor(value * 2) / 2;
-    }
-
-    setCantidad(value);
+    const value = parseInt(e.target.value, 10);
+    setGalpon(value);
   };
 
   return (
@@ -39,31 +23,28 @@ export function EnterQuantity({ Cantidad, setCantidad, apiResponse,Galpon }) {
             </p>
           )}
           {apiResponse.Articulo.Descripcion && (
-            <p className="text-sm text-muted-foreground mb-1">
-              <span className="font-medium">Descripción: </span>{apiResponse.Articulo.Descripcion}
-            </p>
-          )}
-          {Galpon && (
             <p className="text-sm text-muted-foreground">
-              <span className="font-medium">N° Galpon: </span>{Galpon}
+              <span className="font-medium">Descripción: </span>{apiResponse.Articulo.Descripcion}
             </p>
           )}
         </div>
       )}
       <div className="grid gap-2">
-        <Label htmlFor="Cantidad">Cantidad</Label>
-        <Input
-          id="Cantidad"
-          type="number"
-          step="0.5"
-          placeholder="Ingresa la cantidad (múltiplos de 0.5)"
-          value={Cantidad}
+        <Label htmlFor="Galpon">Número de Galpón</Label>
+        <select
+          id="Galpon"
+          value={Galpon}
           onChange={handleChange}
-          min="0"
-          max="30"
-        />
+          className="border rounded px-3 py-2"
+        >
+          <option value="" disabled>Seleccionar número de galpón</option>
+          {[...Array(9).keys()].map((i) => (
+            <option key={i + 1} value={i + 1}>
+              {i + 1}
+            </option>
+          ))}
+        </select>
       </div>
-      
     </div>
   );
 }
