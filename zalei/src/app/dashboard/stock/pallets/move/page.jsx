@@ -116,11 +116,20 @@ export default function Page() {
           });
   
           setSuccess(`El pallet ${IdPaquete} ha sido movido exitosamente.`);
+          // Pausar el escaneo por medio segundo antes de permitir otra lectura
+          setPauseScan(true);
+          setTimeout(() => {
+            setPauseScan(false);
+          }, 500);
         } else {
+          setSuccess("");
           setError(`Error al mover el pallet ${IdPaquete}.`);
+          
         }
       } else {
+        setSuccess("");
         setError(`El pallet ${IdPaquete} no se encontró.`);
+        
       }
     } catch (error) {
       setError("Error al procesar el paquete escaneado.");
