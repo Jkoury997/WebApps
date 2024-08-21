@@ -35,6 +35,7 @@ export async function POST(req) {
         const responseData = await response.json();
 
         if (response.ok) {
+            console.log(responseData)
             // Devolver la respuesta en caso de éxito
             return NextResponse.json(responseData);
         } else {

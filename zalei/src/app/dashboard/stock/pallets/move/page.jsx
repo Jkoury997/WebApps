@@ -3,21 +3,22 @@ import React, { useState, useEffect } from "react";
 import QrScannerComponent from "@/components/component/qr-scanner";
 import { Card, CardContent, CardHeader, CardFooter, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Alert } from "@/components/ui/alert"; // Asegúrate de ajustar la ruta según la ubicación del componente
+import { Alert } from "@/components/ui/alert";
 
 export default function Page() {
   const [step, setStep] = useState(1);
   const [originWarehouse, setOriginWarehouse] = useState("");
   const [destinationWarehouse, setDestinationWarehouse] = useState("");
-  const [scannedPackages, setScannedPackages] = useState(new Set()); // Para evitar escaneos duplicados
-  const [uuidArray, setUuidArray] = useState([]); // Array para almacenar los UUID
-  const [readPackages, setReadPackages] = useState([]); // Definir el estado para los paquetes leídos
+  const [scannedPackages, setScannedPackages] = useState(new Set()); 
+  const [uuidArray, setUuidArray] = useState([]); 
+  const [readPackages, setReadPackages] = useState([]); 
   const [originDescription, setOriginDescription] = useState("");
   const [destinationDescription, setDestinationDescription] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [warehouses, setWarehouses] = useState([]);
-  const [isProcessing, setIsProcessing] = useState(false); // Estado para manejar bloqueo temporal
+  const [isProcessing, setIsProcessing] = useState(false); 
+  const [pauseScan, setPauseScan] = useState(false); 
 
   useEffect(() => {
     const fetchWarehouses = async () => {
@@ -74,71 +75,70 @@ export default function Page() {
   };
 
   const handleScanSuccessPaquetes = async (data) => {
-    setError("");
-    setSuccess("");
-  
-    // Verificar si una operación ya está en curso
-    if (isProcessing) {
-      setError("El procesamiento de un paquete anterior aún está en curso. Por favor, espera.");
-      return;
-    }
-  
-    // Bloquear nuevas operaciones mientras se procesa la actual
-    setIsProcessing(true);
-  
     try {
-      const parsedData = await JSON.parse(data); // Parsear el JSON del QR
+      setError("");
+      setSuccess("");
+  
+      // Verificar si estamos en proceso o si el escaneo está en pausa
+      if (isProcessing || pauseScan) {
+        setError("Procesando el paquete anterior o escaneo en pausa. Por favor, espera.");
+        return;
+      }
+  
+      setIsProcessing(true);
+      setPauseScan(true); // Pausar escaneo para evitar lecturas rápidas repetidas
+  
+      // Intentar parsear el código QR
+      const parsedData = JSON.parse(data);
       const { uuid, IdPaquete } = parsedData;
   
-      // Verificar si el uuid ya ha sido escaneado
+      // Verificar si el UUID ya ha sido escaneado
       if (uuidArray.includes(uuid)) {
+        console.log("adentro verificacion",uuidArray)
         setError("Este paquete ya ha sido escaneado.");
-        console.log("Este paquete ya ha sido escaneado.");
-        return; // Salir sin procesar más
-      }
-  
-      // Verificar si el pallet existe
-      const palletExists = await checkPalletExists(IdPaquete);
-  
-      if (palletExists) {
-        // Mover el pallet si existe
-        const moveSuccess = await movePallet(IdPaquete);
-        if (moveSuccess) {
-          // Agregar el uuid al array de UUIDs
-          setUuidArray((prev) => [...prev, uuid]);
-  
-          // Agregar el paquete a la lista de QR leídos
-          setReadPackages((prev) => {
-            if (!prev.some(pkg => pkg.uuid === uuid)) {
-              return [...prev, parsedData];
-            }
-            return prev;
-          });
-  
-          setSuccess(`El pallet ${IdPaquete} ha sido movido exitosamente.`);
-          // Pausar el escaneo por medio segundo antes de permitir otra lectura
-          setPauseScan(true);
-          setTimeout(() => {
-            setPauseScan(false);
-          }, 500);
-        } else {
-          setSuccess("");
-          setError(`Error al mover el pallet ${IdPaquete}.`);
-          
-        }
+        return;
       } else {
-        setSuccess("");
+        // Verificar si el pallet existe
+      const palletExists = await checkPalletExists(IdPaquete);
+      if (!palletExists) {
         setError(`El pallet ${IdPaquete} no se encontró.`);
-        
+        return;
       }
+  
+      // Intentar mover el pallet
+      const moveSuccess = await movePallet(IdPaquete);
+      if (!moveSuccess) {
+        setError(`Error al mover el pallet ${IdPaquete}.`);
+        return;
+      }
+
+      uuidArray.push(uuid)
+  
+      // Actualizar la lista de paquetes leídos
+      setReadPackages((prev) => {
+        if (!prev.some(pkg => pkg.uuid === uuid)) {
+          return [...prev, parsedData];
+        }
+        return prev;
+      });
+  
+      setSuccess(`El pallet ${IdPaquete} ha sido movido exitosamente.`);
+      console.log("Al final de lo correcto",uuidArray)
+      }
+  
     } catch (error) {
       setError("Error al procesar el paquete escaneado.");
       console.error("Error parsing package data:", error);
     } finally {
-      // Permitir nuevas operaciones después de que se complete el procesamiento
-      setIsProcessing(false);
+      // Despausar el escaneo y permitir nuevas lecturas después de un breve periodo
+      setTimeout(() => {
+        setPauseScan(false);
+        setIsProcessing(false);
+      }, 1000); // Pausa de 1 segundo para evitar múltiples escaneos
     }
   };
+  
+
   
 
   const checkPalletExists = async (idPallet) => {
@@ -163,7 +163,6 @@ export default function Page() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                // Agrega otros encabezados necesarios aquí
             },
             body: JSON.stringify({
                 IdPallet: idPallet,
@@ -175,16 +174,9 @@ export default function Page() {
         const responseData = await response.json();
 
         if (response.ok && responseData.Estado) {
-            // Movimiento completado exitosamente
-            return true;
-        } else {
-            // Manejo de errores específicos de la API
-            console.error('Error al mover el pallet:', responseData.Mensaje || 'Failed to move pallet');
-            setError(responseData.Mensaje || 'Error al mover el pallet.');
-            return false;
+            return responseData.Estado;
         }
     } catch (error) {
-        // Manejo de errores generales
         console.error("Error moving pallet:", error);
         setError("Error al mover el pallet.");
         return false;
@@ -247,28 +239,28 @@ export default function Page() {
                 onScanSuccess={handleScanSuccessPaquetes}
               />
               {readPackages.length > 0 && (
-  <div className="mt-4 bg-white shadow rounded-lg p-4">
-    <h3 className="text-lg font-bold mb-4">Paquetes leídos:</h3>
-    <ul className="divide-y divide-gray-200">
-      {readPackages.map((pkg, index) => (
-        <li key={index} className="py-4 flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-gray-900">{pkg.FullCode}</p>
-            <p className="text-sm text-gray-500">Cantidad: {pkg.Cantidad} unidades</p>
-          </div>
-          <div>
-            <span className="text-xs text-green-500 bg-green-100 p-2 rounded-xl">Aprobado</span>
-          </div>
-        </li>
-      ))}
-    </ul>
-      <div className="flex justify-center mt-4">
-        <Button className="justify-center" onClick={() => window.location.reload()}>
-          Terminar
-        </Button>
-        </div>
-      </div>
-        )}
+                <div className="mt-4 bg-white shadow rounded-lg p-4">
+                  <h3 className="text-lg font-bold mb-4">Paquetes leídos:</h3>
+                  <ul className="divide-y divide-gray-200">
+                    {readPackages.map((pkg, index) => (
+                      <li key={index} className="py-4 flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{pkg.FullCode}</p>
+                          <p className="text-sm text-gray-500">Cantidad: {pkg.Cantidad} unidades</p>
+                        </div>
+                        <div>
+                          <span className="text-xs text-green-500 bg-green-100 p-2 rounded-xl">Aprobado</span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="flex justify-center mt-4">
+                    <Button className="justify-center" >
+                      Terminar
+                    </Button>
+                  </div>
+                </div>
+              )}
             </>
           )}
         </CardContent>
