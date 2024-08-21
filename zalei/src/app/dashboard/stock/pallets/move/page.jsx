@@ -87,7 +87,7 @@ export default function Page() {
     setIsProcessing(true);
   
     try {
-      const parsedData = JSON.parse(data); // Parsear el JSON del QR
+      const parsedData = await JSON.parse(data); // Parsear el JSON del QR
       const { uuid, IdPaquete } = parsedData;
   
       // Verificar si el uuid ya ha sido escaneado
