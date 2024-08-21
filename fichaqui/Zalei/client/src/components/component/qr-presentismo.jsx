@@ -3,6 +3,7 @@ import QRCode from "react-qr-code";
 
 export function QRPresentismo() {
   const [qrCode, setQrCode] = useState("/placeholder.svg");
+  const [isVisible, setIsVisible] = useState(document.visibilityState === 'visible');
 
   const fetchQrCode = async () => {
     try {
@@ -17,12 +18,28 @@ export function QRPresentismo() {
     }
   };
 
-  useEffect(() => {
-    fetchQrCode(); // Fetch QR code on initial render
-    const interval = setInterval(fetchQrCode, 20000); // Fetch QR code every 20 seconds
 
-    return () => clearInterval(interval); // Cleanup interval on component unmount
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsVisible(document.visibilityState === 'visible');
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Cleanup del event listener
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
+
+  useEffect(() => {
+    if (isVisible) {
+      fetchQrCode(); // Fetch QR code when the component first renders and is visible
+      const interval = setInterval(fetchQrCode, 20000); // Fetch QR code every 20 seconds when visible
+
+      return () => clearInterval(interval); // Cleanup interval on component unmount or visibility change
+    }
+  }, [isVisible]);
 
   return (
     <div className="flex flex-col items-center justify-center ">

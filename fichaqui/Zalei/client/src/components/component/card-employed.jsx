@@ -17,13 +17,13 @@ export default function CardEmployed({ employee, employeeDetails }) {
           
           <div className="flex items-center justify-center space-x-2 text-green-500 dark:text-green-400">
             <CheckCircleIcon className="h-5 w-5" />
-            <span>Hora de entrada <p className='hidden'>{new Date(employeeDetails.entryTime).toLocaleTimeString()}</p></span>
+            <span>Hora de entrada</span>
           </div>
 
           {employeeDetails.exitTime && (
             <div className="flex items-center justify-center space-x-2  text-green-500 dark:text-green-400">
               <XCircleIcon className="h-5 w-5" />
-              <span>Hora de salida <p className='hidden'>{new Date(employeeDetails.exitTime).toLocaleTimeString()}</p></span>
+              <span>Hora de salida</span>
             </div>
           )}
 

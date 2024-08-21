@@ -1,41 +1,26 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { Button } from "@/components/ui/button";
-import ListTable from '@/components/component/list-table';
-import { Alert } from "@/components/ui/alert";
 
-export default function QrScannerComponent() {
-  const [scanResults, setScanResults] = useState([]);
+export default function QrScannerComponent({
+  title,
+  description,
+  onScanSuccess, // Callback prop para enviar el resultado escaneado
+  onScanError,
+}) {
   const [scanning, setScanning] = useState(false);
-  const [error, setError] = useState(null);
-  const [scannedCodes, setScannedCodes] = useState(new Set());
-  const [alert, setAlert] = useState({ show: false, type: '', title: '', message: '' });
   const [cameraPermissionDenied, setCameraPermissionDenied] = useState(false);
   const [scannerStarted, setScannerStarted] = useState(false);
+  const [pauseScan, setPauseScan] = useState(false); // Estado para manejar la pausa
+  const [lastScannedCode, setLastScannedCode] = useState(null); // Estado para almacenar el último código escaneado
   const scannerId = 'html5qr-code-full-region';
   const html5QrCodeRef = useRef(null);
-  const lastScanTimeRef = useRef(0);
-  const isComponentMounted = useRef(true);
 
   useEffect(() => {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      setError('Este dispositivo no soporta la API de getUserMedia necesaria para el escaneo de QR.');
+      console.error('Este dispositivo no soporta la API de getUserMedia necesaria para el escaneo de QR.');
     }
-
-    const handleBeforeUnload = (e) => {
-      if (scanResults.length > 0) {
-        e.preventDefault();
-        e.returnValue = 'Tienes datos no enviados. Si abandonas o recargas la página, se perderán.';
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      isComponentMounted.current = false;
-    };
-  }, [scanResults]);
+  }, []);
 
   useEffect(() => {
     if (scanning) {
@@ -46,7 +31,6 @@ export default function QrScannerComponent() {
   }, [scanning]);
 
   const startScanning = () => {
-    setError(null);
     setCameraPermissionDenied(false);
 
     if (!html5QrCodeRef.current) {
@@ -64,154 +48,64 @@ export default function QrScannerComponent() {
     ).then(() => {
       setScannerStarted(true);
     }).catch(err => {
-      console.error(err);
-      setError('Ocurrió un error al intentar iniciar el escaneo. Por favor, inténtalo de nuevo.');
+      console.error('Ocurrió un error al intentar iniciar el escaneo:', err);
       setCameraPermissionDenied(true);
       setScanning(false);
+      if (onScanError) {
+        onScanError(err);
+      }
     });
   };
 
   const stopScanning = () => {
     if (html5QrCodeRef.current) {
       html5QrCodeRef.current.stop().then(() => {
-        if (isComponentMounted.current) {
-          html5QrCodeRef.current.clear();
-        }
+        html5QrCodeRef.current.clear();
       }).catch(err => {
-        console.error(err);
-        if (isComponentMounted.current) {
-          setError('Ocurrió un error al intentar detener el escaneo. Por favor, inténtalo de nuevo.');
-        }
+        console.error('Ocurrió un error al intentar detener el escaneo:', err);
       });
     }
   };
 
-  const handleScan = async (data) => {
-    const currentTime = Date.now();
-    if (data && currentTime - lastScanTimeRef.current > 1000) {
-      lastScanTimeRef.current = currentTime;
+  const handleScan = (data) => {
+    // Verificar si el código escaneado es el mismo que el anterior
+    if (data && !pauseScan && data !== lastScannedCode) {
+      setLastScannedCode(data); // Almacenar el último código escaneado
 
-      const parsedData = JSON.parse(data);
-
-      if (scannedCodes.has(parsedData.uuid)) {
-        showAlert('error', 'Error', 'El código QR ya ha sido escaneado.');
-        return;
+      if (onScanSuccess) {
+        onScanSuccess(data); // Llama a la función de callback para enviar el resultado
       }
 
-      const response = await fetch('/api/utils/codeQrScan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ qrCode: data })
-      });
-
-      const result = await response.json();
-      if (response.status === 200) {
-        setScannedCodes(new Set([...scannedCodes, parsedData.uuid]));
-
-        setScanResults(prevResults => [...prevResults, parsedData]);
-        setError(null);
-        showAlert('success', 'Success', 'Código QR escaneado con éxito.');
-      } else {
-        showAlert('error', 'Error', result.message);
-      }
+      // Pausar el escaneo por medio segundo antes de permitir otra lectura
+      setPauseScan(true);
+      setTimeout(() => {
+        setPauseScan(false);
+      }, 500);
+    } else if (data === lastScannedCode) {
+      console.log("Código duplicado detectado, ignorando.");
     }
   };
 
   const handleError = (err) => {
     if (!err.message.includes("No MultiFormat Readers were able to detect the code")) {
-      console.error(err);
-      showAlert('error', 'Error', 'Ocurrió un error al intentar escanear el código QR. Por favor, inténtalo de nuevo.');
-    }
-  };
-
-  const deleteEntry = async (index) => {
-    const uuidToDelete = scanResults[index].uuid;
-
-    try {
-      const response = await fetch('/api/utils/codeQrScan', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uuid: uuidToDelete })
-      });
-
-      const result = await response.json();
-
-      if (response.status === 200) {
-        const updatedResults = [...scanResults];
-        updatedResults.splice(index, 1);
-        setScanResults(updatedResults);
-
-        const updatedScannedCodes = new Set(scannedCodes);
-        updatedScannedCodes.delete(uuidToDelete);
-        setScannedCodes(updatedScannedCodes);
-        setError(null);
-        showAlert('success', 'Success', 'Código QR eliminado con éxito.');
-      } else {
-        showAlert('error', 'Error', result.message);
+      console.error('Error al intentar escanear el código QR:', err);
+      if (onScanError) {
+        onScanError(err);
       }
-    } catch (error) {
-      console.error('Error al eliminar el código:', error);
-      showAlert('error', 'Error', 'Ocurrió un error al eliminar el código.');
     }
-  };
-
-  const handleSend = async () => {
-    const dataToSend = {
-      Cajones: scanResults.map(item => ({
-        IdArticulo: item.IdArticulo,
-        Cantidad: item.Cantidad
-      }))
-    };
-
-    console.log(dataToSend);
-
-    try {
-      const response = await fetch('/api/syndra/avicola/pallet/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dataToSend })
-      });
-
-      const result = await response.json();
-
-      if (response.status === 200) {
-        console.log('Datos enviados correctamente:', result);
-        setScanResults([]);
-        setScannedCodes(new Set());
-        setError(null);
-        showAlert('success', 'Success', 'Datos enviados correctamente.');
-      } else {
-        showAlert('error', 'Error', result.message);
-      }
-    } catch (error) {
-      console.error('Error al enviar los datos:', error);
-      showAlert('error', 'Error', 'Ocurrió un error al enviar los datos.');
-    }
-  };
-
-  const showAlert = (type, title, message) => {
-    setAlert({ show: true, type, title, message });
-    setTimeout(() => {
-      setAlert({ show: false, type: '', title: '', message: '' });
-    }, 5000);
   };
 
   return (
-    <div className="flex flex-col items-center mt-4 h-screen bg-background">
+    <div className="flex flex-col items-center ">
       <div className="max-w-md w-full px-4 sm:px-6">
         <div className="space-y-4">
           <div className="text-center">
-            <h1 className="text-3xl font-bold tracking-tight">Escáner de Códigos QR</h1>
-            <p className="mt-2 text-muted-foreground">Escanea códigos QR con tu dispositivo móvil.</p>
+            <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
+            <p className="mt-2 text-muted-foreground">{description}</p>
           </div>
           {!scannerStarted && (
             <Button size="lg" className="w-full" onClick={() => setScanning(true)}>
               Iniciar Escáner
-            </Button>
-          )}
-          {scannerStarted && (
-            <Button size="lg" className="w-full mt-4" onClick={() => window.location.href = '/dashboard/stock/pallets'}>
-              Ir a enlace
             </Button>
           )}
           {scanning && (
@@ -221,17 +115,6 @@ export default function QrScannerComponent() {
             <Button size="lg" className="w-full mt-4" onClick={() => startScanning()}>
               Permitir Cámara
             </Button>
-          )}
-          {alert.show && (
-            <div className="mt-4">
-              <Alert type={alert.type} title={alert.title} message={alert.message} />
-            </div>
-          )}
-          {scanResults.length > 0 && (
-            <div className="mt-4">
-              <h2 className="text-sm font-bold tracking-tight mb-1 ms-2">Lista de Códigos Escaneados:</h2>
-              <ListTable data={scanResults} handleDelete={deleteEntry} handleSend={handleSend} />
-            </div>
           )}
         </div>
       </div>

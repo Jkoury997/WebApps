@@ -47,19 +47,19 @@ export function ListPallets({ pallets }) {
     <Card className="border-none">
       <CardHeader className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <CardTitle>Pallets</CardTitle>
-          <CardDescription>Manage your pallets and move them between different warehouses.</CardDescription>
+          <CardTitle>Paquetes</CardTitle>
+          <CardDescription>Lista de paquetes.</CardDescription>
         </div>
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between w-full lg:w-auto mt-4 lg:mt-0 lg:ml-auto">
           <Input
             type="text"
-            placeholder="Search..."
+            placeholder="Buscar..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="mb-4 lg:mb-0 lg:mr-4 w-full lg:w-auto"
           />
-          <Link href={`${pathname}/create`} passHref>
-            <Button className="w-full lg:w-auto">Create New Pallet</Button>
+          <Link href={`${pathname}/move`} passHref>
+            <Button className="w-full lg:w-auto">Mover Cajon</Button>
           </Link>
         </div>
       </CardHeader>
@@ -79,7 +79,7 @@ export function ListPallets({ pallets }) {
           <TableBody>
             {filteredPallets.map((pallet) => (
               <TableRow key={pallet.IdPallet}>
-                <TableCell>{pallet.Numero}</TableCell>
+                <TableCell>{pallet.Numero.slice(-4)}</TableCell>
                 <TableCell>{pallet.location}</TableCell>
                 <TableCell>{pallet.date}</TableCell>
                 <TableCell>
@@ -90,7 +90,7 @@ export function ListPallets({ pallets }) {
                         <span className="sr-only">Toggle menu</span>
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
+                    <DropdownMenuContent align="end" className="hidden">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
                       <DropdownMenuItem onSelect={() => handleMoveClick(pallet)}>Mover de almacen</DropdownMenuItem>
                       <DropdownMenuSeparator />

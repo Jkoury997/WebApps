@@ -71,10 +71,7 @@ export function ScanBarcode({ onScan }) {
   };
 
   const handleManualSubmit = async () => {
-
     if (manualBarcode.trim() === "") return;
-
-
 
     // Hacer consulta a la API
     try {
@@ -87,21 +84,21 @@ export function ScanBarcode({ onScan }) {
   };
 
   return (
-    <div className="grid gap-2">
+    <div className="grid gap-2 mx-auto  max-h-full">
       <Button variant="outline" className="ml-2" onClick={handleScanBarcode}>
-        <BarcodeIcon className="w-4 h-4" />
+        <BarcodeIcon className="w-4 h-4 mr-2" />
         Escanear
       </Button>
-      <div className="mt-4 relative w-full h-64">
+      <div className="mt-4 relative w-full h-48 max-h-48 overflow-hidden">
         <div id="reader" ref={videoRef} className="absolute top-0 left-0 w-full h-full"></div>
       </div>
-      <div className="mt-4 flex items-center ">
+      <div className="mt-4 flex items-center">
         <input
           type="text"
           value={manualBarcode}
           onChange={(e) => setManualBarcode(e.target.value)}
           placeholder="Ingrese el código de barra manualmente"
-          className="border rounded px-2 py-1 mr-2"
+          className="border rounded px-2 py-1 mr-2 "
         />
         <Button variant="outline" onClick={handleManualSubmit}>
           Aplicar

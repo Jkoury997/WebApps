@@ -33,7 +33,7 @@ export function UserDropMenu() {
             alt="Avatar"
             className="rounded-full"
             height="32"
-            src="/vercel.svg"
+            src="/user-round.svg"
             style={{
               aspectRatio: "32/32",
               objectFit: "cover",

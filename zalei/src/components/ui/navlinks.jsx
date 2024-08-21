@@ -1,3 +1,4 @@
+// NavLinks.js
 "use client";
 
 import { useState } from 'react';
@@ -8,7 +9,7 @@ import { usePermissions } from '@/hooks/usePermissions';
 import permissionsConfig from '@/config/permissionsConfig';
 import { ChevronDown } from 'lucide-react';
 
-export function NavLinks() {
+export function NavLinks({ onLinkClick }) {  // Añadimos la prop `onLinkClick`
   const { permissions, loading, error } = usePermissions();
   const pathname = usePathname();
   const [openGroups, setOpenGroups] = useState({});
@@ -77,6 +78,7 @@ export function NavLinks() {
                   <div key={`${group}-${index}`}>
                     <Link
                       href={items.main}
+                      onClick={onLinkClick}  // Cerrar el sidebar al hacer clic en un enlace
                       className={clsx(
                         'flex items-center gap-3 rounded-lg px-3 py-2 transition-all',
                         {

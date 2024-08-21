@@ -24,7 +24,7 @@ export function EnterQuantity({ Cantidad, setCantidad, apiResponse,Galpon }) {
   };
 
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-4 p-2 pt-1">
       {apiResponse && (
         <div className="p-4 border rounded-lg bg-gray-50">
           <h3 className="text-lg font-semibold mb-2">Detalles del Artículo</h3>

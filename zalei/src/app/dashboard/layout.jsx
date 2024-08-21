@@ -1,26 +1,111 @@
+// Component.js
 "use client";
 
-import Brand from "@/components/ui/brand";
-import Header from "@/components/ui/header";
-import Navbar from "@/components/ui/navbar";
+import { useState } from 'react';
+import Link from 'next/link';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { BarChart3, DollarSign, Package, Users, Search, Bell, Menu, X, ChevronDown, Settings, ShoppingCart, FileText, EggFriedIcon } from 'lucide-react';
+import { NavLinks } from "@/components/ui/navlinks";
 
-export default function DashboardLayout({ children }) {
-  const titleBrand = "Zalei";
+export default function Component({ children }) {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const title = process.env.NEXT_PUBLIC_EMPRESA_NAME
+
+  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+
+  // Nueva función para cerrar el sidebar
+  const closeSidebar = () => setSidebarOpen(false);
 
   return (
-    <div key="1" className="grid min-h-screen w-full overflow-hidden lg:grid-cols-[280px_1fr]">
-      <div className="hidden bg-gray-100/40 border-r lg:block">
-        <div className="flex flex-col gap-2">
-          <Brand title={titleBrand} />
-          <div className="flex-1">
-            <Navbar />
+    <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
+      {/* Sidebar for desktop */}
+      <aside className={`bg-white dark:bg-gray-800 w-64 fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="flex h-full flex-col">
+          <div className="flex h-14 items-center justify-between border-b px-4">
+            <Link className="flex items-center font-semibold" href="#">
+              <EggFriedIcon className="mr-2 h-6 w-6" />
+              <span>{title}</span>
+            </Link>
+            <Button variant="ghost" size="icon" onClick={toggleSidebar} className="lg:hidden">
+              <X className="h-5 w-5" />
+              <span className="sr-only">Close menu</span>
+            </Button>
           </div>
+          <nav className="flex-1 overflow-y-auto p-2">
+          <NavLinks onLinkClick={closeSidebar} /> {/* Pasamos la función closeSidebar */}
+          </nav>
         </div>
-      </div>
-      <div className="flex flex-col">
-        <Header  title={titleBrand} />
-        <main className="">
-          {children}
+      </aside>
+
+      {/* Overlay for mobile */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden" onClick={toggleSidebar}></div>
+      )}
+
+      {/* Main Content */}
+      <div className="flex flex-1 flex-col overflow-hidden lg:pl-64">
+        {/* Top bar */}
+        <header className="flex h-14 items-center border-b bg-white dark:bg-gray-800 px-4">
+          <Button variant="ghost" size="icon" onClick={toggleSidebar} className="lg:hidden mr-2">
+            <Menu className="h-5 w-5" />
+            <span className="sr-only">Toggle menu</span>
+          </Button>
+          <div className="flex flex-1 items-center justify-between">
+            <div className="flex items-center">
+              <Search className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+              <Input
+                type="search"
+                placeholder="Search..."
+                className="ml-2 w-full max-w-xs"
+              />
+            </div>
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" className="hidden">
+                <Bell className="h-5 w-5" />
+                <span className="sr-only">Notifications</span>
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <img
+                      alt="Avatar"
+                      className="rounded-full"
+                      height="32"
+                      src="/user-round.svg?height=32&width=32"
+                      style={{
+                        aspectRatio: "32/32",
+                        objectFit: "cover",
+                      }}
+                      width="32"
+                    />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>Profile</DropdownMenuItem>
+                  <DropdownMenuItem>Settings</DropdownMenuItem>
+                  <DropdownMenuItem>Logout</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+        </header>
+
+        {/* Dashboard Content */}
+        <main className="flex-1 overflow-y-auto p-4">
+        {children} 
         </main>
       </div>
     </div>

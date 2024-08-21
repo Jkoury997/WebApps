@@ -10,13 +10,18 @@ async function getDevice(uuid) {
 }
 
 async function updateDevice(userUuid, newUuid) {
-  const device = await Device.findOneAndUpdate({ useruuid: userUuid }, { uuid: newUuid }, { new: true });
+  let device = await Device.findOneAndUpdate({ useruuid: userUuid }, { uuid: newUuid }, { new: true });
   console.log(device)
+
   if (!device) {
-    throw new Error('Device not found');
+    // Crear un nuevo dispositivo vinculado al usuario
+    device = new Device({ useruuid: userUuid, uuid: newUuid });
+    await device.save();
   }
+
   return device;
 }
+
 
 module.exports = {
   getDevice,

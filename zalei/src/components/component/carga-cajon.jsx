@@ -11,17 +11,16 @@ import { StepContent } from "@/components/component/step-content";
 import shortUUID from 'short-uuid';
 
 export function CargaCajon() {
-  const [activeStep, setActiveStep] = useState(1);
-  const [barcode, setBarcode] = useState("");
-  const [Cantidad, setCantidad] = useState("");
-  const [apiResponse, setApiResponse] = useState(null);
-  const [IdArticulo, setIdArticulo] = useState(null);
-  const [IdPaquete, setIdPaquete] = useState(null);
-  const [FullCode, setFullCode] = useState(null);
+  const [activeStep, setActiveStep] = useState(1); // Estado para el paso actual
+  const [barcode, setBarcode] = useState(""); // Código de barras escaneado
+  const [Cantidad, setCantidad] = useState(""); // Cantidad de artículos
+  const [apiResponse, setApiResponse] = useState(null); // Respuesta de la API después del escaneo
+  const [IdArticulo, setIdArticulo] = useState(null); // ID del artículo obtenido
+  const [FullCode, setFullCode] = useState(null); // Código completo del artículo
   const [Galpon, setGalpon] = useState(null); // Estado para el galpón
-  const [alert, setAlert] = useState({ visible: false, type: '', title: '', message: '' });
-  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
-  const [qrData, setQrData] = useState(null);
+  const [alert, setAlert] = useState({ visible: false, type: '', title: '', message: '' }); // Estado para alertas
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false); // Deshabilitar botones mientras se procesa
+  const [qrData, setQrData] = useState(null); // Datos del QR generados
   const router = useRouter();
 
   const handleNextStep = (data, response) => {
@@ -30,7 +29,7 @@ export function CargaCajon() {
       setApiResponse(response);
       setIdArticulo(response.Articulo.IdArticulo);
       setFullCode(response.Articulo.FullCode);
-      setActiveStep(2);
+      setActiveStep(2); // Avanzar al siguiente paso después del escaneo
     } else if (activeStep === 2 && Galpon) { // Verificamos que Galpon esté definido antes de avanzar
       setActiveStep(3);
     }
@@ -38,22 +37,20 @@ export function CargaCajon() {
 
   const handleCreate = async () => {
     try {
-      setIsButtonDisabled(true);
+      setIsButtonDisabled(true); // Deshabilitar botón mientras se procesa
       const responseCreateCajon = await CreateCajon({ IdArticulo, Cantidad });
-      setIdPaquete(responseCreateCajon.IdPaquete);
-      setAlert({
-        visible: true,
-        type: 'success',
-        title: 'Éxito',
-        message: 'El cajón ha sido creado correctamente.'
-      });
-      
+      console.log(responseCreateCajon.IdPaquete);
+  
+      // Obtener el ID del paquete después de la creación
+      const newIdPaquete = responseCreateCajon.IdPaquete;
+  
+      // Crear el objeto QR Data
       const uuid = shortUUID.generate();
-
+  
       const qrDataObject = {
         uuid,
         IdArticulo,
-        IdPaquete,
+        IdPaquete: newIdPaquete,
         Cantidad,
         FullCode,
         Galpon,
@@ -61,12 +58,18 @@ export function CargaCajon() {
           day: '2-digit',
           month: '2-digit',
           year: 'numeric'
-      })
+        })
       };
-
-      console.log(qrDataObject)
+  
+      console.log(qrDataObject);
       setQrData(JSON.stringify(qrDataObject));
-      setActiveStep(4);
+      setActiveStep(4); // Avanzar al paso final
+      setAlert({
+        visible: true,
+        type: 'success',
+        title: 'Éxito',
+        message: 'El cajón ha sido creado correctamente.'
+      });
     } catch (error) {
       setAlert({
         visible: true,
@@ -77,8 +80,9 @@ export function CargaCajon() {
       setIsButtonDisabled(false);
     }
   };
-
+  
   const handleCreateAnother = () => {
+    // Resetear todos los estados para permitir la creación de otro cajón
     setActiveStep(1);
     setBarcode("");
     setCantidad("");
@@ -92,7 +96,7 @@ export function CargaCajon() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-2 py-8">
       <div className="max-w-2xl mx-auto">
         <div className="mb-6 flex flex-col items-center">
           <StepIndicator activeStep={activeStep} />
@@ -107,7 +111,7 @@ export function CargaCajon() {
           </div>
         )}
         <Card>
-          <CardContent className="grid gap-4 pt-6">
+          <CardContent className="grid gap-4  p-1 pt-6">
             <StepContent
               activeStep={activeStep}
               handleNextStep={handleNextStep}
@@ -119,7 +123,7 @@ export function CargaCajon() {
               setGalpon={setGalpon} // Pasamos el setter de Galpon
             />
           </CardContent>
-          <CardFooter className="flex justify-between">
+          <CardFooter className="flex justify-between ps-2 pe-2 pt-2">
             {activeStep > 1 && activeStep < 4 && (
               <Button variant="outline" onClick={() => setActiveStep((prev) => prev - 1)} disabled={isButtonDisabled}>
                 Anterior

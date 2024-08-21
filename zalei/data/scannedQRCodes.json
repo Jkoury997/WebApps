@@ -1,39 +1,11 @@
 {
   "codes": [
     {
-      "uuid": "rPVgpmpTD7Wzg6HRAD8Ge7",
+      "uuid": "6E1DpgLsNUbStV5nGUazcn",
       "IdArticulo": 80618,
       "FullCode": "C360-EC06-3-BLA",
-      "Cantidad": 10,
-      "timestamp": "2024-08-03T09:47:36.234Z"
-    },
-    {
-      "uuid": "afjviBetvVj3vBfahbxMQY",
-      "IdArticulo": 80618,
-      "FullCode": "C360-EC06-3-BLA",
-      "Cantidad": 28,
-      "timestamp": "2024-08-03T10:39:40.664Z"
-    },
-    {
-      "uuid": "nKexHY1FU4KAhZ3qVXniyU",
-      "IdArticulo": 80618,
-      "FullCode": "C360-EC06-3-BLA",
-      "Cantidad": 30,
-      "timestamp": "2024-08-04T23:52:42.670Z"
-    },
-    {
-      "uuid": "c3Jm1rfncoEZkZNdqsamui",
-      "IdArticulo": 80618,
-      "FullCode": "C360-EC06-3-BLA",
-      "Cantidad": 6,
-      "timestamp": "2024-08-04T23:56:49.535Z"
-    },
-    {
-      "uuid": "1CsLq6kLZByEP1z2rjUwp5",
-      "IdArticulo": 80618,
-      "FullCode": "C360-EC06-3-BLA",
-      "Cantidad": 12,
-      "timestamp": "2024-08-04T23:56:59.421Z"
+      "Cantidad": 22,
+      "timestamp": "2024-08-15T15:05:24.454Z"
     }
   ]
 }

@@ -3,33 +3,27 @@ import { cookies } from 'next/headers';
 
 const NEXT_PUBLIC_URL_API_AVICOLA = process.env.NEXT_PUBLIC_URL_API_AVICOLA;
 
-export async function POST(req) {
+export async function GET(req) {
     try {
-        // Parsear el cuerpo de la solicitud
-        const { IdPallet, AlmacenOrigen, AlmacenDestino } = await req.json(); 
-
-        // Obtener el token de las cookies
         const cookieStore = cookies();
         const Token = cookieStore.get("Token");
 
-        // Verificar que los datos necesarios estén presentes
-        if (!IdPallet || !AlmacenOrigen || !AlmacenDestino) {
-            return NextResponse.json({ error: 'Faltan datos requeridos' }, { status: 400 });
+        // Extraer IdPallet de la URL de la solicitud
+        const { searchParams } = new URL(req.url);
+        const IdPallet = searchParams.get('IdPallet');
+
+        if (!IdPallet) {
+            return NextResponse.json({ error: 'IdPallet is required' }, { status: 400 });
         }
 
-        // Hacer la solicitud al backend externo para mover el pallet
-        const response = await fetch(`${NEXT_PUBLIC_URL_API_AVICOLA}/api/Avicola/PalletMover`, {
-            method: 'POST',
+        // Enviar la solicitud al backend
+        const response = await fetch(`${NEXT_PUBLIC_URL_API_AVICOLA}/api/Avicola/Pallets/${IdPallet}`, {
+            method: 'GET',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
                 'Token': Token ? Token.value : ''
             },
-            body: JSON.stringify({
-                IdPallet,
-                AlmacenOrigen,
-                AlmacenDestino
-            })
         });
 
         const responseData = await response.json();
@@ -39,7 +33,7 @@ export async function POST(req) {
             return NextResponse.json(responseData);
         } else {
             // Manejo de errores específicos de la API
-            return NextResponse.json({ error: responseData.Mensaje || 'Failed to move pallet' }, { status: response.status });
+            return NextResponse.json({ error: responseData.Mensaje || 'Failed to retrieve pallet' }, { status: response.status });
         }
     } catch (error) {
         // Manejo de errores generales

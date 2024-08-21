@@ -48,6 +48,7 @@ const updateDeviceWithOtp = async (req, res) => {
 
     const newDeviceUuid = uuidv4();
     console.log("Generated new device UUID:", newDeviceUuid);
+    
 
     const updatedDevice = await deviceService.updateDevice(user.uuid, newDeviceUuid);
     console.log("Updated device:", updatedDevice);
