@@ -1,10 +1,12 @@
+import React from 'react';
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { StepNavigation } from "@/components/component/step-navigation"; // Asegúrate de tener la ruta correcta
 
-export function EnterQuantity({ Cantidad, setCantidad, apiResponse,Galpon }) {
+export function EnterQuantity({ Cantidad, setCantidad, Galpon, IdArticulo, onPrevious, onCreate }) {
   const handleChange = (e) => {
     let value = parseFloat(e.target.value);
-    
+
     if (isNaN(value)) {
       setCantidad("");
       return;
@@ -23,33 +25,15 @@ export function EnterQuantity({ Cantidad, setCantidad, apiResponse,Galpon }) {
     setCantidad(value);
   };
 
+  const handleCreate = () => {
+    // Llama a la función onCreate, que viene de Page.js
+    if (IdArticulo && Cantidad) {
+      onCreate(IdArticulo, Cantidad);
+    }
+  };
+
   return (
     <div className="grid gap-4 p-2 pt-1">
-      {apiResponse && (
-        <div className="p-4 border rounded-lg bg-gray-50">
-          <h3 className="text-lg font-semibold mb-2">Detalles del Artículo</h3>
-          {apiResponse.Articulo.DescDetalle && (
-            <p className="text-sm text-muted-foreground mb-1">
-              <span className="font-medium">Color: </span>{apiResponse.Articulo.DescDetalle}
-            </p>
-          )}
-          {apiResponse.Articulo.DescMedida && (
-            <p className="text-sm text-muted-foreground mb-1">
-              <span className="font-medium">Medida: </span>{apiResponse.Articulo.DescMedida}
-            </p>
-          )}
-          {apiResponse.Articulo.Descripcion && (
-            <p className="text-sm text-muted-foreground mb-1">
-              <span className="font-medium">Descripción: </span>{apiResponse.Articulo.Descripcion}
-            </p>
-          )}
-          {Galpon && (
-            <p className="text-sm text-muted-foreground">
-              <span className="font-medium">N° Galpon: </span>{Galpon}
-            </p>
-          )}
-        </div>
-      )}
       <div className="grid gap-2">
         <Label htmlFor="Cantidad">Cantidad</Label>
         <Input
@@ -63,7 +47,11 @@ export function EnterQuantity({ Cantidad, setCantidad, apiResponse,Galpon }) {
           max="30"
         />
       </div>
-      
+      <StepNavigation 
+        onPrevious={onPrevious} 
+        onNext={handleCreate} 
+        isNextDisabled={!Cantidad} 
+      />
     </div>
   );
 }

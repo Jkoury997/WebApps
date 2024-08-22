@@ -1,163 +1,129 @@
 "use client";
-import React, { useState, useEffect } from "react";
+
+import { useState,useEffect} from "react";
 import QrScannerComponent from "@/components/component/qr-scanner";
-import { Card, CardContent, CardHeader, CardFooter, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Alert } from "@/components/ui/alert";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Alert } from "@/components/ui/alert"; // Verifica que la ruta sea correcta
+import DepositoInfo from "@/components/ui/deposit-info"; // Verifica que la ruta sea correcta
+import { Button } from "@/components/ui/button"; // Verifica que la ruta sea correcta
+import ListPackets from "@/components/component/list-packed";
+import StatusBadge from "@/components/ui/badgeAlert";
 
 export default function Page() {
-  const [step, setStep] = useState(1);
-  const [originWarehouse, setOriginWarehouse] = useState("");
-  const [destinationWarehouse, setDestinationWarehouse] = useState("");
-  const [scannedPackages, setScannedPackages] = useState(new Set()); 
-  const [uuidArray, setUuidArray] = useState([]); 
-  const [readPackages, setReadPackages] = useState([]); 
-  const [originDescription, setOriginDescription] = useState("");
-  const [destinationDescription, setDestinationDescription] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const [warehouses, setWarehouses] = useState([]);
-  const [isProcessing, setIsProcessing] = useState(false); 
-  const [pauseScan, setPauseScan] = useState(false); 
+  const [isFirstScanComplete, setIsFirstScanComplete] = useState(false);
+  const [activeStep, setActiveStep] = useState(1);
+  const [error, setError] = useState(null);
+  const [successBadge, setSuccessBadge] = useState(null);
+  const [errorBadge, setErrorBadge] = useState(null);
+  const [success, setSuccess] = useState(null);
+  const [availableDeposits, setAvailableDeposits] = useState([]);
+  const [depositOrigin, setDepositOrigin] = useState(null);
+  const [depositFinal, setDepositFinal] = useState(null);
+  const [scannedPackages, setScannedPackages] = useState([]);
+  const [scannedUUIDs, setScannedUUIDs] = useState([]);
 
   useEffect(() => {
-    const fetchWarehouses = async () => {
-      try {
-        const response = await fetch('/api/syndra/catalogo/almacenespallets', {
-          method: 'GET',
-        });
-        
-        if (!response.ok) {
-          throw new Error('Error al obtener los almacenes.');
-        }
-
-        const data = await response.json();
-        setWarehouses(data.Almacenes || []);
-      } catch (error) {
-        console.error("Error fetching warehouses:", error);
-        setError("Error al cargar los almacenes.");
+    const handleBeforeUnload = (event) => {
+      if (isFirstScanComplete) {
+        event.preventDefault();
+        event.returnValue = ""; // Es necesario para mostrar la alerta en algunos navegadores
       }
     };
 
-    fetchWarehouses();
-  }, []);
+    window.addEventListener("beforeunload", handleBeforeUnload);
 
-  const handleScanSuccess = async (data) => {
-    setError("");
-    setSuccess("");
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [isFirstScanComplete]);
 
-    if (step === 1) {
-      const warehouse = warehouses.find((warehouse) => warehouse.Codigo === data);
-
-      if (!warehouse) {
-        setError(`El código ${data} no se encontró en los almacenes.`);
-        return;
-      }
-
-      setOriginWarehouse(data);
-      setOriginDescription(warehouse.Descripcion);
-    } else if (step === 2) {
-      if (data === originWarehouse) {
-        setError("El depósito de destino no puede ser el mismo que el depósito de origen.");
-        return;
-      }
-
-      const warehouse = warehouses.find((warehouse) => warehouse.Codigo === data);
-
-      if (!warehouse) {
-        setError(`El código ${data} no se encontró en los almacenes.`);
-        return;
-      }
-
-      setDestinationWarehouse(data);
-      setDestinationDescription(warehouse.Descripcion);
-    }
-  };
-
-  const handleScanSuccessPaquetes = async (data) => {
+  const fetchDeposits = async () => {
     try {
-      setError("");
-      setSuccess("");
-  
-      // Verificar si estamos en proceso o si el escaneo está en pausa
-      if (isProcessing || pauseScan) {
-        setError("Procesando el paquete anterior o escaneo en pausa. Por favor, espera.");
-        return;
-      }
-  
-      setIsProcessing(true);
-      setPauseScan(true); // Pausar escaneo para evitar lecturas rápidas repetidas
-  
-      // Intentar parsear el código QR
-      const parsedData = JSON.parse(data);
-      const { uuid, IdPaquete } = parsedData;
-  
-      // Verificar si el UUID ya ha sido escaneado
-      if (uuidArray.includes(uuid)) {
-        console.log("adentro verificacion",uuidArray)
-        setError("Este paquete ya ha sido escaneado.");
-        return;
+      const response = await fetch("/api/syndra/catalogo/almacenespallets");
+      const data = await response.json();
+      if (response.ok && data.Estado) {
+        setAvailableDeposits(data.Almacenes);
+        return data.Almacenes;
       } else {
-        // Verificar si el pallet existe
-      const palletExists = await checkPalletExists(IdPaquete);
-      if (!palletExists) {
-        setError(`El pallet ${IdPaquete} no se encontró.`);
-        return;
+        setError(data.error || "Error al obtener los depósitos");
+        return null;
       }
-  
-      // Intentar mover el pallet
-      const moveSuccess = await movePallet(IdPaquete);
-      if (!moveSuccess) {
-        setError(`Error al mover el pallet ${IdPaquete}.`);
-        return;
-      }
-
-      uuidArray.push(uuid)
-  
-      // Actualizar la lista de paquetes leídos
-      setReadPackages((prev) => {
-        if (!prev.some(pkg => pkg.uuid === uuid)) {
-          return [...prev, parsedData];
-        }
-        return prev;
-      });
-  
-      setSuccess(`El pallet ${IdPaquete} ha sido movido exitosamente.`);
-      console.log("Al final de lo correcto",uuidArray)
-      }
-  
-    } catch (error) {
-      setError("Error al procesar el paquete escaneado.");
-      console.error("Error parsing package data:", error);
-    } finally {
-      // Despausar el escaneo y permitir nuevas lecturas después de un breve periodo
-      setTimeout(() => {
-        setPauseScan(false);
-        setIsProcessing(false);
-      }, 1000); // Pausa de 1 segundo para evitar múltiples escaneos
+    } catch (err) {
+      setError("Error al realizar la solicitud");
+      return null;
     }
   };
-  
 
-  
+  const handleScanOrigin = async (scannedData) => {
+    setError(null);
+    console.log("Depósito de origen escaneado:", scannedData);
 
-  const checkPalletExists = async (idPallet) => {
+    const deposits = await fetchDeposits();
+
+    if (!deposits) {
+      setError("No se pudieron obtener los depósitos.");
+      return;
+    }
+
+    const foundDeposit = deposits.find(
+      (deposit) => deposit.Codigo === scannedData
+    );
+
+    if (foundDeposit) {
+      setDepositOrigin(foundDeposit);
+      setSuccess("Depósito Origen confirmado.");
+      setActiveStep(2);
+      setIsFirstScanComplete(true); // Marcamos que el primer escaneo se ha completado
+    } else {
+      setError(
+        "Depósito de origen no encontrado en la lista de depósitos disponibles."
+      );
+    }
+  };
+
+  const handleScanFinal = async (scannedData) => {
+    setSuccess(null);
+    setError(null);
+    console.log("Depósito final escaneado:", scannedData);
+
+    const foundDeposit = availableDeposits.find(
+      (deposit) => deposit.Codigo === scannedData
+    );
+
+    // Verificar si el depósito final es el mismo que el depósito de origen
+    if (foundDeposit && foundDeposit.Codigo === depositOrigin?.Codigo) {
+      setError("Depósito Final no puede ser igual al Depósito Origen.");
+      return;
+    }
+
+    if (foundDeposit) {
+      setDepositFinal(foundDeposit);
+      setSuccess("Depósito Final confirmado.");
+      setActiveStep(3); // Avanzar al siguiente paso
+    } else {
+      setError(
+        "Depósito final no encontrado en la lista de depósitos disponibles."
+      );
+    }
+  };
+
+  const fetchCheckPaquete= async (IdPaquete) => {
     try {
-      const response = await fetch(`/api/syndra/avicola/pallet/list/id?IdPallet=${idPallet}`, {
+      const response = await fetch(`/api/syndra/avicola/pallet/list/id?IdPallet=${IdPaquete}`, {
         method: 'GET',
       });
 
       const data = await response.json();
-
-      return data.List && data.List.length > 0;
+      return data.List
     } catch (error) {
-      console.error("Error checking pallet:", error);
-      setError("Error al verificar el pallet.");
+      console.error("Error checking paquete:", error);
+      setErrorBadge("Error al verificar el paquete.");
       return false;
     }
   };
 
-  const movePallet = async (idPallet) => {
+
+  const fetchMovePaquete = async (IdPaquete) => {
     try {
         const response = await fetch('/api/syndra/avicola/pallet/move', {
             method: 'POST',
@@ -165,9 +131,9 @@ export default function Page() {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                IdPallet: idPallet,
-                AlmacenOrigen: originWarehouse,
-                AlmacenDestino: destinationWarehouse,
+                IdPallet: IdPaquete,
+                AlmacenOrigen: depositOrigin.Codigo,
+                AlmacenDestino: depositFinal.Codigo,
             }),
         });
 
@@ -177,94 +143,137 @@ export default function Page() {
             return responseData.Estado;
         }
     } catch (error) {
-        console.error("Error moving pallet:", error);
-        setError("Error al mover el pallet.");
+        console.error("Error moving paquete:", error);
+        setErrorBadge("Error al mover el paquete.");
         return false;
     }
 };
 
 
-  const handleNextStep = () => {
-    setStep(step + 1);
+
+  const handleScanPackage = async (scannedData) => {
+    setSuccess(null);
+    setError(null);
+
+    try {
+      const parsedData = JSON.parse(scannedData);
+      const { uuid, IdPaquete } = parsedData;
+
+      console.log(scannedUUIDs);
+      // Verificar si el UUID ya ha sido escaneado
+      if (scannedUUIDs.includes(uuid)) {
+        setSuccessBadge("");
+        setErrorBadge(`El paquete ${IdPaquete} ya ha sido escaneado.`);
+        return;
+      }
+
+      const paqueteExiste = await fetchCheckPaquete(IdPaquete)
+      if (!paqueteExiste) {
+        setErrorBadge(`El Paquete ${IdPaquete} no se encontró.`);
+        return;
+      }
+
+      console.log(paqueteExiste)
+
+      const almacenPaquete = paqueteExiste[0].Almacen.trim()
+
+      if(almacenPaquete !== depositFinal.Codigo){
+        setErrorBadge(`El paquete ${IdPaquete} ya se encuentra en ${almacenPaquete}.`);
+        return
+      }
+
+      if(almacenPaquete !== depositOrigin.Codigo){
+        setErrorBadge(`El paquete ${IdPaquete} pertenece a un almacén de origen: ${almacenPaquete}.`);
+        return
+      }
+
+      // Intentar mover el pallet
+      const movePaquete = await fetchMovePaquete(IdPaquete);
+      if (!movePaquete) {
+        setErrorBadge(`Error al mover el pallet ${IdPaquete}.`);
+        return;
+      }
+  
+
+      // Añadir el UUID al array de UUIDs escaneados y el paquete a los paquetes escaneados
+      scannedUUIDs.push(uuid);
+      setScannedPackages((prevPackages) => [...prevPackages, parsedData]);
+      setSuccessBadge(`Paquete ${IdPaquete} se movio con éxito.`);
+    } catch (error) {
+      setErrorBadge("Error al procesar el paquete escaneado.");
+    }
+  };
+
+  const handleRestart = async () => {
+    setError(null);
+    setSuccess(null);
+    setSuccessBadge(null)
+    setErrorBadge(null)
+    setAvailableDeposits([]);
+    setDepositOrigin(null);
+    setDepositFinal(null);
+    setScannedPackages([]);
+    setScannedUUIDs([]);
+    setActiveStep(1);
   };
 
   return (
-    <div className="flex items-center justify-center mt-2">
-      <Card className="w-full max-w-md border-none shadow-none">
-        <CardHeader className="text-center">
-          <CardTitle>Transferir Cajón</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-6">
-          {error && <Alert type="error" title="Error" message={error} />}
-          {success && <Alert type="success" title="Éxito" message={success} />}
-          {step === 1 && (
+    <>
+      {error && (
+        <div className="mb-4">
+          <Alert type="error" title="Error" message={error} />
+        </div>
+      )}
+      {success && (
+        <div className="mb-4">
+          <Alert type="success" title="Éxito" message={success} />
+        </div>
+      )}
+
+      <Card>
+        <CardContent className="grid gap-4 p-1 pt-4 pb-4">
+          {activeStep === 1 && (
+            <QrScannerComponent
+              onScanSuccess={handleScanOrigin}
+              title="Deposito Origen"
+              description="Escanar el QR del deposito de origen"
+            />
+          )}
+          {activeStep === 2 && (
             <>
+              <DepositoInfo depositoOrigen={depositOrigin} />
               <QrScannerComponent
-                title="Depósito de Origen"
-                description="Escanea el código QR del depósito de origen."
-                onScanSuccess={handleScanSuccess}
+                onScanSuccess={handleScanFinal}
+                title="Depósito Final"
+                description="Escanar el QR del deposito de destino"
               />
-              {originWarehouse && (
-                <p><strong>Origen:</strong> {originWarehouse} - {originDescription}</p>
-              )}
-              {originWarehouse && (
-                <Button className="w-full mt-4" onClick={handleNextStep}>
-                  Siguiente
-                </Button>
-              )}
             </>
           )}
-          {step === 2 && (
+          {activeStep === 3 && (
             <>
-              <QrScannerComponent
-                title="Depósito de Destino"
-                description="Escanea el código QR del depósito de destino."
-                onScanSuccess={handleScanSuccess}
+              <DepositoInfo
+                depositoOrigen={depositOrigin}
+                depositoFinal={depositFinal}
               />
-              {destinationWarehouse && (
-                <p><strong>Destino:</strong> {destinationWarehouse} - {destinationDescription}</p>
-              )}
-              {destinationWarehouse && (
-                <Button className="w-full mt-4" onClick={handleNextStep}>
-                  Siguiente
-                </Button>
-              )}
-            </>
-          )}
-          {step === 3 && (
-            <>
               <QrScannerComponent
+                onScanSuccess={handleScanPackage}
                 title="Escanear Paquete"
-                description="Escanea el código QR del paquete."
-                onScanSuccess={handleScanSuccessPaquetes}
               />
-              {readPackages.length > 0 && (
-                <div className="mt-4 bg-white shadow rounded-lg p-4">
-                  <h3 className="text-lg font-bold mb-4">Paquetes leídos:</h3>
-                  <ul className="divide-y divide-gray-200">
-                    {readPackages.map((pkg, index) => (
-                      <li key={index} className="py-4 flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">{pkg.FullCode}</p>
-                          <p className="text-sm text-gray-500">Cantidad: {pkg.Cantidad} unidades</p>
-                        </div>
-                        <div>
-                          <span className="text-xs text-green-500 bg-green-100 p-2 rounded-xl">Aprobado</span>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="flex justify-center mt-4">
-                    <Button className="justify-center" >
-                      Terminar
-                    </Button>
-                  </div>
-                </div>
+              {successBadge && <StatusBadge type="success" text={successBadge} />}
+              {errorBadge && <StatusBadge type="error" text={errorBadge} />}
+              {scannedPackages.length > 0 && (
+                <>
+                  <ListPackets paquetes={scannedPackages} />{" "}
+                  {/* Mostrar los paquetes escaneados */}
+                  <Button className="ms-4 me-4" onClick={handleRestart}>
+                    Finalizar
+                  </Button>
+                </>
               )}
             </>
           )}
         </CardContent>
       </Card>
-    </div>
+    </>
   );
 }

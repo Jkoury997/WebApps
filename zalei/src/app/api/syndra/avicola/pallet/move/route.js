@@ -7,7 +7,7 @@ export async function POST(req) {
     try {
         // Parsear el cuerpo de la solicitud
         const { IdPallet, AlmacenOrigen, AlmacenDestino } = await req.json(); 
-
+        console.log(IdPallet, AlmacenOrigen, AlmacenDestino )
         // Obtener el token de las cookies
         const cookieStore = cookies();
         const Token = cookieStore.get("Token");

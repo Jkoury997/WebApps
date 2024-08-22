@@ -2,6 +2,7 @@ import { DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator, Dropdown
 import { Button } from "@/components/ui/button";
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
+import { UserRound } from "lucide-react";
 
 export function UserDropMenu() {
   const router = useRouter();
@@ -26,32 +27,18 @@ export function UserDropMenu() {
   };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button className="rounded-full" size="icon" variant="ghost">
-          <img
-            alt="Avatar"
-            className="rounded-full"
-            height="32"
-            src="/user-round.svg"
-            style={{
-              aspectRatio: "32/32",
-              objectFit: "cover",
-            }}
-            width="32"
-          />
-          <span className="sr-only">Toggle user menu</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleProfileRedirect}>Mi Perfil</DropdownMenuItem>
-        <DropdownMenuItem>Configuración</DropdownMenuItem>
-        <DropdownMenuItem>Ayuda</DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout}>Cerrar sesión</DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="relative  rounded-full">
+                    <UserRound className='h-5 w-5'  alt="Avatar"></UserRound>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleProfileRedirect}>Perfil</DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout}>Cerrar sesion</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
   );
 }

@@ -1,6 +1,8 @@
+import React from 'react';
 import { Label } from "@/components/ui/label";
+import { StepNavigation } from "@/components/component/step-navigation"; // Asegúrate de tener la ruta correcta
 
-export function EnterGalpon({ Galpon, setGalpon, apiResponse }) {
+export function EnterGalpon({ Galpon, setGalpon, onPrevious, onNext }) {
   const handleChange = (e) => {
     const value = parseInt(e.target.value, 10);
     setGalpon(value);
@@ -8,26 +10,6 @@ export function EnterGalpon({ Galpon, setGalpon, apiResponse }) {
 
   return (
     <div className="grid gap-4 p-2">
-      {apiResponse && (
-        <div className="p-4 border rounded-lg bg-gray-50">
-          <h3 className="text-lg font-semibold mb-2">Detalles del Artículo</h3>
-          {apiResponse.Articulo.DescDetalle && (
-            <p className="text-sm text-muted-foreground mb-1">
-              <span className="font-medium">Color: </span>{apiResponse.Articulo.DescDetalle}
-            </p>
-          )}
-          {apiResponse.Articulo.DescMedida && (
-            <p className="text-sm text-muted-foreground mb-1">
-              <span className="font-medium">Medida: </span>{apiResponse.Articulo.DescMedida}
-            </p>
-          )}
-          {apiResponse.Articulo.Descripcion && (
-            <p className="text-sm text-muted-foreground">
-              <span className="font-medium">Descripción: </span>{apiResponse.Articulo.Descripcion}
-            </p>
-          )}
-        </div>
-      )}
       <div className="grid gap-2">
         <Label htmlFor="Galpon">Número de Galpón</Label>
         <select
@@ -46,6 +28,14 @@ export function EnterGalpon({ Galpon, setGalpon, apiResponse }) {
           ))}
         </select>
       </div>
+
+      {Galpon && ( // Mostrar los botones solo si se ha seleccionado un galpón
+        <StepNavigation 
+          onPrevious={onPrevious} 
+          onNext={onNext} 
+          isNextDisabled={!Galpon} 
+        />
+      )}
     </div>
   );
 }

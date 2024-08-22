@@ -3,28 +3,28 @@ import QRCode from 'qrcode.react';
 import { Button } from '../ui/button';
 import { Printer } from 'lucide-react';
 
-const QrPrinter = ({ qrData, apiResponse }) => {
+export default function QrPrinter({ qrData, apiResponse }) {
   const [loading, setLoading] = useState(false);
   const printRef = useRef();
 
   const printContent = () => {
     setLoading(true);
-  
+
     // Verificar el contenido original de qrData
     console.log("Original qrData:", qrData);
-  
+
     // Si qrData ya es un string JSON, lo analizamos; si es un objeto, lo usamos directamente
     const qrDataJson = typeof qrData === 'string' ? JSON.parse(qrData) : qrData;
-  
+
     // Verificar el resultado final que usarás
     console.log("qrData as JSON object:", qrDataJson);
-  
+
     try {
       const printWindow = window.open('', '_blank');
       const qrCanvas = document.querySelector('#qr-canvas canvas');
       const qrImageData = qrCanvas.toDataURL('image/png');
       const qrImgElement = `<img src="${qrImageData}" style="margin: 20px; width: 200px; height: 200px;" />`;
-  
+
       printWindow.document.write('<html><head><title>QR Print</title>');
       printWindow.document.write(`
         <style>
@@ -48,7 +48,7 @@ const QrPrinter = ({ qrData, apiResponse }) => {
             display: flex;
             justify-content: space-between;
           }
-            .section2 {
+          .section2 {
             display: flex;
             justify-content: space-between;
             margin-top: 300px;
@@ -96,7 +96,7 @@ const QrPrinter = ({ qrData, apiResponse }) => {
       `);
       printWindow.document.write('</head><body>');
       printWindow.document.write('<div class="page">');
-  
+
       // Primera Sección
       printWindow.document.write('<div class="section">');
       printWindow.document.write('<div class="details">');
@@ -119,7 +119,7 @@ const QrPrinter = ({ qrData, apiResponse }) => {
       printWindow.document.write('</div>');
       printWindow.document.write(`<div class="qr-code">${qrImgElement}</div>`);
       printWindow.document.write('</div>');
-  
+
       // Segunda Sección
       printWindow.document.write('<div class="section2">');
       printWindow.document.write('<div class="details">');
@@ -142,11 +142,11 @@ const QrPrinter = ({ qrData, apiResponse }) => {
       printWindow.document.write('</div>');
       printWindow.document.write(`<div class="qr-code">${qrImgElement}</div>`);
       printWindow.document.write('</div>');
-  
+
       printWindow.document.write('</div>'); // Cerrar página
-  
+
       printWindow.document.write('</body></html>');
-  
+
       printWindow.document.close();
       printWindow.focus();
       printWindow.addEventListener('load', () => {
@@ -159,8 +159,6 @@ const QrPrinter = ({ qrData, apiResponse }) => {
       setLoading(false);
     }
   };
-  
-  
 
   return (
     <div className="flex flex-col items-center">
@@ -188,7 +186,7 @@ const QrPrinter = ({ qrData, apiResponse }) => {
             )}
             {qrData.Galpon && (
               <p className="text-sm text-muted-foreground">
-                <span className="font-medium">Descripción: </span>
+                <span className="font-medium">Galpón: </span>
                 {qrData.Galpon}
               </p>
             )}
@@ -196,14 +194,12 @@ const QrPrinter = ({ qrData, apiResponse }) => {
         )}
       </div>
       <div id="qr-canvas" className="m-3">
-          <QRCode value={qrData} size={200}/>
-        </div>
+        <QRCode value={qrData} size={200}/>
+      </div>
       <Button onClick={printContent} className="flex items-center justify-center mt-4 p-2 rounded" disabled={loading}>
         <Printer className="mr-2" />
         {loading ? 'Generando...' : 'Imprimir QR'}
       </Button>
     </div>
   );
-};
-
-export default QrPrinter;
+}

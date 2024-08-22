@@ -11,7 +11,7 @@ const permissionsConfig = {
         Insert: '/cajones/insert',
       },
       Pallets: {
-        main: '/dashboard/stock/pallets',
+        main: '/dashboard/stock/pallets/move',
         Edit: '/pallets/edit',
         Insert: '/pallets/insert',
         View: '/pallets/view',

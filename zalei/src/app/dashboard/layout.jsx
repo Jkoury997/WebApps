@@ -14,8 +14,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { BarChart3, DollarSign, Package, Users, Search, Bell, Menu, X, ChevronDown, Settings, ShoppingCart, FileText, EggFriedIcon } from 'lucide-react';
+import { BarChart3, DollarSign, Package, Users, Search, Bell, Menu, X, ChevronDown, Settings, ShoppingCart, FileText, EggFriedIcon,UserRound } from 'lucide-react';
 import { NavLinks } from "@/components/ui/navlinks";
+import { UserDropMenu } from '@/components/ui/user';
 
 export default function Component({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -63,11 +64,11 @@ export default function Component({ children }) {
           </Button>
           <div className="flex flex-1 items-center justify-between">
             <div className="flex items-center">
-              <Search className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+              <Search className="h-5 w-5 text-gray-500 dark:text-gray-400 hidden" />
               <Input
                 type="search"
-                placeholder="Search..."
-                className="ml-2 w-full max-w-xs"
+                placeholder="Buscar..."
+                className="ml-2 w-full max-w-xs hidden"
               />
             </div>
             <div className="flex items-center gap-3">
@@ -75,30 +76,7 @@ export default function Component({ children }) {
                 <Bell className="h-5 w-5" />
                 <span className="sr-only">Notifications</span>
               </Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    <img
-                      alt="Avatar"
-                      className="rounded-full"
-                      height="32"
-                      src="/user-round.svg?height=32&width=32"
-                      style={{
-                        aspectRatio: "32/32",
-                        objectFit: "cover",
-                      }}
-                      width="32"
-                    />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>Profile</DropdownMenuItem>
-                  <DropdownMenuItem>Settings</DropdownMenuItem>
-                  <DropdownMenuItem>Logout</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <UserDropMenu></UserDropMenu>
             </div>
           </div>
         </header>
