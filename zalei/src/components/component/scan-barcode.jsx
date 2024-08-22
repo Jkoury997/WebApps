@@ -35,11 +35,7 @@ export function ScanBarcode({ onScan }) {
           { facingMode: "environment" },  // Usar la cámara trasera
           {
             fps: 10,
-            qrbox: {
-              width: videoRef.current.offsetWidth * 0.8,
-              height: videoRef.current.offsetHeight * 0.8
-            },
-            aspectRatio: videoRef.current.offsetWidth / videoRef.current.offsetHeight,
+            qrbox: 250,
             formatsToSupport: [Html5QrcodeSupportedFormats.CODE_39]
           },
           (decodedText) => {
