@@ -31,12 +31,20 @@ export function ScanBarcode({ onScan }) {
         const cameraId = devices[0].id;
         scannerRef.current = new Html5Qrcode(videoRef.current.id);
 
+        const isMobile = window.innerWidth < 768; // Verificar si el dispositivo es móvil
+
+        const qrboxSize = isMobile ? 250 : 300;
+
         scannerRef.current.start(
           { facingMode: "environment" },  // Usar la cámara trasera
           {
-            fps: 10,
-            qrbox: 250,
-            formatsToSupport: [Html5QrcodeSupportedFormats.CODE_39]
+            fps: 20,
+            qrbox: {
+              width: qrboxSize,
+              height: qrboxSize
+            },
+            formatsToSupport: [Html5QrcodeSupportedFormats.CODE_39],
+            disableFlip: true,
           },
           (decodedText) => {
             onScan(decodedText);
