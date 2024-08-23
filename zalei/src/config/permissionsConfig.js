@@ -2,8 +2,8 @@
 
 const permissionsConfig = {
     Stock: {
-      Almacenes2: {
-        main: '/dashboard/stock/almacenes',
+      Almacenes: {
+        main: '/dashboard/stock/warehouse',
         View: '/almacenes/view',
       },
       Cajones: {
