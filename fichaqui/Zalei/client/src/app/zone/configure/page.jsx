@@ -74,8 +74,8 @@ export default function Page() {
     <div className="flex flex-col items-center justify-center h-screen bg-gray-100 dark:bg-gray-900">
       <div className="max-w-md w-full p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
         <div className="space-y-4">
-          <h1 className="text-2xl font-bold">Configure Your Zone</h1>
-          <p className="text-gray-500 dark:text-gray-400">Scan the QR code to set up your zone.</p>
+          <h1 className="text-2xl font-bold">Configure la zona</h1>
+          <p className="text-gray-500 dark:text-gray-400">Lea el codigo QR para configurar la zona.</p>
           <div className="flex items-center justify-center p-8 bg-gray-100 rounded-lg dark:bg-gray-700">
             <QRScanner
               ref={qrLinkSectionRef}
@@ -89,21 +89,7 @@ export default function Page() {
               <p>{message}</p>
             </div>
           )}
-          <div className="space-y-2 hidden" id="zone-info">
-            <h2 className="text-xl font-bold">Zone Information</h2>
-            <div className="flex items-center space-x-2">
-              <LocateIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-              <p id="zone-address" className="text-gray-500 dark:text-gray-400"></p>
-            </div>
-            <div className="flex items-center space-x-2">
-              <TagIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-              <p id="zone-name" className="text-gray-500 dark:text-gray-400"></p>
-            </div>
-            <div className="flex items-center space-x-2">
-              <InfoIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-              <p id="zone-description" className="text-gray-500 dark:text-gray-400"></p>
-            </div>
-          </div>
+
           {zoneUUID && (
             <div className="mt-4 text-center text-green-500">
               <p>Recognized Zone UUID: {zoneUUID}</p>

@@ -44,6 +44,10 @@ export default function QrPrinter({ qrData, apiResponse }) {
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
           }
+          .importantData{
+            font-size: 25px; /* Aquí puedes ajustar el tamaño según lo necesites */
+            font-weight: bold; /* Opcional: para hacer que el texto sea más prominente */
+          }
           .section {
             display: flex;
             justify-content: space-between;
@@ -51,7 +55,8 @@ export default function QrPrinter({ qrData, apiResponse }) {
           .section2 {
             display: flex;
             justify-content: space-between;
-            margin-top: 300px;
+
+            margin-top: 400px;
           }
           .details {
             width: 60%;
@@ -65,12 +70,14 @@ export default function QrPrinter({ qrData, apiResponse }) {
             padding: 4px 0;
           }
           .qr-code {
-            width: 35%;
+            width: 50%;
             text-align: right;
           }
           .qr-code img {
-            border: 4px solid #333;
-            border-radius: 4px;
+            padding: 10px;
+            border: 2px solid #333;
+            border-radius: 10px;
+
           }
           h3 {
             margin: 0;
@@ -81,6 +88,9 @@ export default function QrPrinter({ qrData, apiResponse }) {
             padding-bottom: 10px;
             margin-bottom: 20px;
             text-align: left;
+          }
+          .transformRotate{
+            transform: scaleX(-1) scaleY(-1);
           }
           @media print {
             body {
@@ -96,55 +106,58 @@ export default function QrPrinter({ qrData, apiResponse }) {
       `);
       printWindow.document.write('</head><body>');
       printWindow.document.write('<div class="page">');
-
+      
       // Primera Sección
       printWindow.document.write('<div class="section">');
       printWindow.document.write('<div class="details">');
-      printWindow.document.write('<h3>Zalei Agropecuaria</h3>');
       if (qrDataJson.Fecha) {
-        printWindow.document.write(`<p>Fecha: ${qrDataJson.Fecha}</p>`);
+          printWindow.document.write(`<h3>Zalei S.A. - Fecha: ${qrDataJson.Fecha}</h3>`);
+      }
+      if (qrDataJson.Cantidad) {
+          printWindow.document.write(`<p class="importantData">Cantidad: ${qrDataJson.Cantidad}</p>`);
       }
       if (apiResponse.Articulo.DescDetalle) {
-        printWindow.document.write(`<p>Color: ${apiResponse.Articulo.DescDetalle}</p>`);
+          printWindow.document.write(`<p>Color: ${apiResponse.Articulo.DescDetalle}</p>`);
       }
       if (apiResponse.Articulo.DescMedida) {
-        printWindow.document.write(`<p>Medida: ${apiResponse.Articulo.DescMedida}</p>`);
+          printWindow.document.write(`<p>Medida: ${apiResponse.Articulo.DescMedida}</p>`);
       }
       if (apiResponse.Articulo.Descripcion) {
-        printWindow.document.write(`<p>Descripción: ${apiResponse.Articulo.Descripcion}</p>`);
+          printWindow.document.write(`<p>Descripción: ${apiResponse.Articulo.Descripcion}</p>`);
       }
       if (qrDataJson.Galpon) {
-        printWindow.document.write(`<p>Galpón: ${qrDataJson.Galpon}</p>`);
+          printWindow.document.write(`<p>Galpón: ${qrDataJson.Galpon}</p>`);
       }
       printWindow.document.write('</div>');
       printWindow.document.write(`<div class="qr-code">${qrImgElement}</div>`);
       printWindow.document.write('</div>');
-
-      // Segunda Sección
+      
+      // Segunda Sección (Espejada)
       printWindow.document.write('<div class="section2">');
-      printWindow.document.write('<div class="details">');
-      printWindow.document.write('<h3>Zalei Agropecuaria</h3>');
+      printWindow.document.write('<div class="details transformRotate">');
       if (qrDataJson.Fecha) {
-        printWindow.document.write(`<p>Fecha: ${qrDataJson.Fecha}</p>`);
+          printWindow.document.write(`<h3>Zalei S.A. - Fecha: ${qrDataJson.Fecha}</h3>`);
+      }
+      if (qrDataJson.Cantidad) {
+          printWindow.document.write(`<p class="importantData">Cantidad: ${qrDataJson.Cantidad}</p>`);
       }
       if (apiResponse.Articulo.DescDetalle) {
-        printWindow.document.write(`<p>Color: ${apiResponse.Articulo.DescDetalle}</p>`);
+          printWindow.document.write(`<p>Color: ${apiResponse.Articulo.DescDetalle}</p>`);
       }
       if (apiResponse.Articulo.DescMedida) {
-        printWindow.document.write(`<p>Medida: ${apiResponse.Articulo.DescMedida}</p>`);
+          printWindow.document.write(`<p>Medida: ${apiResponse.Articulo.DescMedida}</p>`);
       }
       if (apiResponse.Articulo.Descripcion) {
-        printWindow.document.write(`<p>Descripción: ${apiResponse.Articulo.Descripcion}</p>`);
+          printWindow.document.write(`<p>Descripción: ${apiResponse.Articulo.Descripcion}</p>`);
       }
       if (qrDataJson.Galpon) {
-        printWindow.document.write(`<p>Galpón: ${qrDataJson.Galpon}</p>`);
+          printWindow.document.write(`<p>Galpón: ${qrDataJson.Galpon}</p>`);
       }
       printWindow.document.write('</div>');
       printWindow.document.write(`<div class="qr-code">${qrImgElement}</div>`);
       printWindow.document.write('</div>');
-
+      
       printWindow.document.write('</div>'); // Cerrar página
-
       printWindow.document.write('</body></html>');
 
       printWindow.document.close();
@@ -162,37 +175,7 @@ export default function QrPrinter({ qrData, apiResponse }) {
 
   return (
     <div className="flex flex-col items-center">
-      <div id="print-content" className="flex justify-center flex-col items-center hidden" ref={printRef}>
-        {apiResponse && (
-          <div className="p-4 pt-2 border rounded-lg bg-gray-50 mt-2 text-center">
-            <h3 className="text-lg font-semibold mb-2">Detalles del Artículo</h3>
-            {apiResponse.Articulo.DescDetalle && (
-              <p className="text-sm text-muted-foreground mb-1">
-                <span className="font-medium">Color: </span>
-                {apiResponse.Articulo.DescDetalle}
-              </p>
-            )}
-            {apiResponse.Articulo.DescMedida && (
-              <p className="text-sm text-muted-foreground mb-1">
-                <span className="font-medium">Medida: </span>
-                {apiResponse.Articulo.DescMedida}
-              </p>
-            )}
-            {apiResponse.Articulo.Descripcion && (
-              <p className="text-sm text-muted-foreground">
-                <span className="font-medium">Descripción: </span>
-                {apiResponse.Articulo.Descripcion}
-              </p>
-            )}
-            {qrData.Galpon && (
-              <p className="text-sm text-muted-foreground">
-                <span className="font-medium">Galpón: </span>
-                {qrData.Galpon}
-              </p>
-            )}
-          </div>
-        )}
-      </div>
+
       <div id="qr-canvas" className="m-3">
         <QRCode value={qrData} size={200}/>
       </div>
