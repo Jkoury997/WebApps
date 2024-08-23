@@ -44,6 +44,8 @@ export function NavLinks({ onLinkClick }) {  // Añadimos la prop `onLinkClick`
   const renderLinks = (menu, permissions) => {
     return Object.keys(menu).map((groupMajor, indexMajor) => {
       const groupMajorItems = menu[groupMajor];
+      const Icon = groupMajorItems.icon; // Obtener el ícono del grupo
+
       return (
         <div key={`${groupMajor}-${indexMajor}`}>
           <div
@@ -54,6 +56,7 @@ export function NavLinks({ onLinkClick }) {  // Añadimos la prop `onLinkClick`
             onClick={() => toggleGroup(groupMajor)}
           >
             <div className="flex items-center gap-3">
+              {Icon && <Icon className="h-5 w-5" />} {/* Renderizar el ícono */}
               {groupMajor}
             </div>
             <ChevronDown
@@ -78,9 +81,9 @@ export function NavLinks({ onLinkClick }) {  // Añadimos la prop `onLinkClick`
                   <div key={`${group}-${index}`}>
                     <Link
                       href={items.main}
-                      onClick={onLinkClick}  // Cerrar el sidebar al hacer clic en un enlace
+                      onClick={onLinkClick}
                       className={clsx(
-                        'flex items-center gap-3 rounded-lg px-3 py-2 transition-all',
+                        'flex ms-4 items-center gap-3 rounded-lg px-3 py-2 transition-all',
                         {
                           'text-gray-500 hover:text-gray-900': pathname !== items.main,
                           'bg-gray-100 text-gray-900 hover:text-gray-900': pathname === items.main,

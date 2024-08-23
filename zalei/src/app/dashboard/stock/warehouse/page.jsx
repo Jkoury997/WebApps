@@ -47,13 +47,14 @@ export default function Page() {
   );
 
   return (
-    <Card className="bg-transparent border-none shadow-none">
-      <CardHeader >
-        <CardTitle>Lista almacenes</CardTitle>
-      </CardHeader>
-      <CardContent >
+    <> 
         {/* Vista de escritorio */}
         <div className="hidden md:block">
+          <Card >
+        <CardHeader >
+          <CardTitle>Lista almacenes</CardTitle>
+        </CardHeader>
+        <CardContent >
           <Table >
             <TableHeader>
               <TableRow>
@@ -76,12 +77,19 @@ export default function Page() {
               ))}
             </TableBody>
           </Table>
+          </CardContent>
+          </Card>
         </div>
 
         {/* Vista móvil */}
-        <div className="md:hidden bg-none space-y-4 ">
-          {availableDeposits.map((deposit, index) => (
-            <Card key={deposit.Codigo}>
+        <div className="md:hidden  space-y-4 ">
+        <Card className="bg-transparent border-none shadow-none">
+          <CardHeader className="ps-2">
+          <CardTitle>Lista almacenes</CardTitle>
+          </CardHeader>
+            {availableDeposits.map((deposit, index) => (
+            <Card key={deposit.Codigo} className="mb-2">
+              
               <CardContent className="p-4">
                 <div className="flex justify-between items-center mb-2">
                   <h3 className="text-lg font-semibold">{deposit.Codigo}</h3>
@@ -92,11 +100,13 @@ export default function Page() {
                   <ActionButtons Codigo={deposit.Codigo} Descripcion={deposit.Descripcion} />
                 </div>
               </CardContent>
-            </Card>
+              </Card>
+           
           ))}
+           </Card>
         </div>
-      </CardContent>
-
-    </Card>
+     
+        </>
+    
   );
 }

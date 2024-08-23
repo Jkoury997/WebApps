@@ -1,7 +1,9 @@
 // config/permissionsConfig.js
+import { Box} from 'lucide-react';
 
 const permissionsConfig = {
     Stock: {
+      icon: Box, // Añadir el ícono aquí
       Almacenes: {
         main: '/dashboard/stock/warehouse',
         View: '/almacenes/view',
