@@ -31,6 +31,12 @@ export async function GET() {
       path: '/',
       expires: new Date(0),
     });
+    cookieStore.set("userRole", "", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
+      expires: new Date(0),
+    });
 
     // Realizar una solicitud a tu API para invalidar los tokens en el servidor
     let response;

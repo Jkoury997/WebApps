@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { AlertDescription, Alert } from "@/components/ui/alert";
 import { EyeIcon, EyeOffIcon, LoaderIcon, TriangleAlertIcon, AlarmClock } from "lucide-react";
 import { login } from "@/utils/authUtils";
-import Cookies from 'js-cookie';
+import Cookies from "js-cookie";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -19,31 +19,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const router = useRouter();
 
-  useEffect(() => {
-    const checkTokensAndRedirect = () => {
-      // No realizar la redirección si isLoading es true
-      if (isLoading) return;
-
-      const accessToken = Cookies.get('accessToken');
-      const refreshToken = Cookies.get('refreshToken');
-      const deviceUUID = Cookies.get('deviceUUID');
-  
-      if (accessToken && refreshToken && deviceUUID) {
-        router.push("/dashboard");
-      } else {
-        const localDeviceUUID = localStorage.getItem('deviceUUID');
-        if (localDeviceUUID) {
-          Cookies.set('deviceUUID', localDeviceUUID, { path: '/' });
-          sessionStorage.setItem('deviceUUID', localDeviceUUID);
-          router.push("/dashboard");
-        } else {
-          router.push("/auth/register");
-        }
-      }
-    };
-  
-    checkTokensAndRedirect();
-  }, [router, isLoading]);
 
   const handleTogglePassword = () => {
     setShowPassword(!showPassword);
@@ -55,10 +30,14 @@ export default function LoginPage() {
     setShowError(false);
   
     try {
-      const data = await login({ email, password });
+      const localDeviceUUID = localStorage.getItem('deviceUUID');
       
-      Cookies.set('accessToken', data.accessToken);  // Asegúrate de que estás guardando el token
-      Cookies.set('refreshToken', data.refreshToken);  // Asegúrate de que estás guardando el token
+      if (localDeviceUUID) {
+        Cookies.set('deviceUUID', localDeviceUUID, { path: '/' });
+      }
+
+      const data = await login({ email, password });
+
       if(data.accessToken){
         router.push("/dashboard");  // Redirección manual
       }
