@@ -1,42 +1,26 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import QRCode from 'qrcode.react';
 import { Button } from '../ui/button';
 import { Printer } from 'lucide-react';
+import printJS from 'print-js';
 
 export default function QrPrinter({ qrData, apiResponse }) {
   const [loading, setLoading] = useState(false);
-  const printRef = useRef();
 
-  const printContent = () => {
+  const handlePrint = () => {
     setLoading(true);
 
-    // Verificar el contenido original de qrData
-    console.log("Original qrData:", qrData);
-
-    // Si qrData ya es un string JSON, lo analizamos; si es un objeto, lo usamos directamente
+    // Si qrData es un string JSON, lo analizamos; si es un objeto, lo usamos directamente
     const qrDataJson = typeof qrData === 'string' ? JSON.parse(qrData) : qrData;
 
-    // Verificar el resultado final que usarás
-    console.log("qrData as JSON object:", qrDataJson);
+    // Generar la imagen del código QR como Data URL
+    const qrCanvas = document.querySelector('#qr-canvas canvas');
+    const qrImageData = qrCanvas.toDataURL('image/png');
 
-    try {
-      // Crear una nueva ventana para imprimir
-      const printWindow = window.open('', '_blank');
-
-      // Asegurarnos de que la ventana se abrió
-      if (!printWindow) {
-        alert('Por favor, permite las ventanas emergentes para esta funcionalidad.');
-        setLoading(false);
-        return;
-      }
-
-      const qrCanvas = document.querySelector('#qr-canvas canvas');
-      const qrImageData = qrCanvas.toDataURL('image/png');
-      const qrImgElement = `<img src="${qrImageData}" style="margin: 20px; width: 200px; height: 200px;" />`;
-
-      // Escribir el contenido HTML en la nueva ventana
-      printWindow.document.write('<html><head><title>QR Print</title>');
-      printWindow.document.write(`
+    // Crear el contenido HTML que se imprimirá
+    const printContent = `
+      <html>
+      <head>
         <style>
           body {
             font-family: Arial, sans-serif;
@@ -54,9 +38,9 @@ export default function QrPrinter({ qrData, apiResponse }) {
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
           }
-          .importantData{
-            font-size: 25px; /* Aquí puedes ajustar el tamaño según lo necesites */
-            font-weight: bold; /* Opcional: para hacer que el texto sea más prominente */
+          .importantData {
+            font-size: 25px;
+            font-weight: bold;
           }
           .section {
             display: flex;
@@ -97,7 +81,7 @@ export default function QrPrinter({ qrData, apiResponse }) {
             margin-bottom: 20px;
             text-align: left;
           }
-          .transformRotate{
+          .transformRotate {
             transform: scaleX(-1) scaleY(-1);
           }
           @media print {
@@ -111,82 +95,56 @@ export default function QrPrinter({ qrData, apiResponse }) {
             }
           }
         </style>
-      `);
-      printWindow.document.write('</head><body>');
-      printWindow.document.write('<div class="page">');
-      
-      // Primera Sección
-      printWindow.document.write('<div class="section">');
-      printWindow.document.write('<div class="details">');
-      if (qrDataJson.Fecha) {
-          printWindow.document.write(`<h3>Zalei S.A. - Fecha: ${qrDataJson.Fecha}</h3>`);
-      }
-      if (qrDataJson.Cantidad) {
-          printWindow.document.write(`<p class="importantData">Cantidad: ${qrDataJson.Cantidad}</p>`);
-      }
-      if (apiResponse.Articulo.DescDetalle) {
-          printWindow.document.write(`<p>Color: ${apiResponse.Articulo.DescDetalle}</p>`);
-      }
-      if (apiResponse.Articulo.DescMedida) {
-          printWindow.document.write(`<p>Medida: ${apiResponse.Articulo.DescMedida}</p>`);
-      }
-      if (apiResponse.Articulo.Descripcion) {
-          printWindow.document.write(`<p>Descripción: ${apiResponse.Articulo.Descripcion}</p>`);
-      }
-      if (qrDataJson.Galpon) {
-          printWindow.document.write(`<p>Galpón: ${qrDataJson.Galpon}</p>`);
-      }
-      printWindow.document.write('</div>');
-      printWindow.document.write(`<div class="qr-code">${qrImgElement}</div>`);
-      printWindow.document.write('</div>');
-      
-      // Segunda Sección (Espejada)
-      printWindow.document.write('<div class="section2">');
-      printWindow.document.write('<div class="details transformRotate">');
-      if (qrDataJson.Fecha) {
-          printWindow.document.write(`<h3>Zalei S.A. - Fecha: ${qrDataJson.Fecha}</h3>`);
-      }
-      if (qrDataJson.Cantidad) {
-          printWindow.document.write(`<p class="importantData">Cantidad: ${qrDataJson.Cantidad}</p>`);
-      }
-      if (apiResponse.Articulo.DescDetalle) {
-          printWindow.document.write(`<p>Color: ${apiResponse.Articulo.DescDetalle}</p>`);
-      }
-      if (apiResponse.Articulo.DescMedida) {
-          printWindow.document.write(`<p>Medida: ${apiResponse.Articulo.DescMedida}</p>`);
-      }
-      if (apiResponse.Articulo.Descripcion) {
-          printWindow.document.write(`<p>Descripción: ${apiResponse.Articulo.Descripcion}</p>`);
-      }
-      if (qrDataJson.Galpon) {
-          printWindow.document.write(`<p>Galpón: ${qrDataJson.Galpon}</p>`);
-      }
-      printWindow.document.write('</div>');
-      printWindow.document.write(`<div class="qr-code">${qrImgElement}</div>`);
-      printWindow.document.write('</div>');
-      
-      printWindow.document.write('</div>'); // Cerrar página
-      printWindow.document.write('</body></html>');
+      </head>
+      <body>
+        <div class="page">
+          <div class="section">
+            <div class="details">
+              ${qrDataJson.Fecha ? `<h3>Zalei S.A. - Fecha: ${qrDataJson.Fecha}</h3>` : ''}
+              ${qrDataJson.Cantidad ? `<p class="importantData">Cantidad: ${qrDataJson.Cantidad}</p>` : ''}
+              ${apiResponse.Articulo.DescDetalle ? `<p>Color: ${apiResponse.Articulo.DescDetalle}</p>` : ''}
+              ${apiResponse.Articulo.DescMedida ? `<p>Medida: ${apiResponse.Articulo.DescMedida}</p>` : ''}
+              ${apiResponse.Articulo.Descripcion ? `<p>Descripción: ${apiResponse.Articulo.Descripcion}</p>` : ''}
+              ${qrDataJson.Galpon ? `<p>Galpón: ${qrDataJson.Galpon}</p>` : ''}
+            </div>
+            <div class="qr-code">
+              <img src="${qrImageData}" style="margin: 20px; width: 200px; height: 200px;" />
+            </div>
+          </div>
+          <div class="section2 transformRotate">
+            <div class="details">
+              ${qrDataJson.Fecha ? `<h3>Zalei S.A. - Fecha: ${qrDataJson.Fecha}</h3>` : ''}
+              ${qrDataJson.Cantidad ? `<p class="importantData">Cantidad: ${qrDataJson.Cantidad}</p>` : ''}
+              ${apiResponse.Articulo.DescDetalle ? `<p>Color: ${apiResponse.Articulo.DescDetalle}</p>` : ''}
+              ${apiResponse.Articulo.DescMedida ? `<p>Medida: ${apiResponse.Articulo.DescMedida}</p>` : ''}
+              ${apiResponse.Articulo.Descripcion ? `<p>Descripción: ${apiResponse.Articulo.Descripcion}</p>` : ''}
+              ${qrDataJson.Galpon ? `<p>Galpón: ${qrDataJson.Galpon}</p>` : ''}
+            </div>
+            <div class="qr-code">
+              <img src="${qrImageData}" style="margin: 20px; width: 200px; height: 200px;" />
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
 
-      printWindow.document.close();
-      printWindow.focus();
-      printWindow.addEventListener('load', () => {
-        printWindow.print();
-        printWindow.close();
-        setLoading(false);
-      });
-    } catch (error) {
-      console.error('Error printing content:', error);
-      setLoading(false);
-    }
+    // Usar PrintJS para imprimir el contenido
+    printJS({
+      printable: printContent,
+      type: 'raw-html',
+      targetStyles: ['*'],  // Incluir todos los estilos en la impresión
+    });
+
+    setLoading(false);
   };
 
   return (
     <div className="flex flex-col items-center">
       <div id="qr-canvas" className="m-3">
-        <QRCode value={qrData} size={200}/>
+        <QRCode value={qrData} size={200} />
       </div>
-      <Button onClick={printContent} className="flex items-center justify-center mt-4 p-2 rounded" disabled={loading}>
+      <Button onClick={handlePrint} className="flex items-center justify-center mt-4 p-2 rounded" disabled={loading}>
         <Printer className="mr-2" />
         {loading ? 'Generando...' : 'Imprimir QR'}
       </Button>
