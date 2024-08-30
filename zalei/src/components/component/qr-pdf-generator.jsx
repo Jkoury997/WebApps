@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import QRCode from 'qrcode.react';
 import { Button } from '../ui/button';
 import { Printer } from 'lucide-react';
@@ -6,8 +6,16 @@ import printJS from 'print-js';
 
 export default function QrPrinter({ qrData, apiResponse }) {
   const [loading, setLoading] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    // Este efecto se ejecuta solo en el cliente, no en el servidor
+    setIsClient(true);
+  }, []);
 
   const handlePrint = () => {
+    if (!isClient) return;
+
     setLoading(true);
 
     // Si qrData es un string JSON, lo analizamos; si es un objeto, lo usamos directamente
