@@ -8,13 +8,13 @@ export default function DepositoInfo ({ depositoOrigen, depositoFinal }) {
   <CardContent className="p-2">
     <div className="flex items-center justify-between">
       <div className="flex flex-col items-center">
-        <WarehouseIcon className="h-12 w-12 text-primary mb-2" />
+        <WarehouseIcon className="h-8 w-8 text-primary mb-2" />
         <span className="text-sm font-medium">{depositoOrigen?.Codigo || "Depósito 1"}</span>
         <span className="text-xs text-muted-foreground">{depositoOrigen?.Descripcion || "Código 1"}</span>
       </div>
-      <ArrowRightIcon className="h-8 w-8 text-muted-foreground mx-4" />
+      <ArrowRightIcon className="h-6 w-6 text-muted-foreground mx-4" />
       <div className="flex flex-col items-center">
-        <WarehouseIcon className="h-12 w-12 text-primary mb-2" />
+        <WarehouseIcon className="h-8 w-8 text-primary mb-2" />
         <span className="text-sm font-medium">{depositoFinal?.Codigo || "..."}</span>
         <span className="text-xs text-muted-foreground">{depositoFinal?.Descripcion || "..."}</span>
       </div>
