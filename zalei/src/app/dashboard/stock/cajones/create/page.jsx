@@ -5,12 +5,15 @@ import { ScanBarcode } from "@/components/component/scan-barcode";
 import { EnterGalpon } from "@/components/component/enter-galpon";
 import { EnterQuantity } from "@/components/component/enter-quantity";
 import { ArticleDetails } from "@/components/ui/articules-details";
-import QrPrinter from "@/components/component/qr-pdf-generator" // Asegúrate de que la ruta sea correcta
+import dynamic from "next/dynamic"; // Para carga dinámica de componentes
 import { Card, CardContent } from "@/components/ui/card";
 import { StepIndicator } from "@/components/component/step-indicartor";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
 import shortUUID from "short-uuid";
+
+// Carga dinámica del componente QrPrinter, que solo se carga en el cliente
+const QrPrinter = dynamic(() => import('@/components/component/qr-pdf-generator'), { ssr: false });
 
 
 export default function Page() {
