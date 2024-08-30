@@ -177,11 +177,6 @@ export default function Page() {
 
       const almacenPaquete = paqueteExiste[0].Almacen.trim()
 
-      if(almacenPaquete !== depositFinal.Codigo){
-        setErrorBadge(`El paquete ${IdPaquete} ya se encuentra en ${almacenPaquete}.`);
-        return
-      }
-
       if(almacenPaquete !== depositOrigin.Codigo){
         setErrorBadge(`El paquete ${IdPaquete} pertenece a un almacén de origen: ${almacenPaquete}.`);
         return
