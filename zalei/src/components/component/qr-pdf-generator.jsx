@@ -1,66 +1,102 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import QRCode from 'qrcode.react';
 import { Button } from '../ui/button';
 import { Printer } from 'lucide-react';
-import jsPDF from 'jspdf';
-import printJS from 'print-js';
+import { Page, Text, View, Document, StyleSheet, Image, pdf } from '@react-pdf/renderer';
 
+// Estilos para el documento PDF
+const styles = StyleSheet.create({
+  page: {
+    flexDirection: 'column',
+    backgroundColor: '#fff',
+    padding: 20,
+  },
+  section: {
+    margin: 10,
+    padding: 10,
+    flexGrow: 1,
+  },
+  header: {
+    fontSize: 18,
+    marginBottom: 10,
+  },
+  text: {
+    fontSize: 12,
+    marginBottom: 5,
+  },
+  qrContainer: {
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  qrImage: {
+    width: 100,
+    height: 100,
+  },
+});
+
+// Componente para generar el PDF
+const MyDocument = ({ qrData, apiResponse, qrImage }) => (
+  <Document>
+    <Page size="A4" style={styles.page}>
+      <View style={styles.section}>
+        <Text style={styles.header}>Zalei S.A.</Text>
+        <Text style={styles.text}>Fecha: {qrData.Fecha || ''}</Text>
+        <Text style={styles.text}>Cantidad: {qrData.Cantidad || ''}</Text>
+        <Text style={styles.text}>Color: {apiResponse.Articulo.DescDetalle || ''}</Text>
+        <Text style={styles.text}>Medida: {apiResponse.Articulo.DescMedida || ''}</Text>
+        <Text style={styles.text}>Descripción: {apiResponse.Articulo.Descripcion || ''}</Text>
+        <Text style={styles.text}>Galpón: {qrData.Galpon || ''}</Text>
+      </View>
+      <View style={styles.qrContainer}>
+        <Image style={styles.qrImage} src={qrImage} />
+      </View>
+    </Page>
+  </Document>
+);
+
+// Componente principal
 export default function QrPrinter({ qrData, apiResponse }) {
-  const [qrImageData, setQrImageData] = useState(null);
+  const qrCanvasRef = useRef();
+  const [qrImage, setQrImage] = useState('');
 
   useEffect(() => {
-    const qrCanvas = document.querySelector('#qr-canvas canvas');
-    if (qrCanvas) {
-      setQrImageData(qrCanvas.toDataURL('image/png'));
+    if (qrCanvasRef.current) {
+      const qrCanvas = qrCanvasRef.current.querySelector('canvas');
+      if (qrCanvas) {
+        setQrImage(qrCanvas.toDataURL('image/png'));
+      }
     }
   }, [qrData]);
 
-  const handlePrintPDF = () => {
-    if (!qrImageData) return;
+  const handlePrint = async () => {
+    // Generar el documento PDF como un blob
+    const doc = <MyDocument qrData={qrData} apiResponse={apiResponse} qrImage={qrImage} />;
+    const asPdf = pdf([]);
+    asPdf.updateContainer(doc);
+    const blob = await asPdf.toBlob();
 
-    const qrDataJson = typeof qrData === 'string' ? JSON.parse(qrData) : qrData;
-
-    // Crear una instancia de jsPDF
-    const doc = new jsPDF('portrait', 'mm', 'a4');
-
-    // Configurar el PDF: agregar textos y la imagen del QR
-    doc.setFont('Arial');
-    doc.setFontSize(12);
-    doc.text(`Zalei S.A.`, 20, 30);
-    doc.text(`Fecha: ${qrDataJson.Fecha || ''}`, 20, 40);
-    doc.text(`Cantidad: ${qrDataJson.Cantidad || ''}`, 20, 50);
-    doc.text(`Color: ${apiResponse.Articulo.DescDetalle || ''}`, 20, 60);
-    doc.text(`Medida: ${apiResponse.Articulo.DescMedida || ''}`, 20, 70);
-    doc.text(`Descripción: ${apiResponse.Articulo.Descripcion || ''}`, 20, 80);
-    doc.text(`Galpón: ${qrDataJson.Galpon || ''}`, 20, 90);
-
-    // Agregar la imagen del QR
-    doc.addImage(qrImageData, 'PNG', 150, 30, 50, 50);
-
-    // Detectar si el usuario está en un dispositivo móvil (iOS o Android)
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-    if (isMobile) {
-      // En dispositivos móviles, abrir el PDF en una nueva ventana
-      const pdfDataUri = doc.output('dataurlstring');
-      window.open(pdfDataUri);
-    } else {
-      // En otros dispositivos, imprimir con printJS
-      const pdfBase64 = doc.output('datauristring').split(',')[1];
-      printJS({ printable: pdfBase64, type: 'pdf', base64: true });
-    }
+    // Crear una URL del blob y abrirlo en una nueva ventana
+    const pdfUrl = URL.createObjectURL(blob);
+    const printWindow = window.open(pdfUrl);
+    printWindow.addEventListener('load', () => {
+      printWindow.focus();
+      printWindow.print();
+      printWindow.onafterprint = () => {
+        printWindow.close();
+      };
+    });
   };
 
   return (
     <div className="flex flex-col items-center">
       {/* Generar y mostrar el código QR */}
-      <div id="qr-canvas" className="m-3">
+      <div id="qr-canvas" className="m-3" ref={qrCanvasRef}>
         <QRCode value={qrData} size={200} />
       </div>
-      {/* Botón para generar e imprimir el PDF */}
-      <Button onClick={handlePrintPDF} className="flex items-center justify-center mt-4 p-2 rounded">
+      {/* Botón para imprimir directamente el PDF */}
+      <Button onClick={handlePrint} className="flex items-center justify-center mt-4 p-2 rounded">
         <Printer className="mr-2" />
-        Generar y Ver PDF
+        Imprimir QR
       </Button>
     </div>
   );
