@@ -57,6 +57,7 @@ const MyDocument = ({ qrData, apiResponse, qrImage }) => (
 // Componente principal
 export default function QrPrinter({ qrData, apiResponse }) {
   const qrCanvasRef = useRef();
+  const iframeRef = useRef(null);
   const [qrImage, setQrImage] = useState('');
 
   useEffect(() => {
@@ -75,16 +76,15 @@ export default function QrPrinter({ qrData, apiResponse }) {
     asPdf.updateContainer(doc);
     const blob = await asPdf.toBlob();
 
-    // Crear una URL del blob y abrirlo en una nueva ventana
+    // Crear una URL del blob y cargarlo en un iframe oculto
     const pdfUrl = URL.createObjectURL(blob);
-    const printWindow = window.open(pdfUrl);
-    printWindow.addEventListener('load', () => {
-      printWindow.focus();
-      printWindow.print();
-      printWindow.onafterprint = () => {
-        printWindow.close();
-      };
-    });
+    const iframe = iframeRef.current;
+    iframe.src = pdfUrl;
+
+    iframe.onload = () => {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+    };
   };
 
   return (
@@ -98,6 +98,8 @@ export default function QrPrinter({ qrData, apiResponse }) {
         <Printer className="mr-2" />
         Imprimir QR
       </Button>
+      {/* Iframe oculto para la impresión automática */}
+      <iframe ref={iframeRef} style={{ display: 'none' }} />
     </div>
   );
 }
