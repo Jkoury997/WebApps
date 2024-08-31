@@ -46,7 +46,7 @@ const styles = {
   },
   footer: {
     position: 'absolute',
-    bottom: '50px', // Añadido margen inferior
+    bottom: '20px', // Añadido margen inferior
     width: '100%',
     transform: 'rotate(180deg)',
     display: 'flex',
