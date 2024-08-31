@@ -10,14 +10,16 @@ import {
     VideoIcon,
     SettingsIcon,
     PackageIcon,
-    EggIcon
+    EggIcon,
+    WarehouseIcon
   } from "lucide-react";
 
 export default function Page() {
     const items = [
       { name: "Inicio", icon: HomeIcon, url: "/dashboard" },
       { name: "Cajones", icon: EggIcon, url: "/dashboard/stock/cajones/create" },
-      { name: "Paquetes", icon: PackageIcon, url: "/dashboard/stock/pallets/move" },,
+      { name: "Paquetes", icon: PackageIcon, url: "/dashboard/stock/pallets/move" },
+      { name: "Almacenes", icon: WarehouseIcon, url: "/dashboard/stock/warehouse" },
     ];
   
     return <IconGrid items={items} />;

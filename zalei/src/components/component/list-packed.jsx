@@ -6,9 +6,6 @@ export default function ListPackets({paquetes}) {
     console.log(paquetes)
   return (
     <Card className="w-full max-w-xl mx-auto border-none shadow-none">
-      <CardHeader>
-        <CardTitle className="text-lg font-bold">Paquetes Escaneados</CardTitle>
-      </CardHeader>
       <CardContent>
         <ul className="space-y-4">
           {paquetes.map(paquete => (

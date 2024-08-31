@@ -9,10 +9,10 @@ export default function DepositoInfo ({ depositoOrigen, depositoFinal }) {
     <div className="flex items-center justify-between">
       <div className="flex flex-col items-center">
         <WarehouseIcon className="h-8 w-8 text-primary mb-2" />
-        <span className="text-sm font-medium">{depositoOrigen?.Codigo || "Depósito 1"}</span>
-        <span className="text-xs text-muted-foreground">{depositoOrigen?.Descripcion || "Código 1"}</span>
+        <span className="text-sm font-medium">{depositoOrigen?.Codigo || "..."}</span>
+        <span className="text-xs text-muted-foreground">{depositoOrigen?.Descripcion || "..."}</span>
       </div>
-      <ArrowRightIcon className="h-6 w-6 text-muted-foreground mx-4" />
+      <ArrowRightIcon className="h-6 w-6 text-muted-foreground mx-2" />
       <div className="flex flex-col items-center">
         <WarehouseIcon className="h-8 w-8 text-primary mb-2" />
         <span className="text-sm font-medium">{depositoFinal?.Codigo || "..."}</span>

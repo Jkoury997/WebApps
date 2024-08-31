@@ -117,6 +117,7 @@ export default function Page() {
       return data.List
     } catch (error) {
       console.error("Error checking paquete:", error);
+      setSuccessBadge("")
       setErrorBadge("Error al verificar el paquete.");
       return false;
     }
@@ -144,6 +145,7 @@ export default function Page() {
         }
     } catch (error) {
         console.error("Error moving paquete:", error);
+        setSuccessBadge("")
         setErrorBadge("Error al mover el paquete.");
         return false;
     }
@@ -154,11 +156,12 @@ export default function Page() {
   const handleScanPackage = async (scannedData) => {
     setSuccess(null);
     setError(null);
+    setErrorBadge(null)
+    setSuccessBadge(null);
 
     try {
       const parsedData = JSON.parse(scannedData);
       const { uuid, IdPaquete } = parsedData;
-
       console.log(scannedUUIDs);
       // Verificar si el UUID ya ha sido escaneado
       if (scannedUUIDs.includes(uuid)) {
@@ -169,6 +172,7 @@ export default function Page() {
 
       const paqueteExiste = await fetchCheckPaquete(IdPaquete)
       if (!paqueteExiste) {
+        setSuccessBadge("");
         setErrorBadge(`El Paquete ${IdPaquete} no se encontró.`);
         return;
       }
@@ -178,6 +182,7 @@ export default function Page() {
       const almacenPaquete = paqueteExiste[0].Almacen.trim()
 
       if(almacenPaquete !== depositOrigin.Codigo){
+        setSuccessBadge("");
         setErrorBadge(`El paquete ${IdPaquete} pertenece a un almacén de origen: ${almacenPaquete}.`);
         return
       }
@@ -185,6 +190,7 @@ export default function Page() {
       // Intentar mover el pallet
       const movePaquete = await fetchMovePaquete(IdPaquete);
       if (!movePaquete) {
+        setSuccessBadge("");
         setErrorBadge(`Error al mover el pallet ${IdPaquete}.`);
         return;
       }
@@ -193,7 +199,9 @@ export default function Page() {
       // Añadir el UUID al array de UUIDs escaneados y el paquete a los paquetes escaneados
       scannedUUIDs.push(uuid);
       setScannedPackages((prevPackages) => [...prevPackages, parsedData]);
+      
       setSuccessBadge(`Paquete ${IdPaquete} se movio con éxito.`);
+      setErrorBadge("")
     } catch (error) {
       setErrorBadge("Error al procesar el paquete escaneado.");
     }
@@ -250,12 +258,12 @@ export default function Page() {
                 depositoOrigen={depositOrigin}
                 depositoFinal={depositFinal}
               />
+                {successBadge && <StatusBadge type="success" text={successBadge} />}
+                {errorBadge && <StatusBadge type="error" text={errorBadge} />}
               <QrScannerComponent
                 onScanSuccess={handleScanPackage}
                 title="Escanear Paquete"
               />
-              {successBadge && <StatusBadge type="success" text={successBadge} />}
-              {errorBadge && <StatusBadge type="error" text={errorBadge} />}
               {scannedPackages.length > 0 && (
                 <>
                   <ListPackets paquetes={scannedPackages} />{" "}
