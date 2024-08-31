@@ -46,7 +46,7 @@ const styles = {
   },
   footer: {
     position: 'absolute',
-    bottom: '100px', // Añadido margen inferior
+    bottom: '50px', // Añadido margen inferior
     width: '100%',
     transform: 'rotate(180deg)',
     display: 'flex',
@@ -60,7 +60,7 @@ const styles = {
 
 // Componente para el contenido del PDF
 const PrintableContent = forwardRef(({ qrData, apiResponse, qrImage }, ref) => (
-  <div ref={ref} style={{ position: 'relative', minHeight: '100vh', paddingTop: '100px' }}> {/* Añadido padding superior */}
+  <div ref={ref} style={{ position: 'relative', minHeight: '100vh', paddingTop: '50px' }}> {/* Añadido padding superior */}
     <div style={styles.container}>
       <div style={styles.details}>
         <div style={styles.header}>
