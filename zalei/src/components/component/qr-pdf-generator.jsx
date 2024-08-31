@@ -37,11 +37,18 @@ export default function QrPrinter({ qrData, apiResponse }) {
     // Agregar la imagen del QR
     doc.addImage(qrImageData, 'PNG', 150, 30, 50, 50);
 
-    // Convertir el PDF a base64 y remover el prefijo
-    const pdfBase64 = doc.output('datauristring').split(',')[1];
+    // Detectar si el usuario está en un dispositivo móvil (iOS o Android)
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-    // Usar printJS para imprimir el PDF generado
-    printJS({ printable: pdfBase64, type: 'pdf', base64: true });
+    if (isMobile) {
+      // En dispositivos móviles, abrir el PDF en una nueva ventana
+      const pdfDataUri = doc.output('dataurlstring');
+      window.open(pdfDataUri);
+    } else {
+      // En otros dispositivos, imprimir con printJS
+      const pdfBase64 = doc.output('datauristring').split(',')[1];
+      printJS({ printable: pdfBase64, type: 'pdf', base64: true });
+    }
   };
 
   return (
@@ -53,7 +60,7 @@ export default function QrPrinter({ qrData, apiResponse }) {
       {/* Botón para generar e imprimir el PDF */}
       <Button onClick={handlePrintPDF} className="flex items-center justify-center mt-4 p-2 rounded">
         <Printer className="mr-2" />
-        Imprimir QR
+        Generar y Ver PDF
       </Button>
     </div>
   );
