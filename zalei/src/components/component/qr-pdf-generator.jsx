@@ -24,42 +24,40 @@ export default function QrPrinter({ qrData, apiResponse }) {
     const qrDataJson = typeof qrData === 'string' ? JSON.parse(qrData) : qrData;
 
     const printContent = `
-    <div style="width: 210mm; height: 297mm; padding: 20mm; box-sizing: border-box; font-family: Arial, sans-serif;">
+    <div style="width: 100%; max-width: 210mm; height: auto; padding: 20mm; box-sizing: border-box; font-family: Arial, sans-serif;">
       <div style="display: flex; flex-direction: column; height: 100%; justify-content: space-between;">
         
-        <div style="display: flex; justify-content: space-between;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 20mm;">
           <div style="width: 60%; text-align: left;">
-            ${qrDataJson.Fecha ? `<h3>Zalei S.A. - Fecha: ${qrDataJson.Fecha}</h3>` : ''}
-            ${qrDataJson.Cantidad ? `<p style="font-size: 25px; font-weight: bold;">Cantidad: ${qrDataJson.Cantidad}</p>` : ''}
-            ${apiResponse.Articulo.DescDetalle ? `<p>Color: ${apiResponse.Articulo.DescDetalle}</p>` : ''}
-            ${apiResponse.Articulo.DescMedida ? `<p>Medida: ${apiResponse.Articulo.DescMedida}</p>` : ''}
-            ${apiResponse.Articulo.Descripcion ? `<p>Descripción: ${apiResponse.Articulo.Descripcion}</p>` : ''}
+            ${qrDataJson.Fecha ? `<h3 style="margin-bottom: 10px;">Zalei S.A. - Fecha: ${qrDataJson.Fecha}</h3>` : ''}
+            ${qrDataJson.Cantidad ? `<p style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">Cantidad: ${qrDataJson.Cantidad}</p>` : ''}
+            ${apiResponse.Articulo.DescDetalle ? `<p style="margin-bottom: 5px;">Color: ${apiResponse.Articulo.DescDetalle}</p>` : ''}
+            ${apiResponse.Articulo.DescMedida ? `<p style="margin-bottom: 5px;">Medida: ${apiResponse.Articulo.DescMedida}</p>` : ''}
+            ${apiResponse.Articulo.Descripcion ? `<p style="margin-bottom: 5px;">Descripción: ${apiResponse.Articulo.Descripcion}</p>` : ''}
             ${qrDataJson.Galpon ? `<p>Galpón: ${qrDataJson.Galpon}</p>` : ''}
           </div>
           <div style="width: 50%; text-align: right;">
-            <img src="${qrImageData}" style="margin: 20px; width: 200px; height: 200px; padding: 10px; border: 2px solid #333; border-radius: 10px;" />
+            <img src="${qrImageData}" style="margin: 20px; width: 150px; height: 150px; padding: 10px; border: 2px solid #333; border-radius: 10px;" />
           </div>
         </div>
         
-        <div style="display: flex; justify-content: space-between; transform: rotate(180deg) ;">
+        <div style="display: flex; justify-content: space-between; transform: rotate(180deg); margin-top: 20mm;">
           <div style="width: 60%; text-align: left;">
-            ${qrDataJson.Fecha ? `<h3>Zalei S.A. - Fecha: ${qrDataJson.Fecha}</h3>` : ''}
-            ${qrDataJson.Cantidad ? `<p style="font-size: 25px; font-weight: bold;">Cantidad: ${qrDataJson.Cantidad}</p>` : ''}
-            ${apiResponse.Articulo.DescDetalle ? `<p>Color: ${apiResponse.Articulo.DescDetalle}</p>` : ''}
-            ${apiResponse.Articulo.DescMedida ? `<p>Medida: ${apiResponse.Articulo.DescMedida}</p>` : ''}
-            ${apiResponse.Articulo.Descripcion ? `<p>Descripción: ${apiResponse.Articulo.Descripcion}</p>` : ''}
+            ${qrDataJson.Fecha ? `<h3 style="margin-bottom: 10px;">Zalei S.A. - Fecha: ${qrDataJson.Fecha}</h3>` : ''}
+            ${qrDataJson.Cantidad ? `<p style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">Cantidad: ${qrDataJson.Cantidad}</p>` : ''}
+            ${apiResponse.Articulo.DescDetalle ? `<p style="margin-bottom: 5px;">Color: ${apiResponse.Articulo.DescDetalle}</p>` : ''}
+            ${apiResponse.Articulo.DescMedida ? `<p style="margin-bottom: 5px;">Medida: ${apiResponse.Articulo.DescMedida}</p>` : ''}
+            ${apiResponse.Articulo.Descripcion ? `<p style="margin-bottom: 5px;">Descripción: ${apiResponse.Articulo.Descripcion}</p>` : ''}
             ${qrDataJson.Galpon ? `<p>Galpón: ${qrDataJson.Galpon}</p>` : ''}
           </div>
           <div style="width: 50%; text-align: right;">
-            <img src="${qrImageData}" style="margin: 20px; width: 200px; height: 200px; padding: 10px; border: 2px solid #333; border-radius: 10px;" />
+            <img src="${qrImageData}" style="margin: 20px; width: 150px; height: 150px; padding: 10px; border: 2px solid #333; border-radius: 10px;" />
           </div>
         </div>
         
       </div>
     </div>
-  `;
-  
-
+    `;
 
     printJS({
       printable: printContent,
