@@ -2,71 +2,58 @@ import React, { useState, useEffect } from 'react';
 import QRCode from 'qrcode.react';
 import { Button } from '../ui/button';
 import { Printer } from 'lucide-react';
+import jsPDF from 'jspdf';
 import printJS from 'print-js';
 
 export default function QrPrinter({ qrData, apiResponse }) {
-  const [loading, setLoading] = useState(false);
   const [qrImageData, setQrImageData] = useState(null);
 
   useEffect(() => {
-    // Este efecto se ejecuta solo en el cliente
     const qrCanvas = document.querySelector('#qr-canvas canvas');
     if (qrCanvas) {
       setQrImageData(qrCanvas.toDataURL('image/png'));
     }
   }, [qrData]);
 
-  const handlePrint = () => {
+  const handlePrintPDF = () => {
     if (!qrImageData) return;
-
-    setLoading(true);
 
     const qrDataJson = typeof qrData === 'string' ? JSON.parse(qrData) : qrData;
 
-    const printContent = `
-      <div style="width: 210mm; height: 297mm; padding: 20mm; box-sizing: border-box; font-family: Arial, sans-serif;">
-        <div style="display: flex; flex-direction: column; height: 100%; justify-content: space-between;">
-          
-          <div style="display: flex; justify-content: space-between;">
-            <div style="width: 60%; text-align: left;">
-              ${qrDataJson.Fecha ? `<h3>Zalei S.A. - Fecha: ${qrDataJson.Fecha}</h3>` : ''}
-              ${qrDataJson.Cantidad ? `<p style="font-size: 25px; font-weight: bold;">Cantidad: ${qrDataJson.Cantidad}</p>` : ''}
-              ${apiResponse.Articulo.DescDetalle ? `<p>Color: ${apiResponse.Articulo.DescDetalle}</p>` : ''}
-              ${apiResponse.Articulo.DescMedida ? `<p>Medida: ${apiResponse.Articulo.DescMedida}</p>` : ''}
-              ${apiResponse.Articulo.Descripcion ? `<p>Descripción: ${apiResponse.Articulo.Descripcion}</p>` : ''}
-              ${qrDataJson.Galpon ? `<p>Galpón: ${qrDataJson.Galpon}</p>` : ''}
-            </div>
-            <div style="width: 50%; text-align: right;">
-              <img src="${qrImageData}" style="margin: 20px; width: 200px; height: 200px; padding: 10px; border: 2px solid #333; border-radius: 10px;" />
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
+    // Crear una instancia de jsPDF
+    const doc = new jsPDF('portrait', 'mm', 'a4');
 
-    // Crea un contenedor temporal en el DOM
-    const printContainer = document.createElement('div');
-    printContainer.id = 'printJS-form';
-    printContainer.innerHTML = printContent;
-    document.body.appendChild(printContainer);
+    // Configurar el PDF: agregar textos y la imagen del QR
+    doc.setFont('Arial');
+    doc.setFontSize(12);
+    doc.text(`Zalei S.A.`, 20, 30);
+    doc.text(`Fecha: ${qrDataJson.Fecha || ''}`, 20, 40);
+    doc.text(`Cantidad: ${qrDataJson.Cantidad || ''}`, 20, 50);
+    doc.text(`Color: ${apiResponse.Articulo.DescDetalle || ''}`, 20, 60);
+    doc.text(`Medida: ${apiResponse.Articulo.DescMedida || ''}`, 20, 70);
+    doc.text(`Descripción: ${apiResponse.Articulo.Descripcion || ''}`, 20, 80);
+    doc.text(`Galpón: ${qrDataJson.Galpon || ''}`, 20, 90);
 
-    // Llama a printJS para imprimir el contenido
-    printJS('printJS-form', 'html');
+    // Agregar la imagen del QR
+    doc.addImage(qrImageData, 'PNG', 150, 30, 50, 50);
 
-    // Limpia el contenedor después de la impresión
-    document.body.removeChild(printContainer);
+    // Convertir el PDF a base64 y remover el prefijo
+    const pdfBase64 = doc.output('datauristring').split(',')[1];
 
-    setLoading(false);
+    // Usar printJS para imprimir el PDF generado
+    printJS({ printable: pdfBase64, type: 'pdf', base64: true });
   };
 
   return (
     <div className="flex flex-col items-center">
+      {/* Generar y mostrar el código QR */}
       <div id="qr-canvas" className="m-3">
         <QRCode value={qrData} size={200} />
       </div>
-      <Button onClick={handlePrint} className="flex items-center justify-center mt-4 p-2 rounded" disabled={loading}>
+      {/* Botón para generar e imprimir el PDF */}
+      <Button onClick={handlePrintPDF} className="flex items-center justify-center mt-4 p-2 rounded">
         <Printer className="mr-2" />
-        {loading ? 'Generando...' : 'Imprimir QR'}
+        Imprimir QR
       </Button>
     </div>
   );
