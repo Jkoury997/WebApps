@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 
 const NEXT_PUBLIC_URL_API_AVICOLA = process.env.NEXT_PUBLIC_URL_API_AVICOLA;
 
-export async function POST(req) {
+export async function GET(req) {
     const cookieStore = cookies();
     const Token = cookieStore.get("Token");
 

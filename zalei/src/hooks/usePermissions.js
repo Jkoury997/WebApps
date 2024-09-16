@@ -5,8 +5,8 @@ import { useState, useEffect } from 'react';
 
 async function fetchPermissions() {
 ; // Reemplaza esta URL con la URL de tu API
-  const data = await userPermissions() ;
-  return data;
+  const userDataPermissions = await userPermissions() ;
+  return userDataPermissions;
 }
 
 export function usePermissions() {
@@ -16,8 +16,8 @@ export function usePermissions() {
 
   useEffect(() => {
     fetchPermissions()
-      .then((data) => {
-        setPermissions(data.Menu);
+      .then((userDataPermissions) => {
+        setPermissions(userDataPermissions.Menu);
         setLoading(false);
       })
       .catch((error) => {
