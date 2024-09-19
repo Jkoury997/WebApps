@@ -18,6 +18,7 @@ export default function Page() {
 
     const handleScan = async (data) => {
         if (data) {
+            console.log(data)
             try {
                 setScanned(false); // Reiniciar el estado de escaneo
                 const parsedData = JSON.parse(data);
@@ -117,11 +118,16 @@ export default function Page() {
     const isFormComplete = qrData && cantidad > 0; // El botón solo estará habilitado si ambos campos están completos
 
     return (
+<> 
+            <div className="mb-2 flex flex-col items-center">
+            <h1 className="text-2xl font-bold mb-2 text-center">Informar Tejido</h1>
+            <p className="text-muted-foreground text-center">
+            Utiliza este formulario para informar un tejido.
+            </p>
+        </div>
         <Card>
-            <CardHeader className="pb-1">
-                <CardTitle className="text-xl">Información Tejido</CardTitle>
-            </CardHeader>
             <CardContent>
+                
                 {/* Componente de alerta */}
                 {alertMessage && (
                   <Alert 
@@ -159,5 +165,6 @@ export default function Page() {
 
             </CardContent>
         </Card>
+        </>
     );
 }

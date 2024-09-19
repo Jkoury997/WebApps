@@ -11,7 +11,7 @@ const register = async (req, res) => {
     try {
       const { firstName, lastName, dni, email, password, sex } = req.body;
 
-      /*
+
   
       // Realizar login y obtener la clave de acceso
       const accessKeyApi = await utilsApi.loginJinx();
@@ -30,8 +30,7 @@ const register = async (req, res) => {
       if (!existEmployerApi) {
         throw new Error('No se encontro el dni en el sistema');
       }
-  
-    */
+
 
       // Si todo es correcto, proceder con el registro del usuario
       const role = 'employed'; // Rol por defecto

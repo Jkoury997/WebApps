@@ -99,7 +99,7 @@ const PrintableContent = forwardRef(({ qrData, apiResponse, qrImage }, ref) => (
 ));
 
 // Componente principal
-export default function QrPrinter({ qrData, apiResponse }) {
+export default function QrPrinter({ qrData }) {
   const qrCanvasRef = useRef();
   const printRef = useRef();
   const [qrImage, setQrImage] = useState('');
