@@ -1,7 +1,7 @@
 module.exports = {
     apps: [
       {
-        name: 'Fichaqui-Client-Zalei',
+        name: 'Fichaqui-Client-MakeYou',
         script: 'bun',
         args: 'run start',  // Comando para iniciar tu aplicación Next.js en producción
         cwd: './',  // Directorio de trabajo de tu proyecto Next.js
