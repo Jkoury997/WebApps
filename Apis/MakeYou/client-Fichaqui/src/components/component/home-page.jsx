@@ -22,18 +22,24 @@ export default function Homepage() {
         <nav className={`${isMenuOpen ? 'flex' : 'hidden'} lg:flex flex-col lg:flex-row w-full lg:w-auto items-start lg:items-center gap-4 py-4 lg:py-0`}>
 
           <div className="flex flex-row gap-2 w-full lg:w-auto">
+          <Link  href="/auth/login">
             <Button variant="outline" size="sm" className="flex-1 lg:flex-none">
               <LogIn className="mr-2 h-4 w-4" />
               Ingresar
             </Button>
+            </Link>
+            <Link  href="/auth/register">
             <Button variant="outline" size="sm" className="flex-1 lg:flex-none">
               <UserPlus className="mr-2 h-4 w-4" />
               Crear Cuenta
             </Button>
+            </Link>
+            <Link  href="/zone/configure">
             <Button size="sm" className="flex-1 lg:flex-none">
               <WarehouseIcon className="mr-2 h-4 w-4" />
               Zona
             </Button>
+            </Link>
           </div>
         </nav>
       </header>
@@ -48,17 +54,18 @@ export default function Homepage() {
                 Optimiza el control de asistencia de tu personal con nuestra solución innovadora y eficiente.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50 w-full sm:w-auto">Ingresar</Button>
-                <Button size="md" className="bg-white text-blue-600 hover:bg-blue-50 w-full sm:w-auto p-1">Crear Cuenta</Button>
-                <Button size="md" className="bg-white text-blue-600 hover:bg-blue-50 w-full sm:w-auto p-1 ps-2 pe-2">Zona</Button>
+
+                <Link  href="/auth/login"><Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50 w-full sm:w-auto">Ingresar</Button></Link>
+                <Link  href="/auth/register"><Button size="md" className="bg-white text-blue-600 hover:bg-blue-50 w-full sm:w-auto p-1">Crear Cuenta</Button></Link>
+                <Link  href="/zone/configure"><Button size="md" className="bg-white text-blue-600 hover:bg-blue-50 w-full sm:w-auto p-1 ps-2 pe-2">Zona</Button></Link>
 
               </div>
             </div>
-            <div className="md:w-1/2 flex justify-center hidden">
+            <div className="md:w-1/2 flex justify-center">
               <img
                 src="/placeholder.svg?height=400&width=400"
                 alt="Gestión de Asistencia"
-                className="rounded-lg shadow-2xl max-w-full h-auto"
+                className="rounded-lg shadow-2xl max-w-full h-auto hidden"
                 width={400}
                 height={400}
               />
@@ -116,11 +123,11 @@ export default function Homepage() {
       </main>
       <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t bg-gray-100 dark:bg-gray-800">
         <p className="text-xs text-gray-600 dark:text-gray-400">© 2024 Fichaqui. Todos los derechos reservados.</p>
-        <nav className="sm:ml-auto flex gap-4 sm:gap-6 hidden">
-          <Link className="text-xs hover:underline underline-offset-4 text-gray-600 dark:text-gray-400" href="#">
+        <nav className="sm:ml-auto flex gap-4 sm:gap-6 ">
+          <Link className="text-xs hover:underline underline-offset-4 text-gray-600 dark:text-gray-400 hidden" href="#">
             Términos de Servicio
           </Link>
-          <Link className="text-xs hover:underline underline-offset-4 text-gray-600 dark:text-gray-400" href="#">
+          <Link className="text-xs hover:underline underline-offset-4 text-gray-600 dark:text-gray-400 hidden" href="#">
             Privacidad
           </Link>
         </nav>
