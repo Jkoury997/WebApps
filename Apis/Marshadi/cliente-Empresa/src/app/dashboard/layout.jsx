@@ -35,7 +35,7 @@ export default function Component({ children }) {
         <div className="flex h-full flex-col">
           <div className="flex h-14 items-center justify-between border-b px-4">
             <Link className="flex items-center font-semibold" href="#">
-              <EggFriedIcon className="mr-2 h-6 w-6" />
+              <img src="/images/socks.svg" alt="Socks Icon" className="mr-2 h-6 w-6"/>
               <span>{title}</span>
             </Link>
             <Button variant="ghost" size="icon" onClick={toggleSidebar} className="lg:hidden">

@@ -53,7 +53,7 @@ export default function LoginPage() {
     <div className="flex h-screen w-full items-center justify-center bg-gray-100 dark:bg-gray-900">
       <div className="mx-4 w-full max-w-md rounded-lg bg-white p-8 shadow-lg dark:bg-gray-800">
         <div className="flex justify-center">
-          <StoreIcon className="h-12 w-12" />
+        <img src="/images/socks.svg" alt="Socks Icon" className="h-12 w-12"/>
         </div>
         <div className="space-y-6">
           <div className="text-center">
