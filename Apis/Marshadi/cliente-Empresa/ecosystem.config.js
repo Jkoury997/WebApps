@@ -1,7 +1,7 @@
 module.exports = {
     apps: [
       {
-        name: 'ZaleiApp',       // Nombre de la aplicación en PM2
+        name: 'Marshadi-Cliente-Empresa',       // Nombre de la aplicación en PM2
         script: 'node_modules/next/dist/bin/next',  // Ruta al ejecutable de Next.js
         args: 'start',            // Argumentos para iniciar Next.js
         instances: 'max',         // Número de instancias a ejecutar, 'max' usa todos los cores disponibles
