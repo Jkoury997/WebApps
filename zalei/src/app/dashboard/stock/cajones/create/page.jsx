@@ -1,7 +1,8 @@
 "use client";
 
 import { useState,useEffect } from "react";
-import { ScanBarcode } from "@/components/component/scan-barcode";
+import ScanBarcode from "@/components/component/scan-barcode";
+
 import { EnterGalpon } from "@/components/component/enter-galpon";
 import { EnterQuantity } from "@/components/component/enter-quantity";
 import { ArticleDetails } from "@/components/ui/articules-details";
@@ -44,17 +45,17 @@ export default function Page() {
 
       
 
-      const handleScan = async (decodedText) => {
+      const handleScan = async (data) => {
         setIsScanning(false); // Desactivar el escáner mientras se procesa el escaneo
         setError(null); // Resetear errores previos
-        console.log("Código escaneado:", decodedText);
+        console.log("Código escaneado:", data);
         try {
             const response = await fetch('/api/syndra/catalogo/articulo', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ Codebar: decodedText }),
+                body: JSON.stringify({ Codebar: data }),
             });
     
             const result = await response.json();
@@ -149,7 +150,8 @@ export default function Page() {
                 )}
                 <Card>
                     <CardContent className="grid gap-4 p-1 pt-6">
-                        {activeStep === 1 && <ScanBarcode onScan={handleScan} />}
+                        {activeStep === 1 && <ScanBarcode onScanSuccess={handleScan} />}
+
                         {activeStep === 2 && (
                             <>
                                 <ArticleDetails dataArticulo={dataArticulo} Galpon={galpon} />
