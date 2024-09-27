@@ -123,6 +123,7 @@ export default function Page() {
         setDataArticulo("")
         setActiveStep(1)
         setIsScanning(true); 
+        setIsFirstScanComplete(false)
 
     };
 
