@@ -56,8 +56,8 @@ export default function Homepage() {
               <div className="flex flex-col sm:flex-row gap-4">
 
                 <Link  href="/auth/login"><Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50 w-full sm:w-auto">Ingresar</Button></Link>
-                <Link  href="/auth/register"><Button size="md" className="bg-white text-blue-600 hover:bg-blue-50 w-full sm:w-auto p-1">Crear Cuenta</Button></Link>
-                <Link  href="/zone/configure"><Button size="md" className="bg-white text-blue-600 hover:bg-blue-50 w-full sm:w-auto p-1 ps-2 pe-2">Zona</Button></Link>
+                <Link  href="/auth/register"><Button size="md" className="bg-white text-blue-600 hover:bg-blue-50 w-full sm:w-auto">Crear Cuenta</Button></Link>
+                <Link  href="/zone/configure"><Button size="md" className="bg-white text-blue-600 hover:bg-blue-50 w-full sm:w-auto ">Zona</Button></Link>
 
               </div>
             </div>

@@ -31,10 +31,10 @@ export default function Page() {
         localStorage.setItem('readingMode', mode);
       setMessage(`Modo ${mode === 'camera' ? 'Cámara' : 'Lector'} seleccionado y guardado.`);
       if(mode === 'camera'){
-        router.push('/zone/configure/scanerQr');
+        router.push('/zone/configure/lectorQr');
       }
       if(mode === 'reader'){
-        router.push('/zone/configure/lectorQr');
+        router.push('/zone/configure/scanerQr');
       }
     };
   
