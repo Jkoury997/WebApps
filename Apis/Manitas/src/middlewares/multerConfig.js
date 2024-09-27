@@ -7,7 +7,11 @@ const storage = multer.diskStorage({
     cb(null, 'uploads/'); // Carpeta donde se guardarán las imágenes
   },
   filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
+    // Obtener empresa de req.body o de req.user, dependiendo de tu lógica
+    const empresa = req.body.empresa || req.user.empresa;
+
+    // Incluir el nombre de la empresa en el archivo
+    cb(null, `${empresa}-${Date.now()}-${file.originalname}`);
   },
 });
 
@@ -26,7 +30,7 @@ const fileFilter = (req, file, cb) => {
 // Configuración de multer
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 5 MB de límite de tamaño
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB de límite de tamaño
   fileFilter: fileFilter,
 });
 

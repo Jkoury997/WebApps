@@ -18,6 +18,7 @@ const QrPrinter = dynamic(() => import('@/components/component/qr-pdf-generator'
 
 export default function Page() {
     const [isFirstScanComplete, setIsFirstScanComplete] = useState(false);
+    const [isScanning, setIsScanning] = useState(true); 
     const [activeStep, setActiveStep] = useState(1);
     const [galpon, setGalpon] = useState("");
     const [cantidad, setCantidad] = useState("");
@@ -43,7 +44,8 @@ export default function Page() {
 
       
 
-    const handleScan = async (decodedText) => {
+      const handleScan = async (decodedText) => {
+        setIsScanning(false); // Desactivar el escáner mientras se procesa el escaneo
         setError(null); // Resetear errores previos
         console.log("Código escaneado:", decodedText);
         try {
@@ -54,9 +56,9 @@ export default function Page() {
                 },
                 body: JSON.stringify({ Codebar: decodedText }),
             });
-
+    
             const result = await response.json();
-
+    
             if (response.ok) {
                 console.log(result);
                 setDataArticulo(result);
@@ -64,12 +66,14 @@ export default function Page() {
                 setIsFirstScanComplete(true); // Marcamos que el primer escaneo se ha completado
             } else {
                 setError(result.error || 'Error al obtener los datos del artículo');
+                setIsScanning(true); // Reactivar el escáner si hay un error
             }
         } catch (err) {
             setError('Error durante la solicitud a la API');
+            setIsScanning(true); // Reactivar el escáner si hay un error
         }
     };
-
+    
     const handlePrevious = () => {
         setActiveStep(prev => prev - 1);
     };
@@ -118,6 +122,7 @@ export default function Page() {
         setQrData("")
         setDataArticulo("")
         setActiveStep(1)
+        setIsScanning(true); 
 
     };
 
