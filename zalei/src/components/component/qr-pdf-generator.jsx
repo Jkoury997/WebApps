@@ -11,6 +11,7 @@ const styles = {
     alignItems: 'center',
     padding: '20px',
     fontFamily: 'Arial, sans-serif',
+    transform: 'rotate(180deg)',
   },
   details: {
     flex: 1,
@@ -48,13 +49,11 @@ const styles = {
     position: 'absolute',
     bottom: '20px', // Añadido margen inferior
     width: '100%',
-    transform: 'rotate(180deg)',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '20px',
     fontFamily: 'Arial, sans-serif',
-    borderTop: '1px solid #ccc',
   }
 };
 

@@ -98,7 +98,9 @@ export default function Page() {
           className="mb-2"
         />
       )}
-      <Card>
+
+      {nombre && (
+        <Card>
         <CardHeader>
           <CardTitle>Editar empresa</CardTitle>
           <CardDescription>Usa este formulario para editar una empresa</CardDescription>
@@ -132,6 +134,9 @@ export default function Page() {
           </form>
         </CardContent>
       </Card>
+      )
+      }
+      
     </>
   );
 }

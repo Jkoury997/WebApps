@@ -12,6 +12,7 @@ export async function POST(req) {
 
         // Supongamos que el cuerpo de la solicitud incluye el email y la empresa
         const { empresa } = body;
+        
 
         // Enviar la solicitud de acceso al backend
         const response = await fetch(`${URL_API_AUTH}/api/UserAccess`, {
@@ -24,9 +25,12 @@ export async function POST(req) {
 
         const responseData = await response.json();
 
+
         if (responseData.Estado) {
             // Guardar tokens en cookies solo si Estado es true
             cookieStore.set('Token', responseData.Token, { path: '/' });
+            cookieStore.set('Empresa', responseData.Empresa, { path: '/' });
+            cookieStore.set('IdEmpresa', empresa, { path: '/' });
             console.log("AccessKey: ",AccessKey)
             console.log("Token: ",responseData.Token)
             return NextResponse.json(responseData);

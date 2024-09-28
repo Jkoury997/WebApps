@@ -6,9 +6,21 @@ const NEXT_PUBLIC_URL_API_MANITAS = process.env.NEXT_PUBLIC_URL_API_MANITAS;
 export async function POST(req) {
     try {
         const body = await req.json();
+        const cookieStore = cookies();
+        const nombreEmpresaSistema = cookieStore.get("Empresa");
+        const IdEmpresaSistema = cookieStore.get("IdEmpresa");
+        
+        // Validar que la cookie Empresa existe
+        if (!nombreEmpresaSistema || !nombreEmpresaSistema.value) {
+            return NextResponse.json({ error: 'Cookie Empresa no encontrada' }, { status: 400 });
+        }
 
-        // Supongamos que el cuerpo de la solicitud incluye el nombre, dirección, teléfono y email
-        const { nombre, direccion, telefono, email } = body;
+         // Validar los campos obligatorios en el cuerpo de la solicitud
+         const { nombre, direccion, telefono, email } = body;
+         if (!nombre || !direccion || !telefono || !email) {
+             return NextResponse.json({ error: 'Faltan campos obligatorios' }, { status: 400 });
+         }
+
 
         // Enviar la solicitud de creación de empresa al backend
         const response = await fetch(`${NEXT_PUBLIC_URL_API_MANITAS}/api/empresas/crear`, {
@@ -16,7 +28,7 @@ export async function POST(req) {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ nombre, direccion, telefono, email })
+            body: JSON.stringify({ nombre, direccion, telefono, email,idSistema: IdEmpresaSistema.value,EmpresaSistema: nombreEmpresaSistema.value })
         });
 
         const responseData = await response.json();
