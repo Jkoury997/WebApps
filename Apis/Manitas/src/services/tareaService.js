@@ -1,40 +1,57 @@
 const Tarea = require('../database/models/Tareas');
 
-const crearTarea = async (data) => {
-  const nuevaTarea = new Tarea(data);
+// Crear una nueva tarea
+const crearTarea = async (tareaData) => {
+  const nuevaTarea = new Tarea(tareaData);
   return await nuevaTarea.save();
 };
 
-const completarTarea = async (id, data) => {
-  return await Tarea.findByIdAndUpdate(id, data, { new: true });
+// Completar una tarea y agregar imagen "después"
+const completarTarea = async (tareaId, imagenDespues) => {
+  return await Tarea.findByIdAndUpdate(
+    tareaId,
+    { imagenDespues, completada: true, fechaCompletada: Date.now() },
+    { new: true }
+  );
 };
 
-const obtenerTareaPorId = async (id) => {
-  return await Tarea.findById(id);
+// Obtener una tarea por ID
+const obtenerTareaPorId = async (tareaId) => {
+  return await Tarea.findById(tareaId);
 };
 
-const eliminarTarea = async (id) => {
-  return await Tarea.findByIdAndDelete(id);
+// Listar todas las tareas
+const listarTareas = async () => {
+  return await Tarea.find();
 };
 
-const listarTareasPorTienda = async (tienda) => {
-  return await Tarea.find({ tienda });
+// Listar tareas por tienda
+const listarTareasPorLugar = async (lugarId) => {
+  return await Tarea.find({ lugar: lugarId });
 };
 
+// Listar tareas por rubro
 const listarTareasPorRubro = async (rubro) => {
   return await Tarea.find({ rubro });
 };
 
-const listarTareas = async () => {
-  return await Tarea.find();
+// **Listar tareas por empresa**
+const listarTareasPorEmpresa = async (empresaId) => {
+  return await Tarea.find({ empresa: empresaId });
+};
+
+// Eliminar una tarea
+const eliminarTarea = async (tareaId) => {
+  return await Tarea.findByIdAndDelete(tareaId);
 };
 
 module.exports = {
   crearTarea,
   completarTarea,
   obtenerTareaPorId,
-  eliminarTarea,
-  listarTareasPorTienda,
-  listarTareasPorRubro,
   listarTareas,
+  listarTareasPorLugar,
+  listarTareasPorRubro,
+  listarTareasPorEmpresa, // Nueva función para buscar por empresa
+  eliminarTarea,
 };

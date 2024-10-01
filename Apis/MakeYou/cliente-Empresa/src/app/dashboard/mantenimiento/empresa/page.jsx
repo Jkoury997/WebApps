@@ -57,7 +57,7 @@ export default function EmpresaList() {
       <Table className="bg-white">
         <TableHeader>
           <TableRow>
-          <TableCell>Id</TableCell>
+          <TableCell className="hidden">Id</TableCell>
             <TableCell>Nombre</TableCell>
             <TableCell>Dirección</TableCell>
 
@@ -68,7 +68,7 @@ export default function EmpresaList() {
         <TableBody>
           {empresas.map((empresa) => (
             <TableRow key={empresa._id}>
-            <TableCell>{empresa._id}</TableCell>
+            <TableCell className="hidden">{empresa._id}</TableCell>
               <TableCell>{empresa.nombre}</TableCell>
               <TableCell>{empresa.direccion}</TableCell>
 

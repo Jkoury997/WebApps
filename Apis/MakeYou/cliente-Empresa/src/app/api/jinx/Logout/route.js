@@ -16,6 +16,7 @@ export async function GET() {
             const cookieStore = cookies();
             cookieStore.set('AccessKey', '', { path: '/', expires: new Date(0) });
             cookieStore.set('Token', '', { path: '/', expires: new Date(0) });
+            cookieStore.set('User', '', { path: '/', expires: new Date(0) });
         } catch (innerError) {
             console.error('Error al eliminar cookies:', innerError);
         }

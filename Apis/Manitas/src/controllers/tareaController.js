@@ -1,61 +1,52 @@
 const tareaService = require('../services/tareaService');
 
+// Crear una nueva tarea con imagen "antes"
 const crearTarea = async (req, res, next) => {
   try {
-    if (!req.file) {
-      res.status(400);
-      throw new Error('La imagen del "antes" es obligatoria');
-    }
+    const { titulo, descripcion, categoria, lugar, empresa, creadoPor } = req.body;
 
-    const data = {
-      titulo: req.body.titulo,
-      descripcion: req.body.descripcion,
-      rubro: req.body.rubro,
-      tienda: req.body.tienda,
-      creadoPor: req.body.creadoPor,
-      imagenAntes: req.file.path,
-    };
+    const imagenAntes = req.file ? req.file.filename : null;
 
-    const tarea = await tareaService.crearTarea(data);
+    const tarea = await tareaService.crearTarea({
+      titulo,
+      descripcion,
+      categoria,
+      lugar,
+      empresa,
+      creadoPor,
+      imagenAntes,
+    });
+
     res.status(201).json(tarea);
   } catch (error) {
     next(error);
   }
 };
 
+// Completar una tarea con imagen "después"
 const completarTarea = async (req, res, next) => {
   try {
-    if (!req.file) {
-      res.status(400);
-      throw new Error('La imagen del "después" es obligatoria');
+    const imagenDespues = req.file ? req.file.filename : null;
+    const tareaId = req.params.id;
+
+    const tareaCompletada = await tareaService.completarTarea(tareaId, imagenDespues);
+
+    if (!tareaCompletada) {
+      return res.status(404).json({ message: 'Tarea no encontrada' });
     }
 
-    const data = {
-      realizadoPor: req.body.realizadoPor,
-      imagenDespues: req.file.path,
-      fechaCompletada: Date.now(),
-      completada: true,
-    };
-
-    const tarea = await tareaService.completarTarea(req.params.id, data);
-
-    if (!tarea) {
-      res.status(404);
-      throw new Error('Tarea no encontrada');
-    }
-
-    res.status(200).json(tarea);
+    res.status(200).json(tareaCompletada);
   } catch (error) {
     next(error);
   }
 };
 
+// Obtener una tarea por ID
 const obtenerTareaPorId = async (req, res, next) => {
   try {
     const tarea = await tareaService.obtenerTareaPorId(req.params.id);
     if (!tarea) {
-      res.status(404);
-      throw new Error('Tarea no encontrada');
+      return res.status(404).json({ message: 'Tarea no encontrada' });
     }
     res.status(200).json(tarea);
   } catch (error) {
@@ -63,28 +54,17 @@ const obtenerTareaPorId = async (req, res, next) => {
   }
 };
 
-const eliminarTarea = async (req, res, next) => {
+// Listar tareas por tienda
+const listarTareasPorLugar= async (req, res, next) => {
   try {
-    const tarea = await tareaService.eliminarTarea(req.params.id);
-    if (!tarea) {
-      res.status(404);
-      throw new Error('Tarea no encontrada');
-    }
-    res.status(200).json({ message: 'Tarea eliminada' });
-  } catch (error) {
-    next(error);
-  }
-};
-
-const listarTareasPorTienda = async (req, res, next) => {
-  try {
-    const tareas = await tareaService.listarTareasPorTienda(req.params.tienda);
+    const tareas = await tareaService.listarTareasPorLugar(req.params.lugar);
     res.status(200).json(tareas);
   } catch (error) {
     next(error);
   }
 };
 
+// Listar tareas por rubro
 const listarTareasPorRubro = async (req, res, next) => {
   try {
     const tareas = await tareaService.listarTareasPorRubro(req.params.rubro);
@@ -94,6 +74,30 @@ const listarTareasPorRubro = async (req, res, next) => {
   }
 };
 
+// **Listar tareas por empresa**
+const listarTareasPorEmpresa = async (req, res, next) => {
+  try {
+    const tareas = await tareaService.listarTareasPorEmpresa(req.params.empresa);
+    res.status(200).json(tareas);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Eliminar una tarea
+const eliminarTarea = async (req, res, next) => {
+  try {
+    const tareaEliminada = await tareaService.eliminarTarea(req.params.id);
+    if (!tareaEliminada) {
+      return res.status(404).json({ message: 'Tarea no encontrada' });
+    }
+    res.status(200).json({ message: 'Tarea eliminada con éxito' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Listar todas las tareas
 const listarTareas = async (req, res, next) => {
   try {
     const tareas = await tareaService.listarTareas();
@@ -107,8 +111,9 @@ module.exports = {
   crearTarea,
   completarTarea,
   obtenerTareaPorId,
-  eliminarTarea,
-  listarTareasPorTienda,
+  listarTareasPorLugar,
   listarTareasPorRubro,
+  listarTareasPorEmpresa, // Nueva función para listar por empresa
+  eliminarTarea,
   listarTareas,
 };

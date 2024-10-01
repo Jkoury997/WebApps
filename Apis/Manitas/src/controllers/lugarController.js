@@ -1,23 +1,32 @@
+// controllers/lugarController.js
 const lugarService = require('../services/lugarService');
 
 const crearLugar = async (req, res, next) => {
   try {
-    // Validación básica de los datos recibidos
-    if (!req.body.nombre || !req.body.direccion) {
-      return res.status(400).json({ error: 'El nombre y la dirección son requeridos' });
-    }
-
     const lugar = await lugarService.crearLugar(req.body);
     res.status(201).json(lugar);
   } catch (error) {
-    next(error);  // Pasa el error al middleware de manejo de errores
+    next(error);  // Manejo de errores
   }
 };
 
-const listarLugares = async (req, res, next) => {
+const obtenerLugares = async (req, res, next) => {
   try {
     const lugares = await lugarService.listarLugares();
-    res.status(200).json({ lugares }); 
+    res.status(200).json(lugares);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Nueva función para obtener lugares por empresa
+const obtenerLugaresPorEmpresa = async (req, res, next) => {
+  try {
+    const lugares = await lugarService.listarLugaresPorEmpresa(req.params.empresaId);
+    if (!lugares || lugares.length === 0) {
+      return res.status(404).json({ message: 'No se encontraron lugares para esta empresa' });
+    }
+    res.status(200).json(lugares);
   } catch (error) {
     next(error);
   }
@@ -26,61 +35,44 @@ const listarLugares = async (req, res, next) => {
 const obtenerLugarPorId = async (req, res, next) => {
   try {
     const lugar = await lugarService.obtenerLugarPorId(req.params.id);
-
-    // Si no se encuentra el lugar, se responde con un 404
     if (!lugar) {
-      return res.status(404).json({ error: 'Lugar no encontrado' });
+      return res.status(404).json({ message: 'Lugar no encontrado' });
     }
-
     res.status(200).json(lugar);
   } catch (error) {
-    if (error.name === 'CastError') {
-      return res.status(400).json({ error: 'ID de lugar inválido' });
-    }
     next(error);
   }
 };
 
-const actualizarLugar = async (req, res, next) => {
+const editarLugar = async (req, res, next) => {
   try {
-    const lugar = await lugarService.actualizarLugar(req.params.id, req.body);
-
-    // Si no se encuentra el lugar, se responde con un 404
-    if (!lugar) {
-      return res.status(404).json({ error: 'Lugar no encontrado' });
+    const lugarActualizado = await lugarService.editarLugar(req.params.id, req.body);
+    if (!lugarActualizado) {
+      return res.status(404).json({ message: 'Lugar no encontrado' });
     }
-
-    res.status(200).json(lugar);
+    res.status(200).json(lugarActualizado);
   } catch (error) {
-    if (error.name === 'CastError') {
-      return res.status(400).json({ error: 'ID de lugar inválido' });
-    }
     next(error);
   }
 };
 
 const eliminarLugar = async (req, res, next) => {
   try {
-    const lugar = await lugarService.eliminarLugar(req.params.id);
-
-    // Si no se encuentra el lugar, se responde con un 404
-    if (!lugar) {
-      return res.status(404).json({ error: 'Lugar no encontrado' });
+    const lugarEliminado = await lugarService.eliminarLugar(req.params.id);
+    if (!lugarEliminado) {
+      return res.status(404).json({ message: 'Lugar no encontrado' });
     }
-
-    res.status(200).json({ message: 'Lugar eliminado' });
+    res.status(200).json({ message: 'Lugar eliminado con éxito' });
   } catch (error) {
-    if (error.name === 'CastError') {
-      return res.status(400).json({ error: 'ID de lugar inválido' });
-    }
     next(error);
   }
 };
 
 module.exports = {
   crearLugar,
-  listarLugares,
+  obtenerLugares,
+  obtenerLugaresPorEmpresa,  // Nueva función para obtener lugares por empresa
   obtenerLugarPorId,
-  actualizarLugar,
+  editarLugar,
   eliminarLugar,
 };

@@ -1,30 +1,42 @@
-const Categorias = require('../database/models/Categorias');
+// services/categoriaService.js
+const Categoria = require('../database/models/Categorias');
 
-const crearCategorias = async (data) => {
-  const nuevoCategorias = new Categorias(data);
-  return await nuevoCategorias.save();
+// Crear una nueva categoría
+const crearCategoria = async (categoriaData) => {
+  const nuevaCategoria = new Categoria(categoriaData);
+  return await nuevaCategoria.save();
 };
 
+// Editar una categoría existente
+const editarCategoria = async (categoriaId, categoriaData) => {
+  return await Categoria.findByIdAndUpdate(categoriaId, categoriaData, { new: true });
+};
+
+// Eliminar una categoría
+const eliminarCategoria = async (categoriaId) => {
+  return await Categoria.findByIdAndDelete(categoriaId);
+};
+
+// Obtener una categoría por ID
+const obtenerCategoriaPorId = async (categoriaId) => {
+  return await Categoria.findById(categoriaId);
+};
+
+// Listar todas las categorías
 const listarCategorias = async () => {
-  return await Categorias.find();
+  return await Categoria.find();
 };
 
-const obtenerCategoriasPorId = async (id) => {
-  return await Categorias.findById(id);
-};
-
-const actualizarCategorias = async (id, data) => {
-  return await Categorias.findByIdAndUpdate(id, data, { new: true });
-};
-
-const eliminarCategorias = async (id) => {
-  return await Categorias.findByIdAndDelete(id);
+// Nueva función para listar los lugares por empresa
+const listarCategoriasPorEmpresa = async (empresaId) => {
+  return await Categoria.find({ empresa: empresaId });
 };
 
 module.exports = {
-  crearCategorias,
+  crearCategoria,
+  editarCategoria,
+  eliminarCategoria,
+  obtenerCategoriaPorId,
   listarCategorias,
-  obtenerCategoriasPorId,
-  actualizarCategorias,
-  eliminarCategorias,
+  listarCategoriasPorEmpresa
 };

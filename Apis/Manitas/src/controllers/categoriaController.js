@@ -1,19 +1,19 @@
+// controllers/categoriaController.js
 const categoriaService = require('../services/categoriaService');
 
 const crearCategoria = async (req, res, next) => {
   try {
-    // Validación básica de los datos recibidos
-    const categoria = await categoriaService.crearCategorias(req.body);
+    const categoria = await categoriaService.crearCategoria(req.body);
     res.status(201).json(categoria);
   } catch (error) {
-    next(error);  // Pasa el error al middleware de manejo de errores
+    next(error);  // Manejo de errores
   }
 };
 
-const listarCategorias = async (req, res, next) => {
+const obtenerCategorias = async (req, res, next) => {
   try {
     const categorias = await categoriaService.listarCategorias();
-    res.status(200).json({ categorias });
+    res.status(200).json(categorias);
   } catch (error) {
     next(error);
   }
@@ -21,62 +21,58 @@ const listarCategorias = async (req, res, next) => {
 
 const obtenerCategoriaPorId = async (req, res, next) => {
   try {
-    const categoria = await categoriaService.obtenerCategoriasPorId(req.params.id);
-
-    // Si no se encuentra la categoría, se responde con un 404
+    const categoria = await categoriaService.obtenerCategoriaPorId(req.params.id);
     if (!categoria) {
-      return res.status(404).json({ error: 'Categoría no encontrada' });
+      return res.status(404).json({ message: 'Categoría no encontrada' });
     }
-
     res.status(200).json(categoria);
   } catch (error) {
-    if (error.name === 'CastError') {
-      return res.status(400).json({ error: 'ID de categoría inválido' });
-    }
     next(error);
   }
 };
 
-const actualizarCategoria = async (req, res, next) => {
+// Nueva función para obtener lugares por empresa
+const obtenerCategoriasPorEmpresa = async (req, res, next) => {
   try {
-    const categoria = await categoriaService.actualizarCategorias(req.params.id, req.body);
-
-    // Si no se encuentra la categoría, se responde con un 404
-    if (!categoria) {
-      return res.status(404).json({ error: 'Categoría no encontrada' });
+    const categorias = await categoriaService.listarCategoriasPorEmpresa(req.params.empresaId);
+    if (!categorias  || categorias .length === 0) {
+      return res.status(404).json({ message: 'No se encontraron lugares para esta empresa' });
     }
-
-    res.status(200).json(categoria);
+    res.status(200).json(categorias );
   } catch (error) {
-    if (error.name === 'CastError') {
-      return res.status(400).json({ error: 'ID de categoría inválido' });
+    next(error);
+  }
+};
+
+const editarCategoria = async (req, res, next) => {
+  try {
+    const categoriaActualizada = await categoriaService.editarCategoria(req.params.id, req.body);
+    if (!categoriaActualizada) {
+      return res.status(404).json({ message: 'Categoría no encontrada' });
     }
+    res.status(200).json(categoriaActualizada);
+  } catch (error) {
     next(error);
   }
 };
 
 const eliminarCategoria = async (req, res, next) => {
   try {
-    const categoria = await categoriaService.eliminarCategorias(req.params.id);
-
-    // Si no se encuentra la categoría, se responde con un 404
-    if (!categoria) {
-      return res.status(404).json({ error: 'Categoría no encontrada' });
+    const categoriaEliminada = await categoriaService.eliminarCategoria(req.params.id);
+    if (!categoriaEliminada) {
+      return res.status(404).json({ message: 'Categoría no encontrada' });
     }
-
-    res.status(200).json({ message: 'Categoría eliminada' });
+    res.status(200).json({ message: 'Categoría eliminada con éxito' });
   } catch (error) {
-    if (error.name === 'CastError') {
-      return res.status(400).json({ error: 'ID de categoría inválido' });
-    }
     next(error);
   }
 };
 
 module.exports = {
   crearCategoria,
-  listarCategorias,
+  obtenerCategorias,
   obtenerCategoriaPorId,
-  actualizarCategoria,
+  editarCategoria,
   eliminarCategoria,
+  obtenerCategoriasPorEmpresa
 };

@@ -18,6 +18,7 @@ export default function Page() {
     const items = [
       { name: "Inicio", icon: HomeIcon, url: "/dashboard" },
       { name: "Empresa", icon: HammerIcon, url: "/dashboard/mantenimiento/empresa" },
+      { name: "Lugar", icon: HammerIcon, url: "/dashboard/mantenimiento/lugar" },
 
     ];
   

@@ -21,11 +21,11 @@ export async function POST(req) {
         });
 
         const responseData = await response.json();
-        console.log(responseData);
 
         if (responseData.Estado) {
             // Guardar tokens en cookies solo si Estado es true
             cookieStore.set('AccessKey', responseData.AccessKey, { path: '/' });
+            cookieStore.set('User', responseData.Nombre, { path: '/' });
             return NextResponse.json(responseData);
         } else {
             // Manejo de errores específicos de la API

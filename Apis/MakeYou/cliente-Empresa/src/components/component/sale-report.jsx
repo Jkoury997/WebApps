@@ -23,35 +23,12 @@ import {
   calcularCajasTotalesWeb,
   calcularTotalesYPromedios,
   calcularTotalesYPromediosWeb,
+  Pesos,calcularVariacion,
+  calcularCajasTotalesVentasTotales,
+  calcularTotalesYPromediosVentasTotales
 } from "@/utils/salesUtils/salesUtils";
 
-const Pesos = (numero) => {
-  if (isNaN(numero)) {
-    return "N/A";
-  }
 
-  return numero.toLocaleString("es-AR", {
-    style: "currency",
-    currency: "ARS",
-    minimumFractionDigits: 2, // Para mostrar 2 decimales
-  });
-};
-
-// Arreglo de tiendas a excluir
-const tiendasExcluir = [
-  "MercadoLibre",
-  "Venta por Fabrica",
-  "On Line Web",
-  "Comercios",
-  "Total",
-];
-
-// Función para calcular la variación porcentual entre dos valores
-const calcularVariacion = (actual, previo) => {
-  if (previo === 0) return "N/A";
-  const variacion = ((actual - previo) / previo) * 100;
-  return variacion.toFixed(2);
-};
 
 export default function SaleReport({ dataFormasPagos, mergedData }) {
   // Calcular los totales de las cajas
@@ -59,6 +36,8 @@ export default function SaleReport({ dataFormasPagos, mergedData }) {
   
   // Calcula los totales y promedios
   const dataMergeTiendas = calcularTotalesYPromedios(mergedData);
+
+ 
   
 
   // Extraer el elemento total del dataMerge
@@ -214,12 +193,94 @@ export default function SaleReport({ dataFormasPagos, mergedData }) {
       },
     ];
 
+
+      // Calcular los totales de las cajas
+      const CajasTotalesVentasTotales = calcularCajasTotalesVentasTotales(dataFormasPagos);
+
+      // Calcula los totales y promedios
+      const dataMergeVentasTotales = calcularTotalesYPromediosVentasTotales(mergedData);
+  
+      // Extraer el elemento total del dataMerge
+      const totalItemVentasTotales = dataMergeVentasTotales.find((item) => item.Tienda === "Total");
+  
+      // Verificar que totalItemTiendas existe
+      if (!totalItemVentasTotales) {
+        console.error("No se encontró el elemento total en dataMerge");
+      }
+    
+     // Mostrar variaciones en las tarjetas
+     const dataVentaTotales = [
+      {
+        title: "Ventas Totales",
+        value: Pesos(totalItemVentasTotales.Bruto),
+        percentage: calcularVariacion(
+          totalItemVentasTotales.Bruto,
+          totalItemVentasTotales.previousData.Bruto
+        ),
+        icon: DollarSign,
+        id: "dashboard-01-chunk-0",
+      },
+      {
+        title: "Tickets",
+        value: totalItemVentasTotales.Tickets,
+        percentage: calcularVariacion(
+          totalItemVentasTotales.Tickets,
+          totalItemVentasTotales.previousData.Tickets
+        ),
+        icon: Users,
+        id: "dashboard-01-chunk-1",
+      },
+      {
+        title: "Unidades",
+        value: totalItemVentasTotales.Unidades,
+        percentage: calcularVariacion(
+          totalItemVentasTotales.Unidades,
+          totalItemVentasTotales.previousData.Unidades
+        ),
+        icon: BoxIcon,
+        id: "dashboard-01-chunk-2",
+      },
+      {
+        title: "Reseñas",
+        value: "En construcción",
+        percentage: "0",
+        icon: Activity,
+        id: "dashboard-01-chunk-3",
+      },
+    ];
+  
+    // Mostrar variaciones en la tabla
+    const tableDataVentaTotales = [
+      {
+        variable: "CAT",
+        monto: totalItemVentasTotales.CAT.toFixed(2), // Promedio con dos decimales
+        variacion: calcularVariacion(totalItemVentasTotales.CAT, totalItemVentasTotales.previousData.CAT),
+      },
+      {
+        variable: "PP",
+        monto: Pesos(totalItemVentasTotales.PP),
+        variacion: calcularVariacion(totalItemVentasTotales.PP, totalItemVentasTotales.previousData.PP),
+      },
+      {
+        variable: "TP",
+        monto: Pesos(totalItemVentasTotales.TP),
+        variacion: calcularVariacion(totalItemVentasTotales.TP, totalItemVentasTotales.previousData.TP),
+      },
+      {
+        variable: "CMV",
+        monto: Pesos(totalItemVentasTotales.CMV),
+        variacion: calcularVariacion(totalItemVentasTotales.CMV, totalItemVentasTotales.previousData.CMV),
+      },
+    ];
+
   return (
     <>
       <Tabs defaultValue="store" className="w-full text-center">
         <TabsList>
           <TabsTrigger value="store">Tiendas</TabsTrigger>
           <TabsTrigger value="web">Web</TabsTrigger>
+          <TabsTrigger value="totales">Totales</TabsTrigger>
+
         </TabsList>
          {/* TIENDAS */}
         <TabsContent value="store">
@@ -245,6 +306,21 @@ export default function SaleReport({ dataFormasPagos, mergedData }) {
             </div>
           </div>
         </TabsContent>
+         {/* Totales */}
+         <TabsContent value="totales">
+          <div className="space-y-5">
+            <CardResumen data={dataVentaTotales}></CardResumen>
+
+            {/* Tabla de transacciones */}
+            <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-2 mt-1">
+              <TableResumen data={tableDataVentaTotales} ></TableResumen>
+              {/* Segunda tarjeta */}
+              <CajasReport dataCaja={CajasTotalesVentasTotales} />
+            </div>
+          </div>
+        </TabsContent>
+        
+
       </Tabs>
     </>
   );

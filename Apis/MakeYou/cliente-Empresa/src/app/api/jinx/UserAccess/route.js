@@ -29,8 +29,7 @@ export async function POST(req) {
         if (responseData.Estado) {
             // Guardar tokens en cookies solo si Estado es true
             cookieStore.set('Token', responseData.Token, { path: '/' });
-            cookieStore.set('Empresa', responseData.Empresa, { path: '/' });
-            cookieStore.set('IdEmpresa', empresa, { path: '/' });
+
             console.log("AccessKey: ",AccessKey)
             console.log("Token: ",responseData.Token)
             return NextResponse.json(responseData);

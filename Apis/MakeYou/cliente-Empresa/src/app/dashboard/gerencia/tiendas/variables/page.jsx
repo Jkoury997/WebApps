@@ -201,9 +201,7 @@ export default function Page() {
   const handleValueChangeComparative = (value) => {
     setCompareOption(value);
   };
-  const handleValueChangeStore = (value) => {
-    setStoreOption(value);
-  };
+
 
   // Crear un mapa de los datos previos por Tienda
   const dataSalesPreviousMap = {};
@@ -260,17 +258,7 @@ export default function Page() {
                     onValueChange={handleValueChangeComparative}
                   />
                 </div>
-                <div className="flex flex-col md:flex-row w-full md:w-full items-center gap-4">
-                  {loading ? (
-                    <Skeleton className="w-[100px] h-[20px] rounded-full" />
-                  ) : (
-                    <Selecter
-                      title={"Tiendas"}
-                      dataOptions={dataTiendasOptions}
-                      onValueChange={handleValueChangeStore}
-                    />
-                  )}
-                </div>
+
                 {/* Botón Aplicar */}
                 <div className="flex justify-end w-full">
                   <Button onClick={handleApply} className="w-full md:w-auto">
