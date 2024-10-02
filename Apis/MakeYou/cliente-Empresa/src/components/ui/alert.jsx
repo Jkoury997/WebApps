@@ -32,7 +32,7 @@ export const Alert = ({ type, title, message }) => {
   }
 
   return (
-    <div className={`rounded-md p-4 ${bgColor}`}>
+    <div className={`rounded-md p-4 ${bgColor} mb-2`}>
       <div className="flex">
         <div className="flex-shrink-0">
           <IconComponent className={`h-5 w-5 ${iconColor}`} />

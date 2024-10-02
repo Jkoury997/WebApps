@@ -301,24 +301,34 @@ const handleImageChange = (e) => {
     <CardContent>
       <div className="mb-4">
         <Label>Imagen Antes</Label>
-        <Input type="file" onChange={handleImageChange} required />{" "}
+        <Input 
+          type="file" 
+          accept="image/*"  // Acepta solo imágenes
+          capture="environment" // Utiliza la cámara trasera del dispositivo
+          onChange={handleImageChange} 
+          required 
+        />
         {/* El campo de carga de imagen */}
       </div>
 
       {/* Mostrar la vista previa de la imagen seleccionada */}
-      {imagenPreview && (
-  <div className="mb-4 flex justify-center">
-    <img
-      src={imagenPreview}
-      alt="Vista previa"
-      className="w-full h-auto max-w-xs rounded-md"
-    />
-  </div>
-)}
+      {imagenPreview ? (
+        <div className="mb-4 flex justify-center">
+          <img
+            src={imagenPreview}
+            alt="Vista previa"
+            className="w-full h-auto max-w-xs rounded-md"
+          />
+        </div>
+      ) : (
+        <div className="text-center text-gray-500">
+          No se ha seleccionado ninguna imagen
+        </div>
+      )}
       <Button
         type="button"
         className="w-full mt-3"
-        disabled={!isFormComplete()}
+        disabled={!imagenAntes}  // Deshabilita el botón si no hay imagen
         onClick={handleSubmit}
       >
         Crear Tarea

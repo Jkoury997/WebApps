@@ -23,7 +23,7 @@ export async function POST(req) {
 
 
         // Enviar la solicitud de creación de empresa al backend
-        const response = await fetch(`${NEXT_PUBLIC_URL_API_MANITAS}/api/empresas/crear`, {
+        const response = await fetch(`${NEXT_PUBLIC_URL_API_MANITAS}/api/empresas/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

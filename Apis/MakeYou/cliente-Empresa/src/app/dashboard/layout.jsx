@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { BarChart3, DollarSign, Package, Users, Search, Bell, Menu, X, ChevronDown, Settings, ShoppingCart, FileText, EggFriedIcon,UserRound } from 'lucide-react';
+import { BarChart3, DollarSign, Package, Users, Search, Bell, Menu, X, ChevronDown, Settings, ShoppingCart, FileText, EggFriedIcon,UserRound, StoreIcon } from 'lucide-react';
 import { NavLinks } from "@/components/ui/navlinks";
 import { UserDropMenu } from '@/components/ui/user';
 
@@ -34,8 +34,8 @@ export default function Component({ children }) {
       <aside className={`bg-white dark:bg-gray-800 w-64 fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="flex h-full flex-col">
           <div className="flex h-14 items-center justify-between border-b px-4">
-            <Link className="flex items-center font-semibold" href="#">
-              <EggFriedIcon className="mr-2 h-6 w-6" />
+            <Link className="flex items-center font-semibold" href="/dashboard">
+              <StoreIcon className="mr-2 h-6 w-6" />
               <span>{title}</span>
             </Link>
             <Button variant="ghost" size="icon" onClick={toggleSidebar} className="lg:hidden">

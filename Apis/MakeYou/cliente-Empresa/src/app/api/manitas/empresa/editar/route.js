@@ -19,7 +19,7 @@ export async function PUT(req) {
         const { nombre, direccion, telefono, email} = body;
 
         // Enviar la solicitud de creación de empresa al backend
-        const response = await fetch(`${NEXT_PUBLIC_URL_API_MANITAS}/api/empresas/editar/${id}`, {
+        const response = await fetch(`${NEXT_PUBLIC_URL_API_MANITAS}/api/empresas/${id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'

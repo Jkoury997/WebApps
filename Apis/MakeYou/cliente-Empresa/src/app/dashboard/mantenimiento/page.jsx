@@ -11,14 +11,18 @@ import {
     SettingsIcon,
     PackageIcon,
     EggIcon,
-    HammerIcon
+    HammerIcon,
+    MapPinIcon,
+    FactoryIcon,
+    ListChecks
   } from "lucide-react";
 
 export default function Page() {
     const items = [
       { name: "Inicio", icon: HomeIcon, url: "/dashboard" },
-      { name: "Empresa", icon: HammerIcon, url: "/dashboard/mantenimiento/empresa" },
-      { name: "Lugar", icon: HammerIcon, url: "/dashboard/mantenimiento/lugar" },
+      { name: "Empresa", icon: FactoryIcon, url: "/dashboard/mantenimiento/empresa" },
+      { name: "Lugares", icon: MapPinIcon, url: "/dashboard/mantenimiento/lugar" },
+      { name: "Tareas", icon: ListChecks, url: "/dashboard/mantenimiento/tareas" },
 
     ];
   

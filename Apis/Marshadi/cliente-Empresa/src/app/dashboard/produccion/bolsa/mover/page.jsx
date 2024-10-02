@@ -35,7 +35,7 @@ export default function Page() {
         const parsedData = await JSON.parse(data);
 
         const response = await fetch(
-          `/api/zyra/catalogo/personal?id=${parsedData.Persona.CodPersona}`,
+          `/api/zyra/catalogo/personal?id=${parsedData.CodPersona}`,
           {
             method: "GET",
             headers: {

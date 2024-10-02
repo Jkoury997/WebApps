@@ -12,19 +12,15 @@ import {
     PackageIcon,
     EggIcon,
     HammerIcon,
-    LucideDrama,
-    BellElectric,
-    DraftingCompass,
-    FactoryIcon,
-
+    PackageOpenIcon
   } from "lucide-react";
 
 export default function Page() {
     const items = [
       { name: "Inicio", icon: HomeIcon, url: "/dashboard" },
-      { name: "Tejido", icon: DraftingCompass, url: "/dashboard/tejido" },
-      { name: "Produccion", icon: FactoryIcon, url: "/dashboard/produccion" },
+      { name: "Bolsa", icon: PackageOpenIcon, url: "/dashboard/produccion/bolsa" },
 
     ];
-      return <IconGrid items={items} />;
+  
+    return <IconGrid items={items} />;
   }

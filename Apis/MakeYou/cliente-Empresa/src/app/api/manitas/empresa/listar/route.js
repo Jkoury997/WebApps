@@ -10,7 +10,7 @@ export async function GET(req) {
     try {
         // Obtener el query parameter 'id' desde la UR
         // Enviar la solicitud al backend para obtener la empresa por su ID
-        const response = await fetch(`${NEXT_PUBLIC_URL_API_MANITAS}/api/empresas/listar`, {
+        const response = await fetch(`${NEXT_PUBLIC_URL_API_MANITAS}/api/empresas/`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

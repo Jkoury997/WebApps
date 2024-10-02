@@ -4,6 +4,7 @@ import { QRCodeCanvas } from 'qrcode.react';
 import { Button } from '@/components/ui/button';
 import { Printer } from 'lucide-react';
 
+
 const styles = {
   container: {
     display: 'flex',
@@ -15,6 +16,8 @@ const styles = {
   },
   header: {
     marginBottom: '20px',
+    marginLeft: "20px",
+    padding:"20px"
   },
   title: {
     fontSize: '24px',
@@ -31,6 +34,9 @@ const styles = {
     height: '200px',
     padding: '20px',
   },
+  text: {
+    fontSize: '20px',
+  }
 };
 
 // Componente para el contenido imprimible
@@ -39,8 +45,11 @@ const PrintableContent = forwardRef(({ qrData, qrImage }, ref) => (
     <div style={styles.container}>
       <div style={styles.details}>
         <div style={styles.header}>
-          <h1 style={styles.title}>Marshadi S.R.L.</h1>
+          <h1 style={styles.title}>Marshadi S.R.L. - N° {qrData?.IdBolsa || ''}</h1>
           <p>Fecha: {qrData?.Fecha || ''}</p>
+          <p>Articulo: {qrData?.Articulo || ''}</p>
+          <p style={styles.text}>Primera: {qrData?.Cantidad || ''}</p>
+          <p style={styles.text}>Segunda: {qrData?.Segunda || ''}</p>
         </div>
       </div>
       <div style={styles.qrContainer}>
