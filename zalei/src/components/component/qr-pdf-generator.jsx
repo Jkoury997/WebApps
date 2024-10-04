@@ -63,7 +63,7 @@ const PrintableContent = forwardRef(({ qrData, apiResponse, qrImage }, ref) => (
     <div style={styles.container}>
       <div style={styles.details}>
         <div style={styles.header}>
-          <h1 style={styles.title}>Zalei S.A.</h1>
+          <h1 style={styles.title}>Zalei S.A. - N° {qrData?.IdPaquete}</h1>
           <p style={styles.largeText}>Fecha: {qrData?.Fecha || ''}</p>
           <p style={styles.largeText}>Cantidad: {qrData?.Cantidad || ''}</p>
         </div>
@@ -81,7 +81,7 @@ const PrintableContent = forwardRef(({ qrData, apiResponse, qrImage }, ref) => (
     <div style={styles.footer}>
       <div style={styles.details}>
         <div style={styles.header}>
-          <h1 style={styles.title}>Zalei S.A.</h1>
+          <h1 style={styles.title}>Zalei S.A. - N° {qrData?.IdPaquete}</h1>
           <p style={styles.largeText}>Fecha: {qrData?.Fecha || ''}</p>
           <p style={styles.largeText}>Cantidad: {qrData?.Cantidad || ''}</p>
         </div>

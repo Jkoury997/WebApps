@@ -3,6 +3,7 @@ const connectDB = require('./database/db');
 const mainRoute = require('./routes/mainRoute');
 const morgan = require('morgan');
 const cors = require('cors');
+const path = require("path")
 const errorMiddleware = require("./middlewares/errorMiddleware")
 require('dotenv').config();
 
@@ -12,6 +13,10 @@ require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+
+// Configura la carpeta uploads como pública
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Middleware
 app.use(express.json());

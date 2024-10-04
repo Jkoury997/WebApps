@@ -48,8 +48,6 @@ const PrintableContent = forwardRef(({ qrData, qrImage }, ref) => (
           <h1 style={styles.title}>Marshadi S.R.L. - N° {qrData?.IdBolsa || ''}</h1>
           <p>Fecha: {qrData?.Fecha || ''}</p>
           <p>Articulo: {qrData?.Articulo || ''}</p>
-          <p style={styles.text}>Primera: {qrData?.Cantidad || ''}</p>
-          <p style={styles.text}>Segunda: {qrData?.Segunda || ''}</p>
         </div>
       </div>
       <div style={styles.qrContainer}>

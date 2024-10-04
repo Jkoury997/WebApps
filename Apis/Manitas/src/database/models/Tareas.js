@@ -10,10 +10,20 @@ const tareaSchema = new mongoose.Schema({
   empresa: { type: String, ref: 'Empresa', required: true }, // Referencia a la empresa por su UUID
   imagenAntes: { type: String, required: true },
   imagenDespues: { type: String },
+  fechaCreada: { type: Date, default: Date.now }, // Fecha de creación automática
   fechaCompletada: { type: Date },
+  fechaSupervisada: { type: Date },
   completada: { type: Boolean, default: false },
+  supervisada: { type: Boolean, default: false },
   creadoPor: { type: String, required: true },
+  supervisadaPor: { type: String, required: true },
   realizadoPor: { type: String },
+  supervisadoPor: { type: String },
+  urgencia: { 
+    type: String, 
+    enum: ['baja', 'media', 'alta'], // Definimos los posibles valores
+    required: true 
+  }
 });
 
 const Tarea = mongoose.model('Tarea', tareaSchema);

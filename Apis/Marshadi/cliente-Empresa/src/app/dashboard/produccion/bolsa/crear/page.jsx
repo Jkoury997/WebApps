@@ -301,10 +301,10 @@ export default function Page() {
             </CardHeader>
             <CardContent className="m-0">
               <div className="w-full text-left">
-                <Label>Primera</Label>
+                <Label>Primera - DOCENAS</Label>
               </div>
               <Input
-                placeholder="Introducir la cantidad de primera"
+                placeholder="Introducir la cantidad de primera en DOCENAS"
                 type="number"
                 value={primera}
                 onChange={handlePrimeraChange}
@@ -312,10 +312,10 @@ export default function Page() {
                 disabled={loading}
               />
               <div className="w-full text-left mt-2">
-                <Label>Segunda</Label>
+                <Label>Segunda - TUBOS</Label>
               </div>
               <Input
-                placeholder="Introducir la cantidad de segunda"
+                placeholder="Introducir la cantidad de segunda en TUBOS"
                 type="number"
                 value={segunda}
                 onChange={handleSegundaChange}
@@ -323,10 +323,10 @@ export default function Page() {
                 disabled={loading}
               />
               <div className="w-full text-left mt-2">
-                <Label>Descarte</Label>
+                <Label>Descarte - TUBOS</Label>
               </div>
               <Input
-                placeholder="Introducir la cantidad de descarte"
+                placeholder="Introducir la cantidad de descarte en TUBOS"
                 type="number"
                 value={descarte}
                 onChange={handleDescarteChange}
