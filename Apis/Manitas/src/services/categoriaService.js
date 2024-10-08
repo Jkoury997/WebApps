@@ -1,5 +1,5 @@
 // services/categoriaService.js
-const Categoria = require('../database/models/Categorias');
+const Categoria = require('../database/models/Categoria');
 
 // Crear una nueva categoría
 const crearCategoria = async (categoriaData) => {

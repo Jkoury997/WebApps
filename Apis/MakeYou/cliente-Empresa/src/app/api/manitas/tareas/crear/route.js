@@ -17,10 +17,11 @@ export async function POST(req) {
         const descripcion = formData.get('descripcion');
         const categoria = formData.get('categoria');
         const lugar = formData.get('lugar');
+        const urgencia = formData.get('urgencia'); // Aquí está la imagen
         const imagenAntes = formData.get('imagenAntes'); // Aquí está la imagen
 
         // Verifica que todos los campos necesarios existan
-        if (!titulo || !descripcion || !categoria || !lugar || !imagenAntes) {
+        if (!titulo || !descripcion || !categoria || !lugar || !urgencia ||!imagenAntes) {
             return NextResponse.json({ error: 'Todos los campos son obligatorios' }, { status: 400 });
         }
 
@@ -31,9 +32,10 @@ export async function POST(req) {
         formDataToSend.append('categoria', categoria);
         formDataToSend.append('lugar', lugar);
         formDataToSend.append('empresa', empresa);
+        formDataToSend.append('urgencia', urgencia);
         formDataToSend.append('creadoPor', user.value);
         formDataToSend.append('imagenAntes', imagenAntes); // Añadimos la imagen
-
+        console.log(formDataToSend)
         // Enviar la solicitud de creación de tarea al backend
         const response = await fetch(`${NEXT_PUBLIC_URL_API_MANITAS}/api/tareas`, {
             method: 'POST',

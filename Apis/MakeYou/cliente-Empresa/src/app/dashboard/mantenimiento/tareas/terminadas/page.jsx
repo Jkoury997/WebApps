@@ -7,9 +7,10 @@ import FiltersTareas from "@/components/component/manitas/tareas/filter-tareas";
 import ItemTarea from "@/components/component/manitas/tareas/item-tarea";
 import { useFetchDataManitas } from '@/hooks/fetchDataManitas';
 import { Alert } from "@/components/ui/alert";
+import ItemTareaSupevisar from "@/components/component/manitas/tareas/item-tarea-supervisar";
 
 export default function Page() {
-  const { tareas, categorias, lugares, refetchTareas } = useFetchDataManitas(false); // Obtener la función refetchTareas
+  const { tareas, categorias, lugares, refetchTareas } = useFetchDataManitas(true); // Obtener la función refetchTareas
   const [filtroUrgencia, setFiltroUrgencia] = useState("todas");
   const [filtroCategoria, setFiltroCategoria] = useState("todas");
   const [filtroLugar, setFiltroLugar] = useState("todos");
@@ -110,9 +111,10 @@ export default function Page() {
         </Button>
         <div className="mt-2">
           {tareas.map((tarea) => (
-          <ItemTarea key={tarea._id} tarea={tarea} handleComplete={handleCompleteTarea} />
+            <ItemTareaSupevisar key={tarea._id} tarea={tarea} handleComplete={handleCompleteTarea} />
         ))}
       </div>
+      
      
 
       </CardContent>

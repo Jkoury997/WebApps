@@ -16,9 +16,9 @@ const tareaSchema = new mongoose.Schema({
   completada: { type: Boolean, default: false },
   supervisada: { type: Boolean, default: false },
   creadoPor: { type: String, required: true },
-  supervisadaPor: { type: String, required: true },
   realizadoPor: { type: String },
   supervisadoPor: { type: String },
+  nota: { type: String },
   urgencia: { 
     type: String, 
     enum: ['baja', 'media', 'alta'], // Definimos los posibles valores

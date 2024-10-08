@@ -8,7 +8,8 @@ const router = express.Router();
 router.post('/', upload.single('imagenAntes'), tareaController.crearTarea);
 
 // Completar tarea con imagen "después"
-router.patch('/:id/completar', upload.single('imagenDespues'), tareaController.completarTarea);
+router.post('/completar/:id', upload.single('imagenDespues'), tareaController.completarTarea);
+
 
 // Obtener tarea por ID
 router.get('/:id', tareaController.obtenerTareaPorId);

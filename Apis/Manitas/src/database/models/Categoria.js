@@ -9,6 +9,6 @@ const categoriasSchema = new mongoose.Schema({
   empresa: { type: String, ref: 'Empresa', required: true } // Referencia a la empresa por su UUID
 });
 
-const Categorias = mongoose.model('Categorias', categoriasSchema);
+const Categoria = mongoose.model('Categoria', categoriasSchema);
 
-module.exports = Categorias;
+module.exports = Categoria;

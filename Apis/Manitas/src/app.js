@@ -5,6 +5,7 @@ const morgan = require('morgan');
 const cors = require('cors');
 const path = require("path")
 const errorMiddleware = require("./middlewares/errorMiddleware")
+const fs = require('fs'); // Importa el módulo fs
 require('dotenv').config();
 
 
@@ -14,6 +15,11 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Verifica si la carpeta uploads existe, si no, la crea
+const uploadsPath = path.join(__dirname, '../uploads');
+if (!fs.existsSync(uploadsPath)) {
+    fs.mkdirSync(uploadsPath, { recursive: true }); // Crea la carpeta y las subcarpetas si no existen
+}
 
 // Configura la carpeta uploads como pública
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));

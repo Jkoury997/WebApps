@@ -7,10 +7,11 @@ const storage = multer.diskStorage({
     cb(null, 'uploads/'); // Carpeta donde se guardarán las imágenes
   },
   filename: (req, file, cb) => {
-    // Obtener empresa de req.body o de req.user, dependiendo de tu lógica
-    const empresa = req.body.empresa || req.user.empresa;
+    // Obtener empresa de req.body si está disponible, de lo contrario usar un valor por defecto
+    console.log(req.body)
+    const empresa = req.body?.empresa || 'default_empresa'; // Aquí evitamos que el código falle
 
-    // Incluir el nombre de la empresa en el archivo
+    // Incluir el nombre de la empresa en el archivo, con un valor por defecto si no está presente
     cb(null, `${empresa}-${Date.now()}-${file.originalname}`);
   },
 });

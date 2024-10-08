@@ -29,6 +29,7 @@ export default function Page() {
   const [lugar, setLugar] = useState("");
   const [lugares, setLugares] = useState([]); // Inicialización como array vacío
   const [categorias, setCategorias] = useState([]); // Inicialización como array vacío
+  const [urgencia, setUrgencia] = useState([]); // Inicialización como array vacío
   const [imagenAntes, setImagenAntes] = useState(null); // Para manejar la imagen
   const [alertMessage, setAlertMessage] = useState(null);
   const [activeStep, setActiveStep] = useState(1); // Control del paso activo
@@ -85,7 +86,7 @@ const handleImageChange = (e) => {
   // Validar si el formulario de cada paso está completo
   const isFormComplete = () => {
     if (activeStep === 1 && lugar) return true; // Paso 1: Selección del lugar
-    if (activeStep === 2 && categoria) return true; // Paso 2: Categoría
+    if (activeStep === 2 && categoria && urgencia) return true; // Paso 2: Categoría
     if (activeStep === 3 && titulo && descripcion) return true; // Paso 3: Detalles
     if (activeStep === 4 && imagenAntes) return true; // Paso 4: Imagen
     return false;
@@ -108,6 +109,7 @@ const handleImageChange = (e) => {
     formData.append("titulo", titulo);
     formData.append("descripcion", descripcion);
     formData.append("categoria", categoria);
+    formData.append("urgencia",urgencia)
     formData.append("lugar", lugar);
     formData.append("imagenAntes", imagenAntes); // Añadir la imagen seleccionada
      // Depurar el contenido de FormData
@@ -131,8 +133,10 @@ const handleImageChange = (e) => {
         setTitulo("");
         setDescripcion("");
         setCategoria("");
+        setUrgencia("");
         setLugar("");
         setImagenAntes(null); // Reiniciar la imagen
+        setImagenPreview(null)
         setActiveStep(1); // Reiniciar el flujo de pasos
       } else {
         setAlertMessage({
@@ -220,8 +224,9 @@ const handleImageChange = (e) => {
             <CardDescription>Selecciona la categoria para la tarea</CardDescription>
           </CardHeader>
           <CardContent>
-            {/* Selector de categoria */}
-            <Select onValueChange={setCategoria}>
+          <div className="mb-4">
+          <Label>Categoria</Label>
+            <Select onValueChange={setCategoria} >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Selecciona una Categoria" />
               </SelectTrigger>
@@ -240,6 +245,25 @@ const handleImageChange = (e) => {
                 </SelectGroup>
               </SelectContent>
             </Select>
+            </div>
+            {/* Selector de categoria */}
+            <div className="mb-4">
+            <Label>Urgencia</Label>
+            <Select onValueChange={setUrgencia}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Selecciona Urgencia" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Categoria</SelectLabel>
+                    <SelectItem value="baja">Baja</SelectItem>
+                    <SelectItem value="media">Media</SelectItem>
+                    <SelectItem value="alta">Alta</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+            </div>
+
 
             <Button
               type="button"

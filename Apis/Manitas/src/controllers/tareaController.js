@@ -3,7 +3,7 @@ const tareaService = require('../services/tareaService');
 // Crear una nueva tarea con imagen "antes"
 const crearTarea = async (req, res, next) => {
   try {
-    const { titulo, descripcion, categoria, lugar, empresa, creadoPor } = req.body;
+    const { titulo, descripcion, categoria, lugar, empresa, creadoPor,urgencia } = req.body;
 
     const imagenAntes = req.file ? req.file.filename : null;
 
@@ -14,6 +14,7 @@ const crearTarea = async (req, res, next) => {
       lugar,
       empresa,
       creadoPor,
+      urgencia,
       imagenAntes,
     });
 
@@ -26,10 +27,16 @@ const crearTarea = async (req, res, next) => {
 // Completar una tarea con imagen "después"
 const completarTarea = async (req, res, next) => {
   try {
+    // Verificar si se subió una imagen
     const imagenDespues = req.file ? req.file.filename : null;
     const tareaId = req.params.id;
+    const nota = req.body.nota
+    const realizadoPor= req.body.realizadoPor
 
-    const tareaCompletada = await tareaService.completarTarea(tareaId, imagenDespues);
+
+    
+
+    const tareaCompletada = await tareaService.completarTarea(tareaId, imagenDespues,nota,realizadoPor);
 
     if (!tareaCompletada) {
       return res.status(404).json({ message: 'Tarea no encontrada' });
@@ -37,10 +44,10 @@ const completarTarea = async (req, res, next) => {
 
     res.status(200).json(tareaCompletada);
   } catch (error) {
+    // Captura cualquier error y envía una respuesta adecuada
     next(error);
   }
 };
-
 // Obtener una tarea por ID
 const obtenerTareaPorId = async (req, res, next) => {
   try {

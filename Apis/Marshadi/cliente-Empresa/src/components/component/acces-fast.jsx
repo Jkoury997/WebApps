@@ -13,7 +13,7 @@ function IconButton({ name, icon: Icon, url }) {
       <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-white p-2 transition-colors hover:bg-primary hover:text-primary-foreground cursor-pointer">
         <Icon className="h-6 w-6" />
       </div>
-      <span className="mt-2 text-sm text-muted-foreground">{name}</span>
+      <span className="mt-2 text-sm text-muted-foreground text-center">{name}</span>
     </div>
   );
 }
