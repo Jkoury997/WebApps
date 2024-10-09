@@ -24,7 +24,7 @@ export async function POST(req) {
 
         if (responseData.Estado) {
             // Guardar tokens en cookies solo si Estado es true
-            cookieStore.set('AccessKey', responseData.AccessKey, { path: '/' });
+            cookieStore.set('AccessKey', responseData.AccessKey, { path: '/',maxAge: 36000000});
             cookieStore.set('User', responseData.Nombre, { path: '/' });
             return NextResponse.json(responseData);
         } else {

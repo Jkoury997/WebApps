@@ -23,7 +23,10 @@ const tareaSchema = new mongoose.Schema({
     type: String, 
     enum: ['baja', 'media', 'alta'], // Definimos los posibles valores
     required: true 
-  }
+  },
+  supervisionAprobada: { type: Boolean}, // Indica si la supervisión fue aprobada o no
+  motivoRechazo: { type: String }, // Motivo del rechazo en caso de que no se apruebe
+  imagenSupervision: { type: String }, // Imagen adicional en caso de no ser aprobada
 });
 
 const Tarea = mongoose.model('Tarea', tareaSchema);

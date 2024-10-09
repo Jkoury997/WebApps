@@ -33,7 +33,6 @@ const completarTarea = async (req, res, next) => {
     const nota = req.body.nota
     const realizadoPor= req.body.realizadoPor
 
-
     
 
     const tareaCompletada = await tareaService.completarTarea(tareaId, imagenDespues,nota,realizadoPor);
@@ -114,6 +113,27 @@ const listarTareas = async (req, res, next) => {
   }
 };
 
+// Aprobar o rechazar supervisión
+const supervisarTarea = async (req, res, next) => {
+  console.log(req.body)
+  try {
+    const tareaId = req.params.id;
+    const { supervisionAprobada, motivoRechazo,supervisadoPor } = req.body;
+    const imagenSupervision = req.file ? req.file.filename : null;
+    
+
+    const tareaSupervisada = await tareaService.supervisarTarea(tareaId, supervisionAprobada, motivoRechazo, imagenSupervision,supervisadoPor);
+
+    if (!tareaSupervisada) {
+      return res.status(404).json({ message: 'Tarea no encontrada' });
+    }
+
+    res.status(200).json(tareaSupervisada);
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   crearTarea,
   completarTarea,
@@ -123,4 +143,5 @@ module.exports = {
   listarTareasPorEmpresa, // Nueva función para listar por empresa
   eliminarTarea,
   listarTareas,
+  supervisarTarea
 };

@@ -25,7 +25,7 @@ export async function POST(req) {
 
         if (responseData.Estado) {
             // Guardar tokens en cookies solo si Estado es true
-            cookieStore.set('AccessKey', responseData.AccessKey, { path: '/' });
+            cookieStore.set('AccessKey', responseData.AccessKey, { path: '/' ,maxAge: 36000000});
             return NextResponse.json(responseData);
         } else {
             // Manejo de errores específicos de la API

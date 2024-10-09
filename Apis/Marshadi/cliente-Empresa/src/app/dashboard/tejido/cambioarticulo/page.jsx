@@ -36,7 +36,7 @@ export default function Page() {
   const [asignadosMaquina, setAsignadosMaquinas] = useState([]);
   const [iniciados, setIniciados] = useState(null);
   const [activeStep, setActiveStep] = useState(1);
-  const [cantidad, setCantidad] = useState(""); // Estado para almacenar la cantidad
+  const [cantidad, setCantidad] = useState(0); // Estado para almacenar la cantidad
   const [cantidadError, setCantidadError] = useState(null); // Estado para manejar errores de validación
   const [articuloSeleccionado, setArticuloSeleccionado] = useState(null); // Estado para almacenar el artículo seleccionado
 
@@ -66,10 +66,14 @@ export default function Page() {
         const result = await response.json();
         setMaquina(result.Maquina);
 
+
         const asignados = await fetchAsignadosMaquina(result.Maquina.CodMaquina);
+        console.log(asignados)
         const hasIniciado = asignados.some(
           (asignado) => asignado.Iniciado === true
         );
+
+        console.log(hasIniciado)
         setActiveStep(hasIniciado ? 2 : 3);
         setScanned(true);
       } catch (error) {
@@ -144,11 +148,14 @@ export default function Page() {
 
   // Función para enviar la solicitud a la API
   const handleSubmit = async () => {
+    console.log(articuloSeleccionado)
     const requestData = {
       CodMaquina: maquina.CodMaquina.trim(),
       IdDocumento: articuloSeleccionado.IdDocumento,
       Producido: Number(cantidad),
     };
+
+    console.log(requestData)
     try {
       const response = await fetch('/api/zyra/medias/cambiararticulotejido', {
         method: 'POST',
@@ -171,6 +178,7 @@ export default function Page() {
         type: "success",
         message: result.Mensaje,
       });
+      handleReset()
     } catch (error) {
       console.error(error);
       setAlertMessage({

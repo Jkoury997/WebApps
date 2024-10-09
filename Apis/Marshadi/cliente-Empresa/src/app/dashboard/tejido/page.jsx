@@ -18,7 +18,7 @@ import {
 export default function Page() {
     const items = [
       { name: "Inicio", icon: HomeIcon, url: "/dashboard" },
-      { name: "Informa tejido", icon: PackageOpenIcon, url: "/dashboard/tejido/cambioarticulo" },
+      { name: "Informa tejido", icon: PackageOpenIcon, url: "/dashboard/tejido/informartejido" },
       { name: "Cambiar tejido", icon: PackageOpenIcon, url: "/dashboard/tejido/cambioarticulo" },
 
     ];

@@ -10,6 +10,9 @@ router.post('/', upload.single('imagenAntes'), tareaController.crearTarea);
 // Completar tarea con imagen "después"
 router.post('/completar/:id', upload.single('imagenDespues'), tareaController.completarTarea);
 
+// Supervisar una tarea (aprobar o rechazar)
+router.post('/supervisar/:id', upload.single('imagenSupervision'), tareaController.supervisarTarea);
+
 
 // Obtener tarea por ID
 router.get('/:id', tareaController.obtenerTareaPorId);

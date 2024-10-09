@@ -87,37 +87,51 @@ export default function ItemTareaSupervisar({ tarea, handleSupervision, handleCo
                   <DialogTitle>Supervisar Tarea</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmitSupervision}>
-                  <div className="grid gap-4 py-4">
-                    <Label>¿La tarea se realizó correctamente?</Label>
-                    <div className="flex space-x-2">
-                      <Button variant={realizadaCorrectamente === "si" ? "solid" : "outline"} onClick={() => setRealizadaCorrectamente("si")}>Sí</Button>
-                      <Button variant={realizadaCorrectamente === "no" ? "solid" : "outline"} onClick={() => setRealizadaCorrectamente("no")}>No</Button>
-                    </div>
+    <div className="grid gap-4 py-4">
+      {realizadaCorrectamente === null && (
+        <div className="text-center">
+          <Label>¿La tarea se realizó correctamente?</Label>
+          <div className="flex space-x-2 justify-center mt-1">
+            <Button variant={realizadaCorrectamente === "si" ? "solid" : "outline"} onClick={() => setRealizadaCorrectamente("si")}>Sí</Button>
+            <Button variant={realizadaCorrectamente === "no" ? "solid" : "outline"} onClick={() => setRealizadaCorrectamente("no")}>No</Button>
+          </div>
+        </div>
+      )}
 
-                    {realizadaCorrectamente === "no" && (
-                      <>
-                        <div className="grid gap-2">
-                          <Label htmlFor="image">Subir imagen de la tarea supervisada:</Label>
-                          <Input id="image" type="file" accept="image/*" onChange={(e) => handleImageChange(e.target.files[0])} required />
-                        </div>
-                        <div className="grid gap-2">
-                          <Label htmlFor="comentario">Comentario de supervisión:</Label>
-                          <Textarea
-                            id="comentario"
-                            value={comentario}
-                            onChange={(e) => setComentario(e.target.value)}
-                            placeholder="Escribe un comentario sobre la supervisión..."
-                            rows={4}
-                            required
-                          />
-                        </div>
-                      </>
-                    )}
-                  </div>
-                  <Button type="submit" className="w-full">
-                    Confirmar Supervisión
-                  </Button>
-                </form>
+      {realizadaCorrectamente === "no" && (
+        <>
+          <div className="grid gap-2">
+            <Label htmlFor="image">Subir imagen de la tarea supervisada:</Label>
+            <Input
+              id="image"
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleImageChange(e.target.files[0])}
+              required
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="comentario">Comentario de supervisión:</Label>
+            <Textarea
+              id="comentario"
+              value={comentario}
+              onChange={(e) => setComentario(e.target.value)}
+              placeholder="Escribe un comentario sobre la supervisión..."
+              rows={4}
+              required
+            />
+          </div>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={!imagen || !comentario} // Deshabilita el botón si no hay imagen o comentario
+          >
+            Confirmar Supervisión
+          </Button>
+        </>
+      )}
+    </div>
+  </form>
               </DialogContent>
             </Dialog>
           </div>

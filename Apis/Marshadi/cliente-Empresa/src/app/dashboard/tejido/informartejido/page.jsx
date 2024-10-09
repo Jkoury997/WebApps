@@ -138,7 +138,7 @@ export default function Page() {
                   />
                 )}
 
-                <QrScannerComponent onScanSuccess={handleScan} />
+                <QrScannerComponent title={"Qr Maquina"} description={"Escanear el qr de la maquina"} onScanSuccess={handleScan} />
 
                 {/* Renderizar detalles de la máquina si el escaneo y fetch son exitosos */}
                 {scanned && maquina && 

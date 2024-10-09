@@ -80,9 +80,9 @@ export default function QrScannerComponent({
     <div className="flex flex-col items-center mb-2">
       <div className="max-w-md w-full px-4 sm:px-6">
         <div className="space-y-4">
-          <div className="text-center">
-            <h1 className="text-xl font-bold tracking-tight">{title}</h1>
-            <p className="mt-2 text-muted-foreground">{description}</p>
+          <div className="">
+            <h1 className="text-xl font-bold  mt-2">{title}</h1>
+            <p className="mt-2 text-muted-foreground ">{description}</p>
           </div>
           {!scannerStarted && (
             <Button size="lg" className="w-full" onClick={() => setScanning(true)}>

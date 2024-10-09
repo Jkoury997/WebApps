@@ -55,7 +55,7 @@ export function PlanDetails({ dataPlan,cantidad }) {
                   </div>
                 )}
 
-{dataPlan.NumeroPlan && cantidad && <Separator />}
+{dataPlan.DescArticulo && cantidad && <Separator />}
                 {cantidad && (
                   <div className="flex items-center justify-between">
                   <span className="text-sm font-medium flex items-center gap-2">

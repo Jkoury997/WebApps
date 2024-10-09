@@ -28,7 +28,7 @@ export async function POST(req) {
 
         if (responseData.Estado) {
             // Guardar tokens en cookies solo si Estado es true
-            cookieStore.set('Token', responseData.Token, { path: '/' });
+            cookieStore.set('Token', responseData.Token, { path: '/',maxAge: 36000000 });
 
             console.log("AccessKey: ",AccessKey)
             console.log("Token: ",responseData.Token)
