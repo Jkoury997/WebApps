@@ -63,7 +63,8 @@ export default function Page() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {categorias.map((categoria) => (
+        {categorias.length > 0 ? (
+          categorias.map((categoria) => (
             <TableRow key={categoria._id}>
             <TableCell className="hidden">{categoria._id}</TableCell>
               <TableCell>{categoria.titulo}</TableCell>
@@ -76,7 +77,14 @@ export default function Page() {
                 </Link>
               </TableCell>
             </TableRow>
-          ))}
+          ))
+        ) : (
+          <TableRow>
+          <TableCell colSpan={5} className="text-center py-4">
+            No hay categorias creadas
+          </TableCell>
+        </TableRow>
+        )}
         </TableBody>
       </Table>
     </div>

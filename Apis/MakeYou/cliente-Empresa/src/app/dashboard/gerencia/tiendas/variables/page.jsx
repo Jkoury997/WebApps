@@ -280,6 +280,7 @@ export default function Page() {
         <SaleReport
           dataFormasPagos={saleDataFormasPagos}
           mergedData={mergedData}
+          tiendasOptions={dataTiendasOptions}
         />
       ) : (
         <div>No hay datos para mostrar. Por favor, aplica un filtro.</div>

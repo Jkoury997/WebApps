@@ -15,18 +15,16 @@ export default function Page() {
     // Simulación de fetch de datos desde una API
     const fetchLugares = async () => {
       setLoading(true);
-      try{
+      try {
         const response = await fetch("/api/manitas/lugar/listar"); // Reemplaza con tu endpoint real
         const data = await response.json();
-        console.log(data)
+        console.log(data);
         setLugares(data);
-        
-      }catch {
-        console.log("Error")
-      }finally{
+      } catch {
+        console.log("Error");
+      } finally {
         setLoading(false);
       }
-      
     };
 
     fetchLugares();
@@ -47,9 +45,7 @@ export default function Page() {
       {/* Botón para CREAR NUEVO LUGAR */}
       <div className="flex justify-end mb-4">
         <Link href="/dashboard/mantenimiento/lugar/crear">
-        <Button variant="default" >
-          Crear Lugar
-        </Button>
+          <Button variant="default">Crear Lugar</Button>
         </Link>
       </div>
 
@@ -57,31 +53,37 @@ export default function Page() {
       <Table className="bg-white">
         <TableHeader>
           <TableRow>
-          <TableCell className="hidden">Id</TableCell>
+            <TableCell className="hidden">Id</TableCell>
             <TableCell>Nombre</TableCell>
             <TableCell>Dirección</TableCell>
-
             <TableCell>Teléfono</TableCell>
             <TableCell>Acciones</TableCell>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {lugares.map((lugar) => (
-            <TableRow key={lugar._id}>
-            <TableCell className="hidden">{lugar._id}</TableCell>
-              <TableCell>{lugar.nombre}</TableCell>
-              <TableCell>{lugar.direccion}</TableCell>
-
-              <TableCell>{lugar.telefono}</TableCell>
-              <TableCell>
-                <Link href={`/dashboard/mantenimiento/lugar/${lugar._id}`}>
-                <Button variant="outline" >
-                  <EditIcon className="h-4 w-4" />
-                </Button>
-                </Link>
+          {lugares.length > 0 ? (
+            lugares.map((lugar) => (
+              <TableRow key={lugar._id}>
+                <TableCell className="hidden">{lugar._id}</TableCell>
+                <TableCell>{lugar.nombre}</TableCell>
+                <TableCell>{lugar.direccion}</TableCell>
+                <TableCell>{lugar.telefono}</TableCell>
+                <TableCell>
+                  <Link href={`/dashboard/mantenimiento/lugar/${lugar._id}`}>
+                    <Button variant="outline">
+                      <EditIcon className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                </TableCell>
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={5} className="text-center py-4">
+                No hay lugares creados
               </TableCell>
             </TableRow>
-          ))}
+          )}
         </TableBody>
       </Table>
     </div>

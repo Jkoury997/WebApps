@@ -23,7 +23,7 @@ export default function Page() {
       { name: "Empresa", icon: FactoryIcon, url: "/dashboard/mantenimiento/empresa" },
       { name: "Lugares", icon: MapPinIcon, url: "/dashboard/mantenimiento/lugar" },
       { name: "Tareas", icon: ListChecks, url: "/dashboard/mantenimiento/tareas" },
-
+      { name: "Categorias", icon: ListChecks, url: "/dashboard/mantenimiento/categorias" },
     ];
   
     return <IconGrid items={items} />;

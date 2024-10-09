@@ -4,7 +4,6 @@ import { ArrowUpDown } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import FiltersTareas from "@/components/component/manitas/tareas/filter-tareas";
-import ItemTarea from "@/components/component/manitas/tareas/item-tarea";
 import { useFetchDataManitas } from '@/hooks/fetchDataManitas';
 import { Alert } from "@/components/ui/alert";
 import ItemTareaSupevisar from "@/components/component/manitas/tareas/item-tarea-supervisar";
@@ -154,12 +153,18 @@ export default function Page() {
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
         <div className="mt-2">
-          {tareas
-          .filter((tarea) => tarea.supervisada === false)
-          .map((tarea) => (
-            <ItemTareaSupevisar key={tarea._id} tarea={tarea} handleComplete={handleCompleteTarea} handleSupervision={handleSupervisionTarea} />
-        ))}
-      </div>
+  {tareas
+    .filter((tarea) => tarea.supervisionAprobada === false) // Filtrar tareas con supervisionAprobada en false
+    .map((tarea) => (
+      <ItemTareaSupevisar 
+        key={tarea._id} 
+        tarea={tarea} 
+        handleComplete={handleCompleteTarea} 
+        handleSupervision={handleSupervisionTarea} 
+      />
+  ))}
+</div>
+
       
      
 
