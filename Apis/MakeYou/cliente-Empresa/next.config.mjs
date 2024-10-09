@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     images: {
-      domains: ['localhost'], // Solo el dominio, sin 'http://' ni el puerto
+      domains: ['https://manitas.mkapp.com.ar'], // Solo el dominio, sin 'http://' ni el puerto
     },
   };
   
