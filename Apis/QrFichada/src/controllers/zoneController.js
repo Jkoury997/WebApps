@@ -17,11 +17,18 @@ const getZonesByEmpresa = async (req, res) => {
     try {
         const { empresaId } = req.params;
         const zones = await zoneService.getZonesByEmpresa(empresaId);
+
+        // Si no hay zonas, devolvemos un array vacío y un mensaje informativo
+        if (zones.length === 0) {
+            return res.status(200).json({ message: 'No se encontraron zonas para esta empresa.', zones: [] });
+        }
+
         res.status(200).json(zones);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
+
 
 // Controlador para vincular una zona con un trustdevice
 const linkZoneWithTrustDevice = async (req, res) => {

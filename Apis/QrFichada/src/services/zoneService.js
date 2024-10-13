@@ -19,9 +19,6 @@ const createZone = async (zoneData) => {
 const getZonesByEmpresa = async (empresaId) => {
     const zones = await Zone.find({ empresaId });
 
-    if (zones.length === 0) {
-        throw new Error('No se encontraron zonas para esta empresa.');
-    }
 
     return zones;
 };
