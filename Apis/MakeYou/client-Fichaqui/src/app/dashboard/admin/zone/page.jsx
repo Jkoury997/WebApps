@@ -1,12 +1,9 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from 'next/navigation';
 import { QrCodeIcon, TrashIcon, EditIcon } from "lucide-react";
 import * as Dialog from '@radix-ui/react-dialog';
 import QRCode from 'react-qr-code';
-
 
 export default function Page() {
   const [zones, setZones] = useState([]);
@@ -16,18 +13,22 @@ export default function Page() {
   const [currentQR, setCurrentQR] = useState('');
   const router = useRouter();
 
-
   useEffect(() => {
-
     fetchZones();
   }, []);
 
   const fetchZones = async () => {
-      
     try {
       const response = await fetch('/api/qrfichaqui/zones/list');
+      if (!response.ok) {
+        throw new Error('Error fetching zones');
+      }
       const data = await response.json();
-      setZones(data);
+      if (Array.isArray(data)) {
+        setZones(data);
+      } else {
+        setZones([]); // Si el formato de la respuesta no es correcto, lo tratamos como un array vacío.
+      }
     } catch (error) {
       setError('Error fetching zones');
       console.error('Error fetching zones:', error);
@@ -42,7 +43,7 @@ export default function Page() {
       const response = await fetch(`/api/qrfichaqui/zones/delete?id=${id}`, {
         method: 'DELETE',
       });
-  
+
       if (response.ok) {
         fetchZones();  // Recargar la lista de zonas después de eliminar
       } else {
@@ -55,19 +56,17 @@ export default function Page() {
       setLoading(false);  // Ocultar cargando
     }
   };
+
   const handleEdit = (id) => {
     // Implement edit functionality
   };
 
   const handleQR = (id) => {
-    console.log(id)
-  
     setCurrentQR(id);
     setOpen(true);
   };
 
   const handleAdd = () => {
-    // Implement add functionality
     router.push('/dashboard/admin/zone/create');
   };
 
@@ -81,58 +80,64 @@ export default function Page() {
           <h2 className="text-2xl font-bold tracking-tight">Zonas</h2>
           <Button onClick={handleAdd}>Agregar Zona</Button>
         </div>
-        <div className="grid gap-4">
-          {zones.map((zone) => (
-            <div
-              key={zone._id}
-              className="bg-white rounded-lg shadow-sm p-4 flex items-center justify-between dark:bg-gray-800"
-            >
-              <div className="grid gap-1">
-                <h3 className="text-lg font-semibold">{zone.nombre}</h3>
-                <p className="text-gray-500 dark:text-gray-400">{zone.description}</p>
+        
+        {/* Mostrar mensaje si no hay zonas */}
+        {zones.length === 0 ? (
+          <p>No hay zonas disponibles.</p>
+        ) : (
+          <div className="grid gap-4">
+            {zones.map((zone) => (
+              <div
+                key={zone._id}
+                className="bg-white rounded-lg shadow-sm p-4 flex items-center justify-between dark:bg-gray-800"
+              >
+                <div className="grid gap-1">
+                  <h3 className="text-lg font-semibold">{zone.nombre}</h3>
+                  <p className="text-gray-500 dark:text-gray-400">{zone.description}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button size="sm" variant="outline" onClick={() => handleQR(zone._id)} className="md:hidden">
+                    <QrCodeIcon className="w-4 h-4" />
+                    <span className="sr-only">Ver QR</span>
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => handleEdit(zone._id)} className="md:hidden" disabled>
+                    <EditIcon className="w-4 h-4" />
+                    <span className="sr-only">Editar</span>
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => handleDelete(zone._id)} className="md:hidden">
+                    <TrashIcon className="w-4 h-4" />
+                    <span className="sr-only">Eliminar</span>
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleQR(zone._id)}
+                    className="hidden md:inline-flex"
+                  >
+                    Ver QR
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleEdit(zone._id)}
+                    className="hidden md:inline-flex"
+                    disabled
+                  >
+                    Editar
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleDelete(zone._id)}
+                    className="hidden md:inline-flex"
+                  >
+                    Eliminar
+                  </Button>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Button size="sm" variant="outline" onClick={() => handleQR(zone._id)} className="md:hidden">
-                  <QrCodeIcon className="w-4 h-4" />
-                  <span className="sr-only">Ver QR</span>
-                </Button>
-                <Button size="sm" variant="outline"  onClick={() => handleEdit(zone._id)} className="md:hidden" disabled>
-                  <EditIcon className="w-4 h-4" />
-                  <span className="sr-only">Editar</span>
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => handleDelete(zone._id)} className="md:hidden">
-                  <TrashIcon className="w-4 h-4" />
-                  <span className="sr-only">Eliminar</span>
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleQR(zone._id)}
-                  className="hidden md:inline-flex"
-                >
-                  Ver QR
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleEdit(zone._id)}
-                  className="hidden md:inline-flex"
-                  disabled
-                >
-                  Editar
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleDelete(zone._id)}
-                  className="hidden md:inline-flex"
-                >
-                  Eliminar
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
       <Dialog.Root open={open} onOpenChange={setOpen}>
         <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
