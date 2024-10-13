@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from 'next/navigation';
@@ -27,8 +27,14 @@ export default function Page() {
       const data = await response.json();
       if (Array.isArray(data)) {
         setZones(data);
+        if (data.length === 0) {
+          // Redirigir a la página de crear zona si no hay zonas
+          router.push('/dashboard/admin/zone/create');
+        }
       } else {
-        setZones([]); // Si el formato de la respuesta no es correcto, lo tratamos como un array vacío.
+        setZones([]);
+        // Redirigir a la página de crear zona si no hay zonas
+        router.push('/dashboard/admin/zone/create');
       }
     } catch (error) {
       setError('Error fetching zones');
@@ -59,7 +65,7 @@ export default function Page() {
   };
 
   const handleEdit = (id) => {
-    // Implement edit functionality
+    // Implementar funcionalidad de edición
   };
 
   const handleQR = (id) => {
@@ -81,10 +87,10 @@ export default function Page() {
           <h2 className="text-2xl font-bold tracking-tight">Zonas</h2>
           <Button onClick={handleAdd}>Agregar Zona</Button>
         </div>
-        
+
         {/* Mostrar mensaje si no hay zonas */}
         {zones.length === 0 ? (
-          <p>No hay zonas disponibles.</p>
+          <p>No hay zonas disponibles.</p> // Este mensaje no será visible si se redirige.
         ) : (
           <div className="grid gap-4">
             {zones.map((zone) => (
