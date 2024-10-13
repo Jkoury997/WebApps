@@ -1,4 +1,4 @@
-const QrCode = require('../database/models/QrCode');
+const QrCode = require('../database/models/QRCode');
 
 // Servicio para generar y guardar un nuevo QR con UUID generado en el modelo
 const generateUUID = async (userId) => {
