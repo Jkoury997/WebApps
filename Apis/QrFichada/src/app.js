@@ -60,8 +60,8 @@ connectDB().then(() => {
 
 
 app.get('/send-notification', (req, res) => {
-    const { userId, message } = req.query;
+    const { userId, message,type } = req.query;
     const io = app.get('socketio');
-    sendNotification(userId, { message }, io);
+    sendNotification(userId, { message,type }, io);
     res.send('Notification sent');
 });
