@@ -62,7 +62,7 @@ const linksByRole = {
 
 };
 
-export function NavLinks({ userRole }) {
+export function NavLinks() {
   const pathname = usePathname();
   const [openMenus, setOpenMenus] = useState({});
 
@@ -73,29 +73,23 @@ export function NavLinks({ userRole }) {
     }));
   };
 
-  // Obtener enlaces según el rol del usuario
-  let links = linksByRole[userRole] || [];
+  // Combinar todos los enlaces de todos los roles
+  const allLinks = Object.values(linksByRole).flat();
+  const uniqueLinks = [];
 
-  // Si el usuario es admin, combinar todos los enlaces sin duplicados
-  if (userRole === 'admin') {
-    const allLinks = Object.values(linksByRole).flat();
-    const uniqueLinks = [];
-
-    allLinks.forEach(link => {
-      const existingLink = uniqueLinks.find(l => l.name === link.name);
-      if (existingLink) {
-        existingLink.subLinks = [...new Set([...(existingLink.subLinks || []), ...(link.subLinks || [])])];
-      } else {
-        uniqueLinks.push(link);
-      }
-    });
-
-    links = uniqueLinks;
-  }
+  // Evitar duplicados
+  allLinks.forEach(link => {
+    const existingLink = uniqueLinks.find(l => l.name === link.name);
+    if (existingLink) {
+      existingLink.subLinks = [...new Set([...(existingLink.subLinks || []), ...(link.subLinks || [])])];
+    } else {
+      uniqueLinks.push(link);
+    }
+  });
 
   return (
     <>
-      {links.map((link, index) => {
+      {uniqueLinks.map((link, index) => {
         const LinkIcon = link.icon;
         const isActive = pathname === link.href || link.subLinks?.some(subLink => pathname === subLink.href);
         return (

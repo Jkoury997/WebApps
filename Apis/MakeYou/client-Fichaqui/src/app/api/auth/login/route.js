@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
 const URL_API_AUTH = process.env.NEXT_PUBLIC_URL_API_AUTH;
+const NEXT_PUBLIC_EMPRESA_ID = process.env.NEXT_PUBLIC_EMPRESA_ID
 
 export async function POST(req) {
     try {
@@ -17,7 +18,7 @@ export async function POST(req) {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ email, password})
+            body: JSON.stringify({ email, password,empresa:NEXT_PUBLIC_EMPRESA_ID})
         });
 
         const responseData = await response.json();
@@ -26,12 +27,11 @@ export async function POST(req) {
             // Guardar tokens en cookies
             cookieStore.set('accessToken', responseData.accessToken, { path: '/' });
             cookieStore.set('refreshToken', responseData.refreshToken, { path: '/' });
-            cookieStore.set('useruuid', responseData.user.uuid, { path: '/' });
+            cookieStore.set('userId', responseData.user._id, { path: '/' });
 
             return NextResponse.json(responseData);
         } else {
-            console.log(responseData.error)
-            return NextResponse.json({ error: responseData.error }, { status: response.status });
+            return NextResponse.json({ error: responseData.message }, { status: response.status });
         }
     } catch (error) {
 

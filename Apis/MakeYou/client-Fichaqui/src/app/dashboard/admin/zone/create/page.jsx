@@ -3,26 +3,22 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { CardContent, CardFooter, Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 export default function Page() {
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
+  const [nombre, setNombre] = useState('');
   const [message, setMessage] = useState('');
   const router = useRouter();
 
-  const NEXT_PUBLIC_URL_API_PRESENTISMO = process.env.NEXT_PUBLIC_URL_API_PRESENTISMO
-
   const handleCreateZone = async () => {
     try {
-      const response = await fetch(`/api/presentismo/zones/create`, {
+      const response = await fetch(`/api/qrfichaqui/zones/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, description }),
+        body: JSON.stringify({nombre}),
       });
 
       const data = await response.json();
@@ -52,22 +48,12 @@ export default function Page() {
           <Card>
             <CardContent className="space-y-6 pt-3">
               <div className="space-y-2">
-                <Label htmlFor="name">Nombre de la Zona</Label>
+                <Label htmlFor="nombre">Nombre de la Zona</Label>
                 <Input
-                  id="name"
+                  id="nombre"
                   placeholder="Ingresa el nombre de la zona"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="description">Descripción</Label>
-                <Textarea
-                  className="min-h-[150px]"
-                  id="description"
-                  placeholder="Ingresa una breve descripción de la zona"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                  value={nombre}
+                  onChange={(e) => setNombre(e.target.value)}
                 />
               </div>
             </CardContent>

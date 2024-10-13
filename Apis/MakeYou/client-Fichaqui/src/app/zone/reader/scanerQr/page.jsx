@@ -3,15 +3,15 @@ import { useState, useEffect, useRef } from "react";
 import CardEmployed from "@/components/component/card-employed";
 import { useRouter } from "next/navigation";
 import QRScanner from "@/components/component/QRScanner";
+import { Alert } from "@/components/component/alert";
 
-const NEXT_PUBLIC_URL_API_AUTH = process.env.NEXT_PUBLIC_URL_API_AUTH;
-const NEXT_PUBLIC_URL_API_PRESENTISMO = process.env.NEXT_PUBLIC_URL_API_PRESENTISMO;
 
 export default function Page() {
-  const [employeeDetails, setEmployeeDetails] = useState(null);
+  const [zoneId, setZoneId] = useState(null);
+  const [fichada, setFichada] = useState(null);
   const [employee, setEmployee] = useState(null);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState(null);
+  const [alertMessage, setAlertMessage] = useState(null);
+  const [error,setError] = useState(null)
   const [lastScannedCode, setLastScannedCode] = useState(null);
   const [scanning, setScanning] = useState(false); // Estado para controlar el escaneo
   const router = useRouter();
@@ -22,42 +22,41 @@ export default function Page() {
   useEffect(() => {
     successSound.current = new Audio('/sounds/success.mp3'); // Cargar el sonido de éxito
 
-    const checkZoneUUID = async () => {
-      const zoneUUID = localStorage.getItem('zoneUUID');
-      const readingMode = localStorage.getItem('readingMode');
-      if (!zoneUUID) {
+    const checkTrustDevice = async () => {
+      const trustdevice = localStorage.getItem('trustdevice');
+      if (!trustdevice) {
         router.push('/zone/configure');
-        return;
-      }
-
-      if (!readingMode) {
-        router.push('/zone/reader');
-        return;
-      }
-
-      if (readingMode !== "camera") {
-        router.push('/zone/reader/lectorQr');
         return;
       }
 
       try {
-        const response = await fetch(`/api/presentismo/zones/find?uuid=${zoneUUID}`);
+        const response = await fetch(`/api/qrfichaqui/zones/find?trustdevice=${trustdevice}`);
         if (!response.ok) {
           throw new Error('Zona no encontrada');
         }
         const data = await response.json();
+
         if (data.error) {
           throw new Error(data.error);
         }
+        setZoneId(data._id);
       } catch (error) {
         console.error('Error al obtener la zona:', error);
-        localStorage.removeItem('zoneUUID');
-        sessionStorage.removeItem('zoneUUID');
+        localStorage.removeItem('trustdevice');
         router.push('/zone/configure');
       }
     };
 
-    checkZoneUUID();
+    const checkModo = async () => {
+      const readingMode = localStorage.getItem('readingMode');
+      if (!readingMode) {
+        router.push('/zone/configure');
+        return;
+      }
+    };
+
+    checkTrustDevice();
+    checkModo();
   }, [router]);
 
   useEffect(() => {
@@ -67,66 +66,85 @@ export default function Page() {
     };
   }, []);
 
-  async function registerAttendance(code, location) {
+  async function registerAttendance(uuid) {
+    setAlertMessage(""); // Limpiar mensaje antes de registrar nueva asistencia
     try {
-      const response = await fetch('/api/presentismo/attendance/register', {
+      const response = await fetch('/api/qrfichaqui/attendance/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ code, location }),
+        body: JSON.stringify({ uuid, zoneId }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.log(errorData.message)
-        throw new Error(errorData.error || 'Error al fichar');
-      }
+      const data = await response.json();
 
-      return await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Error al registrar asistencia');
+      }
+      setFichada(data)
+      return data;
     } catch (error) {
-      setError(error.message);  // Captura el error aquí
+      console.log(error)
+      setAlertMessage({
+        type: "error",
+        message: error.message,
+      }); // Actualiza el estado del error
       throw error;
     }
   }
-
-  async function fetchEmployeeDetails(useruuid) {
-    const response = await fetch(`/api/auth/user?useruuid=${useruuid}`);
-
-    if (!response.ok) {
-      throw new Error('Error al obtener los detalles del empleado');
+  async function fetchEmployeeDetails(userId) {
+    try {
+      const response = await fetch(`/api/auth/info/user?userId=${userId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+  
+      // Verificar si la respuesta es exitosa
+      if (!response.ok) {
+        const errorData = await response.json(); // Obtener los detalles del error del servidor
+        throw new Error(errorData.message || 'Error al obtener los detalles del empleado');
+      }
+      const data = await response.json();
+      setEmployee(data)
+      // Devolver los datos si la respuesta es exitosa
+      return data
+    } catch (error) {
+      // Capturar y lanzar el error con un mensaje más claro
+      console.error('Error al obtener los detalles del empleado:', error);
+      throw new Error(error.message || 'Error al obtener los detalles del empleado');
     }
-
-    return await response.json();
   }
+  
 
- const handleScan = async (data) => {
+  const handleScan = async (data) => {
+    setError(null); // Limpiar cualquier error anterior
     if (data && data.text !== lastScannedCode && !scanning) {
       setScanning(true);
       const scannedCode = data.text;
       try {
-        const location = localStorage.getItem('zoneUUID');
-        if (!location) {
-          setMessage('Zona no configurada. Por favor configure la zona primero.');
-          setScanning(false);
-          return;
+        const attendanceResponse = await registerAttendance(scannedCode);
+
+        if(attendanceResponse){
+          console.log(attendanceResponse)
+          await fetchEmployeeDetails(attendanceResponse.userId)
         }
-
-        const attendanceResponse = await registerAttendance(scannedCode, location);
-
-        const employeeDetails = await fetchEmployeeDetails(attendanceResponse.useruuid);
-
-
-        setEmployeeDetails(attendanceResponse);
-        setEmployee(employeeDetails);
-        setMessage(` ${employeeDetails.firstName} ${employeeDetails.lastName} fichada correcta`);
-
+        
         successSound.current.play();
-
         setLastScannedCode(scannedCode);
+        setAlertMessage({
+          type: "success",
+          message: "Fichada exitosa.",
+        });
+
       } catch (error) {
         console.error('Error al fichar al empleado:', error);
-        setMessage(error.message || 'Error al fichar al empleado');
+        setAlertMessage({
+          type: "error",
+          message: error.message,
+        });
       } finally {
         setScanning(false);
         if (scannerRef.current && scannerRef.current.resetScanner) {
@@ -138,7 +156,10 @@ export default function Page() {
 
   const handleError = (err) => {
     console.error(err);
-    setError("Error al escanear el código QR. Inténtelo nuevamente.");
+    setAlertMessage({
+      type: "error",
+      message: err.message,
+    });
   };
 
   return (
@@ -154,15 +175,19 @@ export default function Page() {
             handleError={handleError}
           />
         </div>
-        {message && (
-          <div className="text-center mt-4">
-            <p>{message}</p>
-          </div>
-        )}
+        {alertMessage && (
+        <Alert
+          type={alertMessage.type}
+          title={alertMessage.type === "error" ? "Error" : "Éxito"}
+          message={alertMessage.message}
+          onClose={() => setAlertMessage(null)}
+          className="mb-2"
+        />
+      )}
       </div>
       {employee && (
         <div className="mt-3 w-full max-w-md">
-          <CardEmployed employee={employee} employeeDetails={employeeDetails} />
+          <CardEmployed employee={employee} fichada={fichada} />
         </div>
       )}
     </div>

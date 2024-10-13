@@ -1,5 +1,6 @@
-"use client";
-import { useState } from "react";
+'use client';
+
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -8,6 +9,7 @@ import Link from "next/link";
 import { AlertTitle, AlertDescription, Alert } from "@/components/ui/alert";
 import { login, register } from "@/utils/authUtils";
 import { AlarmClock, EyeIcon, EyeOffIcon, FlagIcon, LoaderIcon, TriangleAlertIcon } from "lucide-react";
+import FingerprintJS from '@fingerprintjs/fingerprintjs';
 
 export default function Page() {
   const [showPassword, setShowPassword] = useState(false);
@@ -53,19 +55,34 @@ export default function Page() {
       setIsLoading(false);
       return;
     }
+
     try {
+      // Registrar al usuario
       const data = await register(formData);
       console.log("Registration successful:", data);
-      // Redirigir al usuario a la página de inicio de sesión
-       
-      // Assuming the deviceUUID is returned in the data object
-      localStorage.setItem('deviceUUID', data.deviceUUID);
-      sessionStorage.setItem('deviceUUID', data.deviceUUID);
-      const datalogin = await login(formData)
 
+      // Generar el fingerprint del dispositivo
+      const fp = await FingerprintJS.load();
+      const result = await fp.get();
+      const fingerprint = result.visitorId;
+
+      console.log("Fingerprint generado:", fingerprint);
+
+      // Enviar el fingerprint a tu API
+      await fetch('/api/auth/trustdevice', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ // Asegúrate de enviar el userId o cualquier dato relevante
+          fingerprint: fingerprint,
+        }),
+      });
+
+      // Redirigir al login después de un registro exitoso
       router.push("/auth/login");
     } catch (error) {
-      console.error("Error during registration:", error);
+      console.error("Error durante el registro:", error);
       setErrorMessage(error.message);
       setShowError(true);
     } finally {
@@ -85,6 +102,8 @@ export default function Page() {
             <p className="text-gray-500 dark:text-gray-400">Crea tu cuenta</p>
           </div>
           <form className="space-y-4" onSubmit={handleSignUp}>
+            {/* Formulario de registro */}
+            {/* Campos de entrada */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="firstName">Nombre</Label>
@@ -132,7 +151,7 @@ export default function Page() {
               />
             </div>
             <div>
-              <Label htmlFor="sex">Sexo segun DNI</Label>
+              <Label htmlFor="sex">Sexo según DNI</Label>
               <select
                 id="sex"
                 required
@@ -140,10 +159,9 @@ export default function Page() {
                 onChange={handleChange}
                 className="w-full rounded-md border border-gray-300 p-2 text-gray-900 dark:bg-gray-700 dark:text-white"
               >
-                <option value="" disabled>Selecionar sexo</option>
+                <option value="" disabled>Seleccionar sexo</option>
                 <option value="Male">Masculino</option>
                 <option value="Female">Femenino</option>
-                <option value="Other" disabled className="hidden">X</option>
               </select>
             </div>
             <div className="relative">
@@ -210,10 +228,10 @@ export default function Page() {
           </form>
           <div className="text-center text-sm text-gray-500 dark:text-gray-400">
             <Link className="font-medium underline" href="/auth/login">
-            Ya tengo cuenta. Iniciar sesion
+              Ya tengo cuenta. Iniciar sesión
             </Link>
           </div>
-          <div className="text-center text-sm text-gray-500 dark:text-gray-400"> 
+          <div className="text-center text-sm text-gray-500 dark:text-gray-400">
             <Link className="font-medium underline" href="/auth/login">
               Recuperar contraseña o Dispositivo
             </Link>

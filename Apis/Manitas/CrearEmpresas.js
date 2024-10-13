@@ -5,7 +5,7 @@ const Empresa = require('./src/database/models/Empresa'); // Asegúrate de ajust
 // Conexión a la base de datos
 const conectarDB = async () => {
   try {
-    await mongoose.connect('Colocar Uri', {
+    await mongoose.connect('mongodb://apiauth:Jorge97@vps-3687594-x.dattaweb.com:27017/AuthMakeYou', {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });

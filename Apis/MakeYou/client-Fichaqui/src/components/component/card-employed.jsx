@@ -1,7 +1,7 @@
 import React from 'react';
 import { UserIcon, CheckCircleIcon, XCircleIcon } from 'lucide-react';
 
-export default function CardEmployed({ employee, employeeDetails }) {
+export default function CardEmployed({ employee,fichada}) {
   return (
     <div className="w-full max-w-md mx-auto bg-white rounded-lg shadow-md p-6 md:max-w-lg md:flex md:items-center md:p-8 dark:bg-gray-800">
       <div className="flex flex-col items-center">
@@ -15,17 +15,22 @@ export default function CardEmployed({ employee, employeeDetails }) {
           <div className="text-gray-500 dark:text-gray-400">{employee.email}</div>
           <div className="text-gray-500 dark:text-gray-400">{employee.dni}</div>
           
+          {fichada.type === "entrada" ? (
           <div className="flex items-center justify-center space-x-2 text-green-500 dark:text-green-400">
-            <CheckCircleIcon className="h-5 w-5" />
-            <span>Hora de entrada</span>
-          </div>
+          <CheckCircleIcon className="h-5 w-5" />
+          <span>Hora de entrada</span>
+        </div>
 
-          {employeeDetails.exitTime && (
+          ): (
+
             <div className="flex items-center justify-center space-x-2  text-green-500 dark:text-green-400">
               <XCircleIcon className="h-5 w-5" />
               <span>Hora de salida</span>
             </div>
           )}
+
+
+
 
           <div className="text-gray-500 dark:text-gray-400">
             Necesitas escanear tu código QR de tu app para marcar la hora de entrada y salida.

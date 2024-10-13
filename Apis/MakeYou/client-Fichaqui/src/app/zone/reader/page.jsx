@@ -9,15 +9,15 @@ export default function Page() {
     const [message, setMessage] = useState('');
   
     useEffect(() => {
-      const checkZoneUUID = async () => {
-        const zoneUUID = localStorage.getItem('zoneUUID');
-        if (!zoneUUID) {
+      const checkTrustDevice = async () => {
+        const trustdevice= localStorage.getItem('trustdevice');
+        if (!trustdevice) {
           router.push('/zone/configure');
           return;
         }
   
         try {
-          const response = await fetch(`/api/presentismo/zones/find?uuid=${zoneUUID}`);
+          const response = await fetch(`/api/qrfichaqui/zones/find?trustdevice=${trustdevice}`);
           if (!response.ok) {
             throw new Error('Zona no encontrada');
           }
@@ -27,36 +27,40 @@ export default function Page() {
           }
         } catch (error) {
           console.error('Error al obtener la zona:', error);
-          localStorage.removeItem('zoneUUID');
-          sessionStorage.removeItem('zoneUUID');
+          localStorage.removeItem('trustdevice');
           router.push('/zone/configure');
         }
       };
 
-      const checkMode = async () => {
-        const mode = localStorage.getItem('readingMode');
-        if(mode === 'camera'){
-          router.push('/zone/reader/lectorQr');
+      const checkModo = async () => {
+        const readingMode = localStorage.getItem('readingMode');
+        if (!readingMode) {
+          router.push('/zone/configure');
+          return;
         }
-        if(mode === 'reader'){
-          router.push('/zone/reader/scanerQr');
-        }
-      }
   
-      checkZoneUUID();
-      checkMode()
+        if(readingMode === 'camera'){
+            router.push('/zone/reader/scanerQr');
+        }
+        if(readingMode === 'reader'){
+            router.push('/zone/reader/lectorQr');
+          }
+      };
+  
+      checkTrustDevice ();
+      checkModo()
     }, [router]);
   
     const handleModeSelect = (mode) => {
-        localStorage.setItem('readingMode', mode);
-      setMessage(`Modo ${mode === 'camera' ? 'Cámara' : 'Lector'} seleccionado y guardado.`);
-      if(mode === 'camera'){
-        router.push('/zone/reader/lectorQr');
-      }
-      if(mode === 'reader'){
-        router.push('/zone/reader/scanerQr');
-      }
-    };
+      localStorage.setItem('readingMode', mode);
+    setMessage(`Modo ${mode === 'camera' ? 'Cámara' : 'Lector'} seleccionado y guardado.`);
+    if(mode === 'camera'){
+      router.push('/zone/reader/scanerQr');
+    }
+    if(mode === 'reader'){
+      router.push('/zone/reader/lectorQr');
+    }
+  };
   
     return (
         <div className="flex flex-col items-center justify-center h-screen bg-gray-100 dark:bg-gray-900">

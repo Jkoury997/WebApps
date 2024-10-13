@@ -8,12 +8,12 @@ import io from 'socket.io-client';
 const NEXT_PUBLIC_URL_WEBSOCKET = process.env.NEXT_PUBLIC_URL_WEBSOCKET;
 
 export function EnableNotification({ setIsEnabled }) {
-  const [useruuid, setUseruuid] = useState(null);
+  const [userId, setUserId] = useState(null);
 
   useEffect(() => {
-    const uuid = Cookies.get('useruuid');
-    setUseruuid(uuid);
-    console.log(`useruuid: ${uuid}`);
+    const uuid = Cookies.get('userId');
+    setUserId(uuid);
+    console.log(`userId: ${uuid}`);
   }, []);
 
   const enableNotifications = () => {
@@ -21,9 +21,10 @@ export function EnableNotification({ setIsEnabled }) {
 
     const socket = io(NEXT_PUBLIC_URL_WEBSOCKET);
 
-    console.log(`Connecting with useruuid: ${useruuid}`);
-    socket.emit('join', useruuid);
+    console.log(`Connecting with useruuid: ${userId}`);
+    socket.emit('join', userId);
 
+    // Aquí simulamos recibir dos tipos diferentes de notificación
     socket.on('notification', (data) => {
       console.log('Notificación recibida:', data);
 
@@ -31,16 +32,30 @@ export function EnableNotification({ setIsEnabled }) {
         navigator.vibrate(200);
       }
 
-      toast.success(data.message, {
-        position: "top-center",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      });
+      // Mostrar toast dependiendo del tipo de notificación
+      if (data.type === 'success') {
+        toast.success(data.message, {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        });
+      } else if (data.type === 'error') {
+        toast.error(data.message, {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        });
+      }
     });
 
     socket.on('connect', () => {

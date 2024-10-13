@@ -2,14 +2,13 @@
 import { useState, useEffect, useRef } from "react";
 import CardEmployed from "@/components/component/card-employed";
 import { useRouter } from "next/navigation";
-
-const NEXT_PUBLIC_URL_API_AUTH = process.env.NEXT_PUBLIC_URL_API_AUTH;
-const NEXT_PUBLIC_URL_API_PRESENTISMO = process.env.NEXT_PUBLIC_URL_API_PRESENTISMO;
+import { Alert } from "@/components/component/alert";
 
 export default function Page() {
-  const [employeeDetails, setEmployeeDetails] = useState(null);
+  const [zoneId, setZoneId] = useState(null);
+  const [fichada, setFichada] = useState(null);
   const [employee, setEmployee] = useState(null);
-  const [message, setMessage] = useState('');
+  const [alertMessage, setAlertMessage] = useState(null);
   const [error, setError] = useState(null);
   const [scanning, setScanning] = useState(false);
   const [pageVisible, setPageVisible] = useState(true);
@@ -20,151 +19,148 @@ export default function Page() {
   useEffect(() => {
     successSound.current = new Audio('/sounds/success.mp3'); // Cargar el sonido de éxito
 
-    const checkZoneUUID = async () => {
-      const zoneUUID = localStorage.getItem('zoneUUID');
-      const readingMode = localStorage.getItem('readingMode');
-      if (!zoneUUID) {
+    const checkTrustDevice = async () => {
+      const trustdevice = localStorage.getItem('trustdevice');
+      if (!trustdevice) {
         router.push('/zone/configure');
-        return;
-      }
-
-      if (!readingMode) {
-        router.push('/zone/reader');
-        return;
-      }
-
-      if (readingMode !== "reader") {
-        router.push('/zone/reader/scanerQr');
         return;
       }
 
       try {
-        const response = await fetch(`/api/presentismo/zones/find?uuid=${zoneUUID}`);
+        const response = await fetch(`/api/qrfichaqui/zones/find?trustdevice=${trustdevice}`);
         if (!response.ok) {
           throw new Error('Zona no encontrada');
         }
         const data = await response.json();
+
         if (data.error) {
           throw new Error(data.error);
         }
+        setZoneId(data._id);
       } catch (error) {
         console.error('Error al obtener la zona:', error);
-        localStorage.removeItem('zoneUUID');
-        sessionStorage.removeItem('zoneUUID');
+        localStorage.removeItem('trustdevice');
         router.push('/zone/configure');
       }
     };
 
-    checkZoneUUID();
-
-    const handleKeydown = async (event) => {
-      if (event.key === 'Enter' && inputRef.current.value) {
-        handleScan(inputRef.current.value);
+    const checkModo = async () => {
+      const readingMode = localStorage.getItem('readingMode');
+      if (!readingMode) {
+        router.push('/zone/configure');
+        return;
       }
     };
 
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        setPageVisible(false); // La página no está visible
-      } else {
-        setPageVisible(true); // La página está visible
-      }
-    };
-
-    // Detectar clics en cualquier lugar de la página
-    const handleDocumentClick = () => {
-      if (inputRef.current) {
-        inputRef.current.focus(); // Enfocar el input cuando se haga clic en cualquier parte
-      }
-    };
-
-    document.addEventListener('keydown', handleKeydown);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    document.addEventListener('click', handleDocumentClick);
-
-    return () => {
-      document.removeEventListener('keydown', handleKeydown);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      document.removeEventListener('click', handleDocumentClick);
-    };
+    checkTrustDevice();
+    checkModo();
   }, [router]);
+
+  useEffect(() => {
+    // Enfocar automáticamente el input al cargar la página
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, []);
 
   const handleConfirmPresence = () => {
     setPageVisible(true);
   };
 
-  async function registerAttendance(code, location) {
+  async function registerAttendance(uuid) {
+    setAlertMessage(null); // Limpiar mensaje antes de registrar nueva asistencia
     try {
-      const response = await fetch('/api/presentismo/attendance/register', {
+      const response = await fetch('/api/qrfichaqui/attendance/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ code, location }),
+        body: JSON.stringify({ uuid, zoneId }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.log(errorData.message)
-        throw new Error(errorData.error || 'Error al fichar');
-      }
+      const data = await response.json();
 
-      return await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Error al registrar asistencia');
+      }
+      setFichada(data);
+      return data;
     } catch (error) {
-      setError(error.message);
+      console.log(error);
+      setAlertMessage({
+        type: "error",
+        message: error.message,
+      }); // Actualiza el estado del error
       throw error;
     }
   }
 
-  async function fetchEmployeeDetails(useruuid) {
-    const response = await fetch(`/api/auth/user?useruuid=${useruuid}`);
+  async function fetchEmployeeDetails(userId) {
+    try {
+      const response = await fetch(`/api/auth/info/user?userId=${userId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-    if (!response.ok) {
-      throw new Error('Error al obtener los detalles del empleado');
+      if (!response.ok) {
+        const errorData = await response.json(); // Obtener los detalles del error del servidor
+        throw new Error(errorData.message || 'Error al obtener los detalles del empleado');
+      }
+      const data = await response.json();
+      setEmployee(data);
+      return data;
+    } catch (error) {
+      console.error('Error al obtener los detalles del empleado:', error);
+      throw new Error(error.message || 'Error al obtener los detalles del empleado');
     }
-
-    return await response.json();
   }
 
   const handleScan = async (scannedCode) => {
-
-    scannedCode = scannedCode.replace(/'/g, "-");
+    scannedCode = scannedCode.replace(/'/g, "-"); // Reemplazar caracteres no válidos
 
     if (scannedCode && !scanning) {
       setScanning(true);
-      console.log(scannedCode)
       try {
-        const location = localStorage.getItem('zoneUUID');
-        if (!location) {
-          setMessage('Zona no configurada. Por favor configure la zona primero.');
-          setScanning(false);
-          return;
+        const attendanceResponse = await registerAttendance(scannedCode);
+        if (attendanceResponse) {
+          await fetchEmployeeDetails(attendanceResponse.userId);
         }
 
-        const attendanceResponse = await registerAttendance(scannedCode, location);
-
-        const employeeDetails = await fetchEmployeeDetails(attendanceResponse.useruuid);
-
-        setEmployeeDetails(attendanceResponse);
-        setEmployee(employeeDetails);
-        setMessage(` ${employeeDetails.firstName} ${employeeDetails.lastName} fichada correcta`);
+        setAlertMessage({
+          type: "success",
+          message: "Fichada exitosa.",
+        });
 
         successSound.current.play();
 
         inputRef.current.value = ''; // Limpia el campo de entrada después de escanear
       } catch (error) {
         console.error('Error al fichar al empleado:', error);
-        setMessage(error.message || 'Error al fichar al empleado');
-        inputRef.current.value = ''; // Limpia el campo de entrada después de escanear
+        setAlertMessage({
+          type: "error",
+          message: error.message,
+        });
       } finally {
         setScanning(false);
-        inputRef.current.value = ''; // Limpia el campo de entrada después de escanear
+        inputRef.current.value = ''; // Asegura que el campo se limpia después del escaneo
+        inputRef.current.focus(); // Asegura que el campo de entrada mantenga el enfoque
       }
     }
   };
 
+  const handleClick = () => {
+    if (inputRef.current) {
+      inputRef.current.focus(); // Enfocar el campo de entrada si se toca la pantalla
+    }
+  };
+
   return (
-    <div className="flex flex-col md:flex-row items-center justify-center h-screen bg-gray-100 dark:bg-gray-900 p-4">
+    <div
+      className="flex flex-col md:flex-row items-center justify-center h-screen bg-gray-100 dark:bg-gray-900 p-4"
+      onClick={handleClick} // Enfocar el input al hacer clic en cualquier parte de la pantalla
+    >
       {!pageVisible && (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-white p-4 rounded shadow-md">
@@ -188,17 +184,22 @@ export default function Page() {
             className="w-full p-2 bg-white rounded dark:bg-gray-800"
             placeholder="Escanea el código QR aquí"
             autoFocus // Asegura que el input esté enfocado al cargar la página
+            onChange={(e) => handleScan(e.target.value)} // Llamar a handleScan cuando cambie el valor del input
           />
         </div>
-        {message && (
-          <div className="text-center mt-4">
-            <p>{message}</p>
-          </div>
+        {alertMessage && (
+          <Alert
+            type={alertMessage.type}
+            title={alertMessage.type === "error" ? "Error" : "Éxito"}
+            message={alertMessage.message}
+            onClose={() => setAlertMessage(null)}
+            className="mb-2"
+          />
         )}
       </div>
       {employee && (
         <div className="mt-3 w-full max-w-md">
-          <CardEmployed employee={employee} employeeDetails={employeeDetails} />
+          <CardEmployed employee={employee} fichada={fichada} />
         </div>
       )}
     </div>

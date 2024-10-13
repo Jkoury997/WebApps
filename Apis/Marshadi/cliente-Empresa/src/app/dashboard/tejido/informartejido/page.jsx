@@ -132,7 +132,7 @@ export default function Page() {
                 {alertMessage && (
                   <Alert 
                     type={alertMessage.type} 
-                    title={"Error"}
+                    title={alertMessage.type}
                     message={alertMessage.message} 
                     onClose={() => setAlertMessage(null)} 
                   />

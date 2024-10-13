@@ -9,14 +9,14 @@ export function QRPresentismo() {
 
   const fetchQrCode = async () => {
     try {
-      const response = await fetch("/api/qr/generate-qr");
+      const response = await fetch("/api/qrfichaqui/qr/generate-qr");
       const data = await response.json();
 
       if (!response.ok) {
         setErrorMessage(data.error || "Error fetching QR code");
         setQrCode(null);
       } else {
-        setQrCode(data.code); // Asume que tu API devuelve el código QR en un campo 'code'
+        setQrCode(data.uuid); // Asume que tu API devuelve el código QR en un campo 'code'
         setErrorMessage(""); // Limpia cualquier mensaje de error previo
       }
     } catch (error) {

@@ -19,19 +19,19 @@ export async function GET() {
       path: '/',
       expires: new Date(0),
     });
+    cookieStore.set("fingerprint", "", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
+      expires: new Date(0),
+    });
     cookieStore.set("refreshToken", "", {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       path: '/',
       expires: new Date(0),
     });
-    cookieStore.set("useruuid", "", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      path: '/',
-      expires: new Date(0),
-    });
-    cookieStore.set("userRole", "", {
+    cookieStore.set("userId", "", {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       path: '/',

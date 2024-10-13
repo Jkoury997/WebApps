@@ -1,3 +1,4 @@
+
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -7,8 +8,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { AlertDescription, Alert } from "@/components/ui/alert";
 import { EyeIcon, EyeOffIcon, LoaderIcon, TriangleAlertIcon, AlarmClock } from "lucide-react";
-import { login } from "@/utils/authUtils";
-import Cookies from "js-cookie";
+import FingerprintJS from '@fingerprintjs/fingerprintjs';
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -19,6 +19,29 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const router = useRouter();
 
+  useEffect(() => {
+    const fecthRefreshToken = async () => {
+      try {
+        const response = await fetch("/api/auth/refreshtoken");
+        if (!response.ok) {
+          throw new Error('Error al obtener el refresh token');
+        }
+        const data = await response.json();
+        console.log('Refresh token fetched:', data);
+        router.push("/dashboard")
+      } catch (error) {
+        console.error('Error fetching refresh token:', error);
+      }
+    };
+
+    fecthRefreshToken(); // Ejecutar la función dentro del useEffect
+  }, []); 
+
+  // Limpiar el estado del error y error de dispositivo al intentar de nuevo
+  const resetError = () => {
+    setShowError(false);
+    setError("");
+  };
 
   const handleTogglePassword = () => {
     setShowPassword(!showPassword);
@@ -27,27 +50,78 @@ export default function LoginPage() {
   const handleSignIn = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setShowError(false);
-  
+    resetError();  // Limpiar cualquier error previo
+
     try {
-      const localDeviceUUID = localStorage.getItem('deviceUUID');
-      
-      if (localDeviceUUID) {
-        Cookies.set('deviceUUID', localDeviceUUID, { path: '/' });
+      // Primer paso: autenticación del usuario
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password,
+        }),
+      });
+
+      // Si la respuesta no es correcta, arrojar un error
+      if (!response.ok) {
+        throw new Error("Error en el login");
       }
 
-      const data = await login({ email, password });
+      // Obtener los datos de la respuesta (ej. tokens)
+      const data = await response.json();
 
-      if(data.accessToken){
-        router.push("/dashboard");  // Redirección manual
+      // Si hay un token de acceso, procedemos con la verificación del dispositivo
+      if (data.accessToken) {
+        const resultFingerprint = await generateFingerprint();
+        console.log(resultFingerprint)
+
+        try {
+          // Verificar el dispositivo enviando la huella digital al backend
+          const fingerprintResponse = await fetch(`/api/auth/trustdevice/verify`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              fingerprint: resultFingerprint,
+            }),
+          });
+
+          const fingerprintData = await fingerprintResponse.json();
+          console.log(fingerprintData)
+
+          // Verificar si el dispositivo es de confianza
+          if (fingerprintData.isTrusted) {
+            // Redirigir al dashboard si todo está correcto
+            router.push("/dashboard");
+          } else {
+            throw new Error("Dispositivo no reconocido. Verificación fallida.");
+          }
+        } catch (error) {
+          console.error("Error en la verificación del dispositivo:", error);
+          setError("Error verificando el dispositivo");
+          setShowError(true);
+        }
       }
     } catch (error) {
-      console.error("Error during login:", error);
+      console.error("Error en el login:", error);
       setError(error.message || "Error al iniciar sesión");
       setShowError(true);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const generateFingerprint = async () => {
+    // Inicializa el agente de Fingerprint.js
+    const fp = await FingerprintJS.load();
+    // Genera la huella digital del dispositivo
+    const result = await fp.get();
+    // El identificador único del dispositivo
+    return result.visitorId;
   };
 
   return (

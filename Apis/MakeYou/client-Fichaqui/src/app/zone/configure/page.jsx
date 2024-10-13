@@ -17,10 +17,10 @@ export default function Page() {
         }
   
         if(readingMode === 'camera'){
-            router.push('/zone/configure/lectorQr');
+            router.push('/zone/configure/scanerQr');
         }
         if(readingMode === 'reader'){
-            router.push('/zone/configure/scanerQr');
+            router.push('/zone/configure/lectorQr');
           }
       };
   
@@ -31,10 +31,10 @@ export default function Page() {
         localStorage.setItem('readingMode', mode);
       setMessage(`Modo ${mode === 'camera' ? 'Cámara' : 'Lector'} seleccionado y guardado.`);
       if(mode === 'camera'){
-        router.push('/zone/configure/lectorQr');
+        router.push('/zone/configure/scanerQr');
       }
       if(mode === 'reader'){
-        router.push('/zone/configure/scanerQr');
+        router.push('/zone/configure/lectorQr');
       }
     };
   

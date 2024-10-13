@@ -1,1 +1,0 @@
-const Token = require('../database/models/Token');

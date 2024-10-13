@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { EyeIcon, EyeOffIcon, LoaderIcon } from "lucide-react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { useRouter } from "next/navigation";
+import FingerprintJS from '@fingerprintjs/fingerprintjs';
 
 export default function Page() {
   const [formData, setFormData] = useState({
@@ -38,6 +39,10 @@ export default function Page() {
     setIsLoading(true);
 
     try {
+      // Generar el fingerprint antes de enviar el formulario
+      const fingerprint = await generateFingerprint();
+
+      // Enviar los datos del formulario junto con el fingerprint
       const response = await fetch("/api/auth/recovery/resetdevice", {
         method: "POST",
         headers: {
@@ -46,6 +51,7 @@ export default function Page() {
         body: JSON.stringify({
           email: formData.email,
           otp: formData.otp,
+          fingerprint,  // Enviar el fingerprint generado
         }),
       });
 
@@ -54,13 +60,7 @@ export default function Page() {
       }
 
       const data = await response.json();
-
-      // Assuming the deviceUUID is returned in the data object
-      localStorage.setItem('deviceUUID', data.data.device.uuid);
-      sessionStorage.setItem('deviceUUID', data.data.device.uuid);
-
-      setNewDeviceUuid(data.data.device.uuid); // Asumiendo que el UUID se devuelve en data.device.uuid
-      // Manejar respuesta exitosa
+      console.log(data)
 
       router.push("/auth/login");
 
@@ -71,6 +71,16 @@ export default function Page() {
       setIsLoading(false);
     }
   };
+
+  const generateFingerprint = async () => {
+    // Inicializa el agente de Fingerprint.js
+    const fp = await FingerprintJS.load();
+    // Genera la huella digital del dispositivo
+    const result = await fp.get();
+    // El identificador único del dispositivo
+    return result.visitorId;
+  };
+
 
   return (
     <div className="flex h-screen w-full items-center justify-center bg-gray-100 dark:bg-gray-900">

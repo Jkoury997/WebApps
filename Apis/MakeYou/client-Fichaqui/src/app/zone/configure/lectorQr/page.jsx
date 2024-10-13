@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import FingerprintJS from "@fingerprintjs/fingerprintjs";
 
 export default function Page() {
   const [message, setMessage] = useState('');
@@ -11,16 +12,39 @@ export default function Page() {
   const qrLinkSectionRef = useRef(null);
   const [isLinkingNewQR, setIsLinkingNewQR] = useState(false);
 
-  useEffect(() => {
-    const deviceUUID = localStorage.getItem('deviceUUID');
-    const zoneUUID = localStorage.getItem('zoneUUID');
-    if (deviceUUID && zoneUUID) {
-      router.push('/zone/reader'); // Redirect to reader if already configured
-    }
-    if (inputRef.current) {
-      inputRef.current.focus(); // Focus the input on mount
-    }
-  }, [router]);
+    // Cargar el fingerprint si no existe en localStorage
+    const generateFingerprint = async () => {
+      const fp = await FingerprintJS.load();
+      const result = await fp.get();
+      return result.visitorId; // Este será el "trustdevice"
+    };
+
+    useEffect(() => {
+
+      const checkModo = async () => {
+        const readingMode = localStorage.getItem('readingMode');
+        if (!readingMode) {
+          router.push('/zone/configure');
+          return;
+        }
+       }
+       
+  
+      const trustdevice = localStorage.getItem('trustdevice');
+      
+      // Si trustdevice ya está en localStorage, redirigir a la página de configuración
+      if (trustdevice) {
+        router.push('/zone/reader');
+      }
+  
+      if (inputRef.current) {
+        inputRef.current.focus(); // Focus the input on mount
+      }
+
+      checkModo()
+
+    }, [router]);
+  
 
   useEffect(() => {
     if (isLinkingNewQR && qrLinkSectionRef.current) {
@@ -33,30 +57,34 @@ export default function Page() {
     if (qrGeneralUUID) {
       setZoneUUID(qrGeneralUUID);
       try {
-        const response = await fetch('/api/presentismo/zones/configure', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ zoneUUID: qrGeneralUUID }),
-        });
+        // Generar el trustdevice
+        const trustdevice = await generateFingerprint();
 
-        if (!response.ok) {
-          throw new Error('Failed to configure device');
-        }
+        console.log(trustdevice,qrGeneralUUID)
 
-        const responseData = await response.json();
-        const { deviceUUID } = responseData;
+       // Enviar la solicitud a la API para vincular el zoneId con el trustdevice
+       const response = await fetch('/api/qrfichaqui/zones/link', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          zoneId: qrGeneralUUID, // zoneId traído del escaneo del QR
+          trustdevice: trustdevice // Enviar el trustdevice generado
+        }),
+      });
 
-        localStorage.setItem('deviceUUID', deviceUUID);
-        localStorage.setItem('zoneUUID', qrGeneralUUID);
-        document.cookie = `deviceUUID=${deviceUUID}; path=/`;
-        document.cookie = `zoneUUID=${qrGeneralUUID}; path=/`;
+      if (!response.ok) {
+        throw new Error('Failed to configure device');
+      }
 
-        setZoneUUID(qrGeneralUUID);
-        setMessage(`Device configured for zone: ${qrGeneralUUID}`);
+      // Guardar el trustdevice en localStorage
+      localStorage.setItem('trustdevice', trustdevice);
 
-        router.push('/zone/reader'); // Redirect to reader after configuration
+      setMessage(`Device configured for zone: ${qrGeneralUUID}`);
+
+      // Redirigir a la página de configuración
+      router.push('/zone/reader'); 
       } catch (err) {
         setError("Error al realizar la acción con el UUID. Por favor, intenta nuevamente.");
       }

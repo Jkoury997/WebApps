@@ -7,7 +7,6 @@ import { QrCodeIcon, TrashIcon, EditIcon } from "lucide-react";
 import * as Dialog from '@radix-ui/react-dialog';
 import QRCode from 'react-qr-code';
 
-const NEXT_PUBLIC_URL_API_PRESENTISMO = process.env.NEXT_PUBLIC_URL_API_PRESENTISMO
 
 export default function Page() {
   const [zones, setZones] = useState([]);
@@ -19,39 +18,43 @@ export default function Page() {
 
 
   useEffect(() => {
-    const fetchZones = async () => {
-      
-      try {
-        const response = await fetch('/api/presentismo/zones');
-        const data = await response.json();
-        setZones(data);
-      } catch (error) {
-        setError('Error fetching zones');
-        console.error('Error fetching zones:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
 
     fetchZones();
   }, []);
 
-  const handleDelete = async (id) => {
+  const fetchZones = async () => {
+      
     try {
-      const response = await fetch(`/api/presentismo/zones?id=${id}`, {
+      const response = await fetch('/api/qrfichaqui/zones/list');
+      const data = await response.json();
+      setZones(data);
+    } catch (error) {
+      setError('Error fetching zones');
+      console.error('Error fetching zones:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    setLoading(true);  // Mostrar cargando al eliminar
+    try {
+      const response = await fetch(`/api/qrfichaqui/zones/delete?id=${id}`, {
         method: 'DELETE',
       });
-
+  
       if (response.ok) {
-        setZones(zones.filter((zone) => zone._id !== id));
+        fetchZones();  // Recargar la lista de zonas después de eliminar
       } else {
         throw new Error('Error deleting zone');
       }
     } catch (error) {
       console.error('Error deleting zone:', error);
+      setError('Error eliminando la zona');
+    } finally {
+      setLoading(false);  // Ocultar cargando
     }
   };
-
   const handleEdit = (id) => {
     // Implement edit functionality
   };
@@ -85,15 +88,15 @@ export default function Page() {
               className="bg-white rounded-lg shadow-sm p-4 flex items-center justify-between dark:bg-gray-800"
             >
               <div className="grid gap-1">
-                <h3 className="text-lg font-semibold">{zone.name}</h3>
+                <h3 className="text-lg font-semibold">{zone.nombre}</h3>
                 <p className="text-gray-500 dark:text-gray-400">{zone.description}</p>
               </div>
               <div className="flex items-center gap-2">
-                <Button size="sm" variant="outline" onClick={() => handleQR(zone.uuid)} className="md:hidden">
+                <Button size="sm" variant="outline" onClick={() => handleQR(zone._id)} className="md:hidden">
                   <QrCodeIcon className="w-4 h-4" />
                   <span className="sr-only">Ver QR</span>
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => handleEdit(zone._id)} className="md:hidden">
+                <Button size="sm" variant="outline"  onClick={() => handleEdit(zone._id)} className="md:hidden" disabled>
                   <EditIcon className="w-4 h-4" />
                   <span className="sr-only">Editar</span>
                 </Button>
@@ -104,7 +107,7 @@ export default function Page() {
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => handleQR(zone.uuid)}
+                  onClick={() => handleQR(zone._id)}
                   className="hidden md:inline-flex"
                 >
                   Ver QR
@@ -114,6 +117,7 @@ export default function Page() {
                   variant="outline"
                   onClick={() => handleEdit(zone._id)}
                   className="hidden md:inline-flex"
+                  disabled
                 >
                   Editar
                 </Button>
