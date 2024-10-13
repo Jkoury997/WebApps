@@ -1,6 +1,7 @@
 const User = require('../database/models/User');
 const Empresa = require('../database/models/Empresa');
 const RefreshToken = require('../database/models/RefreshToken');
+const roleService = require('../services/roleService');
 const jwtService = require('../services/jwtService'); 
 const bcrypt = require('bcryptjs');
 
@@ -27,6 +28,10 @@ const registerUser = async (userData) => {
     // Crear el nuevo usuario
     const newUser = new User(userData);
     await newUser.save();
+
+    // Asignar el rol de "usuario" por defecto al registrarse
+    await roleService.assignOrUpdateRoleForUserInEmpresa(newUser._id, empresa, 'usuario');
+    
     return newUser;
 }
 
@@ -38,18 +43,24 @@ const loginUser = async (email, password, empresa) => {
         throw new Error('Credenciales inválidas.');
     }
 
-    // Generar Refresh Token y guardarlo en la base de datos
-    const refreshToken = await createAndSaveRefreshToken(user);
+     // Obtener el rol del usuario en esta empresa
+     const userRole = await roleService.getRolesByUserId(user._id);
+     if (!userRole) {
+         throw new Error('El usuario no tiene un rol asignado.');
+     }
 
-    // Generar Access Token
-    const accessToken = jwtService.generateAccessToken(user);
+    // Generar Refresh Token y guardarlo en la base de datos
+    const refreshToken = await createAndSaveRefreshToken(user,userRole.role);
+
+    const accessToken = await refreshAccessToken(refreshToken)
+
 
     return { accessToken, refreshToken, user };
 };
 
 // Crear y guardar el Refresh Token en la base de datos
-const createAndSaveRefreshToken = async (user) => {
-    const refreshToken = jwtService.generateRefreshToken(user);
+const createAndSaveRefreshToken = async (user,role) => {
+    const refreshToken = jwtService.generateRefreshToken(user,role);
 
     // Guardar el Refresh Token en la base de datos
     const expiresAt = new Date();
@@ -78,10 +89,11 @@ const refreshAccessToken = async (refreshToken) => {
     const decoded = jwtService.verifyRefreshToken(refreshToken);
 
     // Extraer la información necesaria del token decodificado
-    const { userId, empresa } = decoded;
+    const { userId,empresa,role } = decoded;
+    console.log({ userId,empresa,role })
 
     // Generar un nuevo Access Token
-    const newAccessToken = jwtService.generateAccessToken({ _id: userId, empresa });
+    const newAccessToken = jwtService.generateAccessToken(userId,empresa, role);
 
     return newAccessToken;
 };

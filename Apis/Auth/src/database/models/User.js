@@ -13,6 +13,7 @@ const userSchema = new mongoose.Schema({
     lockUntil: { type: Date },
     sex: { type: String, enum: ['Male', 'Female', 'Other'], required: true },
     empresa: { type: mongoose.Schema.Types.String, ref: 'Empresa', required: true }
+    
 });
 
 // Índice compuesto que asegura la unicidad de dni dentro de una empresa

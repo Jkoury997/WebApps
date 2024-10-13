@@ -1,10 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from 'clsx';
 import { HomeIcon, UserRound, ChevronDown } from "lucide-react";
+import { decode } from 'jsonwebtoken';
+import Cookies from 'js-cookie';
+
+// Definir enlaces para el usuario
+const usuarioLinks = [
+  { 
+    name: 'Home', 
+    href: '/dashboard', 
+    icon: HomeIcon 
+  },
+];
 
 // Definir enlaces según roles
 const linksByRole = {
@@ -34,14 +45,9 @@ const linksByRole = {
       ] 
     },
   ],
-  employed: [
-    { 
-      name: 'Home', 
-      href: '/dashboard', 
-      icon: HomeIcon 
-    },
-  ],
+  usuario: usuarioLinks,
   admin: [
+    ...usuarioLinks,  // Usar spread operator para combinar enlaces de 'usuario'
     { 
       name: 'Admin', 
       href: '/dashboard/admin', 
@@ -57,14 +63,23 @@ const linksByRole = {
         },
       ] 
     },
-
   ],
-
 };
 
 export function NavLinks() {
   const pathname = usePathname();
   const [openMenus, setOpenMenus] = useState({});
+  const [role, setRole] = useState(null); // Estado para el rol
+
+  useEffect(() => {
+    // Leer el token de las cookies
+    const token = Cookies.get('accessToken');
+    if (token) {
+      // Decodificar el token para extraer el rol
+      const decodedToken = decode(token);
+      setRole(decodedToken?.role);
+    }
+  }, []);
 
   const toggleMenu = (name) => {
     setOpenMenus((prev) => ({
@@ -73,23 +88,16 @@ export function NavLinks() {
     }));
   };
 
-  // Combinar todos los enlaces de todos los roles
-  const allLinks = Object.values(linksByRole).flat();
-  const uniqueLinks = [];
+  if (!role) {
+    return null; // Mostrar un loader o algo similar mientras se obtiene el rol
+  }
 
-  // Evitar duplicados
-  allLinks.forEach(link => {
-    const existingLink = uniqueLinks.find(l => l.name === link.name);
-    if (existingLink) {
-      existingLink.subLinks = [...new Set([...(existingLink.subLinks || []), ...(link.subLinks || [])])];
-    } else {
-      uniqueLinks.push(link);
-    }
-  });
+  // Obtener los enlaces correspondientes al rol
+  const links = linksByRole[role] || [];
 
   return (
     <>
-      {uniqueLinks.map((link, index) => {
+      {links.map((link, index) => {
         const LinkIcon = link.icon;
         const isActive = pathname === link.href || link.subLinks?.some(subLink => pathname === subLink.href);
         return (
