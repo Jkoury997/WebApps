@@ -29,28 +29,37 @@ export default function Page() {
   });
   const router = useRouter();
 
-  // Generar fingerprint consistente
-  const generateConsistentFingerprint = async () => {
-    const fingerprints = [];
-    const fp = await FingerprintJS.load();
-
-    for (let i = 0; i < 10; i++) {
-      const result = await fp.get();
-      fingerprints.push(result.visitorId);
-      await new Promise((resolve) => setTimeout(resolve, 500));
-    }
-
-    const consistentFingerprint = fingerprints.sort((a, b) =>
-      fingerprints.filter(v => v === a).length - fingerprints.filter(v => v === b).length
-    ).pop();
-
-    setFingerprint(consistentFingerprint); // Guardamos el fingerprint en el estado
-    console.log("Fingerprint consistente generado:", consistentFingerprint);
-  };
+    // Generar fingerprint consistente
+    const generateAverageFingerprint = async () => {
+      const fingerprints = [];
+      const fp = await FingerprintJS.load();
+    
+      // Generamos el fingerprint 10 veces con un intervalo breve
+      for (let i = 0; i < 10; i++) {
+        const result = await fp.get();
+        fingerprints.push(result.visitorId);
+        await new Promise((resolve) => setTimeout(resolve, 200)); // Intervalo reducido
+      }
+    
+      console.log("Fingerprints generados:", fingerprints); // Muestra todos los fingerprints generados
+    
+      // Seleccionamos el fingerprint más repetido
+      const commonFingerprint = fingerprints.reduce((acc, fingerprint) => {
+        acc[fingerprint] = (acc[fingerprint] || 0) + 1;
+        return acc;
+      }, {});
+    
+      const consistentFingerprint = Object.keys(commonFingerprint).reduce((a, b) =>
+        commonFingerprint[a] > commonFingerprint[b] ? a : b
+      );
+    
+      console.log("Fingerprint consistente seleccionado:", consistentFingerprint);
+      setFingerprint(consistentFingerprint); // Guardamos el fingerprint en el estado
+    };
 
   useEffect(() => {
     // Iniciar la generación del fingerprint al cargar la página
-    generateConsistentFingerprint();
+    generateAverageFingerprint();
   }, []);
 
   const handleTogglePassword = () => {
