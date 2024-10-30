@@ -28,6 +28,29 @@ export default function Page() {
   });
   const router = useRouter();
 
+
+  const generateConsistentFingerprint = async () => {
+    const fingerprints = [];
+    
+    // Cargamos el módulo de FingerprintJS una sola vez fuera del bucle
+    const fp = await FingerprintJS.load();
+    
+    // Generamos el fingerprint 10 veces con un intervalo de 500 ms
+    for (let i = 0; i < 10; i++) {
+      const result = await fp.get();
+      fingerprints.push(result.visitorId);
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+  
+    // Identificamos el fingerprint más común
+    const fingerprint = fingerprints.sort((a, b) =>
+      fingerprints.filter(v => v === a).length - fingerprints.filter(v => v === b).length
+    ).pop();
+    
+    console.log("Fingerprint consistente generado:", fingerprint);
+    return fingerprint;
+  };
+
   const handleTogglePassword = () => {
     setShowPassword(!showPassword);
   };
@@ -61,10 +84,8 @@ export default function Page() {
       const data = await register(formData);
       console.log("Registration successful:", data);
 
-      // Generar el fingerprint del dispositivo
-      const fp = await FingerprintJS.load();
-      const result = await fp.get();
-      const fingerprint = result.visitorId;
+      // Generar el fingerprint del dispositivo de forma consistente
+    const fingerprint = await generateConsistentFingerprint();
 
       console.log("Fingerprint generado:", fingerprint);
 
