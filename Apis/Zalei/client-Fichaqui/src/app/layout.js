@@ -4,8 +4,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Make You - Fichaqui",
-  description: "App Creada unica y exclusivamente para fichar en MakeYou",
+  title: "Zalei - Fichaqui",
+  description: "App Creada unica y exclusivamente para fichar en Zalei Agropecuaria",
 };
 
 export default function RootLayout({ children }) {
