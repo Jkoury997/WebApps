@@ -122,8 +122,127 @@ export default function Page() {
           <form className="space-y-4" onSubmit={handleSignUp}>
             {/* Formulario de registro */}
             {/* Campos de entrada */}
-            {/* El código de los campos de formulario permanece igual */}
-            {/* Alerta de error y botón de registro */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="firstName">Nombre</Label>
+                <Input
+                  id="firstName"
+                  placeholder="John"
+                  required
+                  type="text"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                />
+              </div>
+              <div>
+                <Label htmlFor="lastName">Apellido</Label>
+                <Input
+                  id="lastName"
+                  placeholder="Doe"
+                  required
+                  type="text"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="dni">DNI</Label>
+              <Input
+                id="dni"
+                placeholder="12345678 sin puntos"
+                required
+                type="text"
+                value={formData.dni}
+                onChange={handleChange}
+              />
+            </div>
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                placeholder="name@example.com"
+                required
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+              />
+            </div>
+            <div>
+              <Label htmlFor="sex">Sexo según DNI</Label>
+              <select
+                id="sex"
+                required
+                value={formData.sex}
+                onChange={handleChange}
+                className="w-full rounded-md border border-gray-300 p-2 text-gray-900 dark:bg-gray-700 dark:text-white"
+              >
+                <option value="" disabled>Seleccionar sexo</option>
+                <option value="Male">Masculino</option>
+                <option value="Female">Femenino</option>
+              </select>
+            </div>
+            <div className="relative">
+              <Label htmlFor="password">Contraseña</Label>
+              <Input
+                id="password"
+                placeholder="••••••••"
+                required
+                type={showPassword ? "text" : "password"}
+                value={formData.password}
+                onChange={handleChange}
+              />
+              <Button
+                className="absolute bottom-1 right-1 h-7 w-7"
+                size="icon"
+                variant="ghost"
+                type="button"
+                onClick={handleTogglePassword}
+              >
+                {showPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
+                <span className="sr-only">Toggle password visibility</span>
+              </Button>
+            </div>
+            <div className="relative">
+              <Label htmlFor="confirmPassword">Confirmar contraseña</Label>
+              <Input
+                id="confirmPassword"
+                placeholder="••••••••"
+                required
+                type={showConfirmPassword ? "text" : "password"}
+                value={formData.confirmPassword}
+                onChange={handleChange}
+              />
+              <Button
+                className="absolute bottom-1 right-1 h-7 w-7"
+                size="icon"
+                variant="ghost"
+                type="button"
+                onClick={handleToggleConfirmPassword}
+              >
+                {showConfirmPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
+                <span className="sr-only">Toggle confirm password visibility</span>
+              </Button>
+            </div>
+            {showError && (
+              <Alert variant="destructive">
+                <TriangleAlertIcon className="h-4 w-4" />
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>{errorMessage}</AlertDescription>
+              </Alert>
+            )}
+            <div className="flex items-center justify-between">
+              <Button className="w-full" type="submit" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
+                    Cargando
+                  </>
+                ) : (
+                  "Registrame"
+                )}
+              </Button>
+            </div>
           </form>
           <div className="text-center text-sm text-gray-500 dark:text-gray-400">
             <Link className="font-medium underline" href="/auth/login">
@@ -139,4 +258,4 @@ export default function Page() {
       </div>
     </div>
   );
-}
+} 
