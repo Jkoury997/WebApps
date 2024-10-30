@@ -5,7 +5,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
   title: "Make You - Fichaqui",
-  description: "App Creada unica y exclusivamente para fichar en MakeYou",
+  description: "App Creada unica y exclusivamente para fichar en MakeYou Srl",
 };
 
 export default function RootLayout({ children }) {

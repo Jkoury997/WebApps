@@ -178,14 +178,19 @@ export default function Page() {
         <h1 className="text-2xl font-bold">Fichada</h1>
         <p className="text-gray-500 dark:text-gray-400">Escanea tu QR para poder fichar.</p>
         <div className="flex items-center justify-center p-1 bg-gray-100 rounded-lg dark:bg-gray-700">
-          <input
-            ref={inputRef}
-            type="text"
-            className="w-full p-2 bg-white rounded dark:bg-gray-800"
-            placeholder="Escanea el código QR aquí"
-            autoFocus // Asegura que el input esté enfocado al cargar la página
-            onChange={(e) => handleScan(e.target.value)} // Llamar a handleScan cuando cambie el valor del input
-          />
+        <input
+  ref={inputRef}
+  type="text"
+  className="w-full p-2 bg-white rounded dark:bg-gray-800"
+  placeholder="Escanea el código QR aquí"
+  autoFocus // Asegura que el input esté enfocado al cargar la página
+  onKeyDown={(e) => {
+    if (e.key === "Enter") {
+      handleScan(e.target.value); // Llamar a handleScan solo si se presiona Enter
+    }
+  }}
+/>
+
         </div>
         {alertMessage && (
           <Alert

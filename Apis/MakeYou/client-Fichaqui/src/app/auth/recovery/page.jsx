@@ -54,7 +54,7 @@ export default function Page() {
           <div className="text-center">
             <h1 className="text-3xl font-bold">Recuperar contraseña</h1>
             <p className="text-gray-500 dark:text-gray-400">
-              Ingresa tu correo electrónico y te enviaremos un código para restablecer tu contraseña.
+              Te enviaremos un código de 6 digitos a tu email.
             </p>
           </div>
           <form className="space-y-4" onSubmit={handleSubmit}>

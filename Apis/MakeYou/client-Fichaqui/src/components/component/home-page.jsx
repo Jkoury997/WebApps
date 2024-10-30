@@ -8,19 +8,8 @@ export default function HomePage() {
       <header className="px-4 lg:px-6 h-14 flex items-center">
         <a className="flex items-center justify-center" href="#">
           <Clock className="h-6 w-6 text-green-600" />
-          <span className="ml-2 text-2xl font-bold text-gray-900">Fichaqui</span>
+          <span className="ml-2 text-2xl font-bold text-gray-900">Fichaqui - Make You</span>
         </a>
-        <nav className="ml-auto flex gap-4 sm:gap-6">
-          <Button variant="ghost" className="text-gray-700 hover:text-green-600">
-            Características
-          </Button>
-          <Button variant="ghost" className="text-gray-700 hover:text-green-600">
-            Precios
-          </Button>
-          <Button variant="ghost" className="text-gray-700 hover:text-green-600">
-            Contacto
-          </Button>
-        </nav>
       </header>
       <main className="flex-1">
         <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48">

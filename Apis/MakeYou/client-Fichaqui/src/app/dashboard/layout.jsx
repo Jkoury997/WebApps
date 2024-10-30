@@ -9,7 +9,7 @@ import { EnableNotification } from '@/components/component/enable-notification';
 import { ToastContainer } from 'react-toastify';
 
 export default function DashboardLayout({ children }) {
-  const titleBrand = "Fichaqui";
+  const titleBrand = "Fichaqui - Make You";
 
   const [isEnabled, setIsEnabled] = useState(false);
 
