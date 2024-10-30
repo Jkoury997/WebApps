@@ -6,6 +6,8 @@ const { getZonesById } = require('./zoneService');
 
 const {sendNotification} = require("../utils/socketHandler");
 
+const MorganaApiService = require("./MorganaApiService")
+
 // Servicio para crear un nuevo registro de asistencia (deducir entrada o salida)
 const createAttendance = async (attendanceData,io) => {
     const { uuid, zoneId } = attendanceData;
@@ -23,7 +25,7 @@ const createAttendance = async (attendanceData,io) => {
     const zoneEmpresaId = zone.empresaId; // Obtener la empresa de la zona
 
     // Verificar si el usuario pertenece a la misma empresa que la zona
-    if (user.empresa !== zoneEmpresaId) {
+    if (user.empresa._id !== zoneEmpresaId) {
         throw new Error('El usuario no puede registrar asistencia en una zona de otra empresa.');
     }
 
@@ -52,6 +54,7 @@ const createAttendance = async (attendanceData,io) => {
         type = 'salida'; // Si han pasado más de 5 minutos, entonces es una salida
     }
 
+
     // Crear la nueva asistencia
     const newAttendance = new Attendance({
         userId,
@@ -63,6 +66,11 @@ const createAttendance = async (attendanceData,io) => {
     sendNotification(userId, { message,type:"success" }, io);
 
     await newAttendance.save();
+
+    //Se crear la asistencia en la base de datos
+    const Morgana = await MorganaApiService.sendAttendanceData(user)
+
+    console.log(Morgana)
     return newAttendance;
 };
 
@@ -83,6 +91,8 @@ const getAttendanceByZone = async (zoneId) => {
     }
     return attendances;
 };
+
+
 
 module.exports = {
     createAttendance,

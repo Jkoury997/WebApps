@@ -41,14 +41,31 @@ const isTrustedDevice = async (userId, fingerprint) => {
 
 // Actualizar el dispositivo de confianza con OTP
 const updateTrustedDevice = async (userId, newFingerprint) => {
-    // Encontrar y actualizar el dispositivo de confianza existente
-    const updatedDevice = await TrustDevice.findOneAndUpdate(
-        { userId },
-        { fingerprint: newFingerprint, trusted: true },
-        { new: true }
-    );
-    return updatedDevice;
+    // Buscar el dispositivo de confianza existente para el userId
+    let existingDevice = await TrustDevice.findOne({ userId });
+
+    if (!existingDevice) {
+        // Si no existe, crea un nuevo dispositivo de confianza
+        existingDevice = await TrustDevice.create({
+            userId,
+            fingerprint: newFingerprint,
+            trusted: true
+        });
+    } else {
+        // Si existe, actualiza el fingerprint y lo marca como confiable
+        await TrustDevice.updateOne(
+            { userId },
+            { fingerprint: newFingerprint, trusted: true }
+        );
+
+        // Actualizar la referencia de `existingDevice` con los cambios
+        existingDevice = await TrustDevice.findOne({ userId });
+    }
+
+    return existingDevice;
 };
+
+
 
 module.exports = {
     registerTrustedDevice,

@@ -3,6 +3,7 @@ const connectDB = require('./database/db');
 const mainRoute = require('./routes/mainRoute');
 const morgan = require('morgan');
 const cors = require('cors');
+const { startTokenRenewal,tokens} = require('./utils/tokenManager');
 require('dotenv').config();
 
 const { errorHandler } = require('./middlewares/errorMiddleware');
@@ -48,6 +49,7 @@ app.set('socketio', io);
 
 // Conectar a MongoDB y luego iniciar el servidor
 connectDB().then(() => {
+    startTokenRenewal(); 
     app.use('/api', mainRoute);
 
     server.listen(PORT, () => {

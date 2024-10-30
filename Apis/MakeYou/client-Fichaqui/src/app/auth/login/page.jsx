@@ -50,79 +50,46 @@ export default function LoginPage() {
   const handleSignIn = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    resetError();  // Limpiar cualquier error previo
+    resetError(); // Limpiar cualquier error previo
 
     try {
-      // Primer paso: autenticación del usuario
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: email,
-          password: password,
-        }),
-      });
-
-      // Si la respuesta no es correcta, arrojar un error
-      if (!response.ok) {
-        throw new Error("Error en el login");
-      }
-
-      // Obtener los datos de la respuesta (ej. tokens)
-      const data = await response.json();
-
-      // Si hay un token de acceso, procedemos con la verificación del dispositivo
-      if (data.accessToken) {
-        const resultFingerprint = await generateFingerprint();
-        console.log(resultFingerprint)
-
-        try {
-          // Verificar el dispositivo enviando la huella digital al backend
-          const fingerprintResponse = await fetch(`/api/auth/trustdevice/verify`, {
+        // Paso 1: Autenticación del usuario
+        const response = await fetch("/api/auth/login", {
             method: "POST",
             headers: {
-              "Content-Type": "application/json",
+                "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              fingerprint: resultFingerprint,
+                email: email,
+                password: password,
             }),
-          });
+        });
 
-          const fingerprintData = await fingerprintResponse.json();
-          console.log(fingerprintData)
-
-          // Verificar si el dispositivo es de confianza
-          if (fingerprintData.isTrusted) {
-            // Redirigir al dashboard si todo está correcto
-            router.push("/dashboard");
-          } else {
-            throw new Error("Dispositivo no reconocido. Verificación fallida.");
-          }
-        } catch (error) {
-          console.error("Error en la verificación del dispositivo:", error);
-          setError("Error verificando el dispositivo");
-          setShowError(true);
+        // Verifica si la respuesta es correcta, de lo contrario arroja un error
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Error en el login");
         }
-      }
-    } catch (error) {
-      console.error("Error en el login:", error);
-      setError(error.message || "Error al iniciar sesión");
-      setShowError(true);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
-  const generateFingerprint = async () => {
-    // Inicializa el agente de Fingerprint.js
-    const fp = await FingerprintJS.load();
-    // Genera la huella digital del dispositivo
-    const result = await fp.get();
-    // El identificador único del dispositivo
-    return result.visitorId;
-  };
+        // Paso 2: Obtener los datos de la respuesta (ej. tokens)
+        const data = await response.json();
+
+        // Paso 3: Verificación y redirección
+        if (data.accessToken) {
+            router.push("/dashboard"); // Redirigir al dashboard si la autenticación es exitosa
+        } else {
+            throw new Error("Token de acceso no disponible.");
+        }
+    } catch (error) {
+        console.error("Error en el login:", error);
+        setError(error.message || "Error al iniciar sesión");
+        setShowError(true);
+    } finally {
+        setIsLoading(false);
+    }
+};
+
+
 
   return (
     <div className="flex h-screen w-full items-center justify-center bg-gray-100 dark:bg-gray-900">
@@ -145,6 +112,7 @@ export default function LoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                autoComplete = "true"
               />
             </div>
             <div className="relative">

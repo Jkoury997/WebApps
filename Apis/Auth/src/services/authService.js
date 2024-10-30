@@ -14,7 +14,7 @@ const registerUser = async (userData) => {
     if (!existingEmpresa) {
         throw new Error('La empresa no existe.');
     }
-
+    
     // Verificar si el email o dni ya existen en la misma empresa
     const existingUser = await User.findOne({
         empresa, 
@@ -90,7 +90,7 @@ const refreshAccessToken = async (refreshToken) => {
 
     // Extraer la información necesaria del token decodificado
     const { userId,empresa,role } = decoded;
-    console.log({ userId,empresa,role })
+
 
     // Generar un nuevo Access Token
     const newAccessToken = jwtService.generateAccessToken(userId,empresa, role);

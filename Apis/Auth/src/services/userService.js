@@ -7,7 +7,9 @@ const getAllUsers = async () => {
 
 // Obtener un usuario por ID sin la contraseña
 const getUserById = async (userId) => {
-    return await User.findById(userId).select('-password');  // Excluir el campo password
+    return await User.findById(userId)
+        .select('-password')         // Excluir el campo password
+        .populate('empresa');        // Traer los datos de la empresa relacionada
 };
 
 // Obtener usuarios por empresa sin la contraseña
@@ -18,6 +20,10 @@ const getUsersByEmpresa = async (empresaId) => {
 // Obtener usuario por email sin la contraseña
 const getUserByEmail = async (email) => {
     return await User.find({ email }).select('-password');  // Excluir el campo password
+};
+
+const getUserByEmailAndEmpresa = async (email, empresaId) => {
+    return await User.findOne({ email, empresa: empresaId }).select('-password');  // Excluir el campo password
 };
 
 // Modificar un usuario por ID (no hay necesidad de excluir la contraseña aquí, porque solo estás actualizando)
@@ -40,7 +46,7 @@ const deleteUser = async (userId) => {
 // Verificar si un userId existe
 const checkUserExists = async (userId) => {
     const user = await User.findById(userId);
-    console.log(user)
+    
     return !!user;  // Devuelve true si el usuario existe, false si no
 };
 
@@ -53,4 +59,5 @@ module.exports = {
     updateUser,
     deleteUser,
     checkUserExists,
+    getUserByEmailAndEmpresa
 };
