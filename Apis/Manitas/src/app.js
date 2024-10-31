@@ -25,7 +25,9 @@ if (!fs.existsSync(uploadsPath)) {
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Middleware
-app.use(express.json());
+// Middleware con límite de tamaño aumentado
+app.use(express.json({ limit: '50mb' })); // Límite para JSON
+app.use(express.urlencoded({ limit: '50mb', extended: true })); // Límite para datos de formularios
 app.use(morgan('dev'));
 app.use(cors({
     origin: '*', // Asegúrate de permitir tu dominio específico si es necesario
