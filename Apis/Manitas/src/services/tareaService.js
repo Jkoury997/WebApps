@@ -56,14 +56,15 @@ const eliminarTarea = async (tareaId) => {
   return await Tarea.findByIdAndDelete(tareaId);
 };
 
+
 // Aprobar o rechazar supervisión
 const supervisarTarea = async (tareaId, supervisionAprobada, motivoRechazo, imagenSupervision, supervisadoPor) => {
   return await Tarea.findByIdAndUpdate(
     tareaId,
     {
       supervisionAprobada,
-      motivoRechazo: supervisionAprobada === 'false' ? motivoRechazo : null,
-      imagenSupervision: supervisionAprobada === 'false' ? imagenSupervision : null, // Solo almacenar la imagen si es rechazada
+      motivoRechazo: !supervisionAprobada ? motivoRechazo : null,
+      imagenSupervision: !supervisionAprobada ? imagenSupervision : null, // Solo almacenar la imagen si es rechazada
       supervisada: true,
       fechaSupervisada: Date.now(),
       supervisadoPor
@@ -71,7 +72,6 @@ const supervisarTarea = async (tareaId, supervisionAprobada, motivoRechazo, imag
     { new: true }
   );
 };
-
 
 
 module.exports = {

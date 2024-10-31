@@ -115,14 +115,22 @@ const listarTareas = async (req, res, next) => {
 
 // Aprobar o rechazar supervisión
 const supervisarTarea = async (req, res, next) => {
-  console.log(req.body)
+  console.log(req.body);
   try {
     const tareaId = req.params.id;
-    const { supervisionAprobada, motivoRechazo,supervisadoPor } = req.body;
+    const { supervisionAprobada, motivoRechazo, supervisadoPor } = req.body;
     const imagenSupervision = req.file ? req.file.filename : null;
-    
 
-    const tareaSupervisada = await tareaService.supervisarTarea(tareaId, supervisionAprobada, motivoRechazo, imagenSupervision,supervisadoPor);
+    // Convertir supervisionAprobada a booleano
+    const isSupervisionAprobada = supervisionAprobada === 'true';
+
+    const tareaSupervisada = await tareaService.supervisarTarea(
+      tareaId,
+      isSupervisionAprobada,
+      motivoRechazo,
+      imagenSupervision,
+      supervisadoPor
+    );
 
     if (!tareaSupervisada) {
       return res.status(404).json({ message: 'Tarea no encontrada' });
@@ -133,6 +141,7 @@ const supervisarTarea = async (req, res, next) => {
     next(error);
   }
 };
+
 
 module.exports = {
   crearTarea,
