@@ -73,30 +73,24 @@ export default function Page() {
   };
 
   const handleSupervisionTarea = async (tareaId, comentario, imagen, realizadaCorrectamente) => {
-
     try {
-      // Crear un objeto FormData para manejar la subida de archivos e información adicional
       const formData = new FormData();
       
-    
-  
       // Si la supervisión fue correcta, marcar como aprobada
       if (realizadaCorrectamente === "si") {
-        formData.append('supervisionAprobada', true);
+        formData.append('supervisionAprobada', 'true');
       } else {
-        // Si no fue aprobada, agregar los campos de rechazo
-        formData.append('supervisionAprobada', false);
+        formData.append('supervisionAprobada', 'false');
         formData.append('motivoRechazo', comentario);
         formData.append('imagenSupervision', imagen); // Aquí subes la imagen de la supervisión si corresponde
       }
   
       // Hacer la solicitud POST a la API para supervisar la tarea
       const response = await fetch(`/api/manitas/tareas/supervisar?tareaId=${tareaId}`, {
-        method: 'POST', // Usar POST o PATCH según tu API
-        body: formData, // Enviar el formData
+        method: 'POST',
+        body: formData,
         headers: {
-          // El navegador manejará el 'Content-Type' automáticamente para FormData
-          Authorization: `Bearer ${localStorage.getItem('token')}`, // Asumiendo que usas un token
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       });
   
@@ -104,17 +98,14 @@ export default function Page() {
         throw new Error('Error al supervisar la tarea.');
       }
   
-      const data = await response.json(); // Parsear la respuesta como JSON
-  
-      // Manejar la respuesta exitosa
+      const data = await response.json();
       console.log('Supervisión exitosa', data);
       await refetchTareas();
-      // Aquí puedes realizar alguna acción como actualizar la UI o llamar a una función de actualización.
     } catch (error) {
       console.error('Hubo un error al supervisar la tarea:', error);
-      // Manejo de errores, como mostrar un mensaje en la UI
     }
   };
+  
   
 
   return (
