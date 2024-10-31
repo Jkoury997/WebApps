@@ -47,6 +47,8 @@ export function QRPresentismo() {
     }
   }, [isVisible]);
 
+
+
   return (
     <div className="flex flex-col items-center justify-center">
   <div className="max-w-md w-full px-4 text-center space-y-4">
@@ -65,6 +67,7 @@ export function QRPresentismo() {
             }}
             value={qrCode}
             viewBox={`0 0 256 256`}
+
           />
         
         </>
