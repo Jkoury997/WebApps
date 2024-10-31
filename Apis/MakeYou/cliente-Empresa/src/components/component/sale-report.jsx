@@ -457,6 +457,7 @@ export default function SaleReport({ dataFormasPagos, mergedData,tiendasOptions 
         onChange={(e) => handleSelectChange(e.target.value)}
         className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
       >
+        <option key="elegir" value="Elegir Tienda">Elegit tienda</option>
         {tiendasOptions.map((item) => (
           <option key={item.value} value={item.label}>
             {item.label}

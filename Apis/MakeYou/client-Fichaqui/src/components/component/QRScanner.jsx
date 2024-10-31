@@ -97,7 +97,7 @@ const QRScanner = forwardRef(({ error, handleScan, handleError }, ref) => {
             style={previewStyle}
             onError={handleError}
             onScan={handleScan}
-            constraints={{ video: { facingMode: "environment" } }} // Aquí puedes configurar la cámara trasera o frontal
+            constraints={{ video: { facingMode: "user" } }} // Aquí puedes configurar la cámara trasera o frontal
           />
         )}
       </div>

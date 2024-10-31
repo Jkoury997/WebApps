@@ -2,6 +2,9 @@
 const categoriaService = require('../services/categoriaService');
 
 const crearCategoria = async (req, res, next) => {
+  console.log(
+    req.body
+  )
   try {
     const categoria = await categoriaService.crearCategoria(req.body);
     res.status(201).json(categoria);

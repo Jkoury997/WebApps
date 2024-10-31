@@ -1,6 +1,6 @@
 // createCategoriasMantenimiento.js
 const mongoose = require('mongoose');
-const Categoria = require('./src/database/models/Categorias'); // Asegúrate de ajustar el path al modelo de Categoría
+const Categoria = require('./src/database/models/Categoria'); // Asegúrate de ajustar el path al modelo de Categoría
 
 // Conexión a la base de datos
 const conectarDB = async () => {
@@ -16,6 +16,8 @@ const conectarDB = async () => {
   }
 };
 
+const empresa = "a17cd3ca-3f71-48ec-bfc1-76ef94a57921"
+
 // Crear las categorías de mantenimiento
 const crearCategoriasMantenimiento = async () => {
   const categorias = [
@@ -23,61 +25,61 @@ const crearCategoriasMantenimiento = async () => {
       titulo: 'Reparaciones Eléctricas',
       descripcion: 'Tareas relacionadas con la reparación y mantenimiento del sistema eléctrico.',
       creadoPor: 'Jorge Koury',
-      empresa: "85845c7f-6cfb-4cfa-b4db-3887a485b7d4"
+      empresa: empresa
     },
     {
       titulo: 'Plomería',
       descripcion: 'Mantenimiento y reparación de instalaciones de agua y tuberías.',
       creadoPor: 'Jorge Koury',
-      empresa: "85845c7f-6cfb-4cfa-b4db-3887a485b7d4"
+      empresa: empresa
     },
     {
       titulo: 'Pintura y Restauración',
       descripcion: 'Tareas de pintura, restauración de superficies y paredes.',
       creadoPor: 'Jorge Koury',
-      empresa: "85845c7f-6cfb-4cfa-b4db-3887a485b7d4"
+      empresa: empresa
     },
     {
       titulo: 'Mantenimiento de Aire Acondicionado',
       descripcion: 'Instalación y reparación de equipos de aire acondicionado.',
       creadoPor: 'Jorge Koury',
-      empresa: "85845c7f-6cfb-4cfa-b4db-3887a485b7d4"
+      empresa: empresa
     },
     {
       titulo: 'Carpintería',
       descripcion: 'Tareas relacionadas con la reparación y construcción de elementos de madera.',
       creadoPor: 'Jorge Koury',
-      empresa: "85845c7f-6cfb-4cfa-b4db-3887a485b7d4"
+      empresa: empresa
     },
     {
       titulo: 'Jardinería',
       descripcion: 'Mantenimiento de áreas verdes, poda de plantas y árboles.',
       creadoPor: 'Jorge Koury',
-      empresa: "85845c7f-6cfb-4cfa-b4db-3887a485b7d4"
+      empresa: empresa
     },
     {
       titulo: 'Limpieza General',
       descripcion: 'Limpieza de áreas comunes, oficinas y espacios públicos.',
       creadoPor: 'Jorge Koury',
-      empresa: "85845c7f-6cfb-4cfa-b4db-3887a485b7d4"
+      empresa: empresa
     },
     {
       titulo: 'Mantenimiento de Equipos',
       descripcion: 'Revisión y reparación de equipos y maquinarias.',
       creadoPor: 'Jorge Koury',
-      empresa: "85845c7f-6cfb-4cfa-b4db-3887a485b7d4"
+      empresa: empresa
     },
     {
       titulo: 'Seguridad y Alarmas',
       descripcion: 'Revisión y reparación de sistemas de seguridad, alarmas y cámaras.',
       creadoPor: 'Jorge Koury',
-      empresa: "85845c7f-6cfb-4cfa-b4db-3887a485b7d4"
+      empresa: empresa
     },
     {
       titulo: 'Control de Plagas',
       descripcion: 'Tareas relacionadas con la eliminación de plagas y fumigación.',
       creadoPor: 'Jorge Koury',
-      empresa: "85845c7f-6cfb-4cfa-b4db-3887a485b7d4"
+      empresa: empresa
     },
   ];
 
