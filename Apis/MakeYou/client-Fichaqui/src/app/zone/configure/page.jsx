@@ -25,6 +25,8 @@ export default function Page() {
       };
   
       checkModo();
+
+      
     }, [router]);
   
     const handleModeSelect = (mode) => {

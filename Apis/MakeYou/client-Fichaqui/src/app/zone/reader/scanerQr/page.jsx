@@ -4,6 +4,7 @@ import CardEmployed from "@/components/component/card-employed";
 import { useRouter } from "next/navigation";
 import QRScanner from "@/components/component/QRScanner";
 import { Alert } from "@/components/component/alert";
+import useGeolocation from "@/hooks/useGeoLocation";
 
 
 export default function Page() {
@@ -18,6 +19,8 @@ export default function Page() {
   const scannerRef = useRef(null); // Referencia al componente QRScanner
 
   const successSound = useRef(null);
+
+  const { location, errorlocation } = useGeolocation();
 
   useEffect(() => {
     successSound.current = new Audio('/sounds/success.mp3'); // Cargar el sonido de éxito
