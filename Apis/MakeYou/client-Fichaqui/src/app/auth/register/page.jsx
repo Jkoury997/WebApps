@@ -161,7 +161,7 @@ export default function Page() {
                 id="dni"
                 placeholder="12345678 sin puntos"
                 required
-                type="text"
+                type="number"
                 value={formData.dni}
                 onChange={handleChange}
               />

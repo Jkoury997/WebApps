@@ -1,26 +1,21 @@
-"use client"
-import IconGrid from "@/components/component/acces-fast";
+import { AppSidebar } from "@/components/component/sidebar/app-sidebar"
 import {
-    HomeIcon,
-    SearchIcon,
-    MailIcon,
-    CalendarIcon,
-    CameraIcon,
-    Music2Icon,
-    VideoIcon,
-    SettingsIcon,
-    PackageIcon,
-    EggIcon,
-    HammerIcon
-  } from "lucide-react";
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
+import { Separator } from "@/components/ui/separator"
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar"
 
 export default function Page() {
-    const items = [
-      { name: "Inicio", icon: HomeIcon, url: "/dashboard" },
-      { name: "Mantenimiento", icon: HammerIcon, url: "/dashboard/mantenimiento" },
-      { name: "Variables", icon: HammerIcon, url: "/dashboard/gerencia/tiendas/variables" },
-
-    ];
-  
-    return <IconGrid items={items} />;
-  }
+  return (
+    <p>jorge</p>
+  );
+}

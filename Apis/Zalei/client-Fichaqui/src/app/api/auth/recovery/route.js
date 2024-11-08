@@ -3,16 +3,22 @@ import { NextResponse } from 'next/server';
 const URL_API_AUTH = process.env.NEXT_PUBLIC_URL_API_AUTH;
 const NEXT_PUBLIC_EMPRESA_ID = process.env.NEXT_PUBLIC_EMPRESA_ID
 
+function toLowerCaseString(str) {
+  return str ? str.toLowerCase() : '';
+}
+
 export async function POST(request) {
 
   try {
-    const { email } = await request.json();
+    let { email } = await request.json();
 
     if (!email) {
       return NextResponse.json({ error: 'Correo electrónico es requerido' }, { status: 400 });
     }
 
-    console.log({ email, empresaId: NEXT_PUBLIC_EMPRESA_ID})
+      // Convertir email a minúsculas
+      email = toLowerCaseString(email);
+
 
     const response = await fetch(`${URL_API_AUTH}/api/recovery/generate-otp`, {
       method: 'POST',

@@ -1,366 +1,296 @@
 "use client";
+
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useEffect, useState } from "react";
-import { Alert } from "@/components/ui/alert";
-import { StepIndicator } from "@/components/component/step-indicartor";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "sonner"
+import { useRouter } from "next/navigation";
+
+import { Camera } from "lucide-react";
 
 export default function Page() {
-  const [titulo, setTitulo] = useState("");
-  const [descripcion, setDescripcion] = useState("");
-  const [categoria, setCategoria] = useState("");
-  const [lugar, setLugar] = useState("");
-  const [lugares, setLugares] = useState([]); // Inicialización como array vacío
-  const [categorias, setCategorias] = useState([]); // Inicialización como array vacío
-  const [urgencia, setUrgencia] = useState([]); // Inicialización como array vacío
-  const [imagenAntes, setImagenAntes] = useState(null); // Para manejar la imagen
+  const [formData, setFormData] = useState({
+    lugar: "",
+    categoria: "",
+    urgencia: "",
+    titulo: "",
+    descripcion: "",
+    imagenAntes: null,
+  });
+  const [lugares, setLugares] = useState([]);
+  const [categorias, setCategorias] = useState([]);
   const [alertMessage, setAlertMessage] = useState(null);
-  const [activeStep, setActiveStep] = useState(1); // Control del paso activo
+  const [activeStep, setActiveStep] = useState(1);
+  const [imagenPreview, setImagenPreview] = useState(null);
   const totalSteps = 4;
+  const router = useRouter();
 
-  const [imagenPreview, setImagenPreview] = useState(null); // Estado para almacenar la URL de la imagen
-
-// Función para manejar la carga de imagen
-const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    setImagenAntes(file); // Guardar la imagen seleccionada
-    setImagenPreview(URL.createObjectURL(file)); // Crear una URL para mostrar la vista previa
-};
-
-
-  // Cargar lugares desde la API
   useEffect(() => {
     fetchLugares();
     fetchCategorias();
-  }, []); // useEffect ahora está correctamente configurado
+  }, []);
 
-
-
-  // Función para cargar los lugares desde la API
   const fetchLugares = async () => {
     try {
       const response = await fetch("/api/manitas/lugar/listar");
       const data = await response.json();
-
       setLugares(data);
     } catch (error) {
-      setAlertMessage({
-        type: "error",
-        message: "Error al cargar Lugares",
-      });
+      setAlertMessage({ type: "error", message: "Error al cargar Lugares" });
     }
   };
 
-  // Función para cargar las categorías desde la API
   const fetchCategorias = async () => {
     try {
       const response = await fetch("/api/manitas/categoria/listar");
       const data = await response.json();
-
       setCategorias(data);
     } catch (error) {
-      setAlertMessage({
-        type: "error",
-        message: "Error al cargar Categorias",
-      });
+      setAlertMessage({ type: "error", message: "Error al cargar Categorias" });
     }
   };
 
-  // Validar si el formulario de cada paso está completo
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    setFormData((prev) => ({ ...prev, imagenAntes: file }));
+    setImagenPreview(URL.createObjectURL(file));
+  };
+
   const isFormComplete = () => {
-    if (activeStep === 1 && lugar) return true; // Paso 1: Selección del lugar
-    if (activeStep === 2 && categoria && urgencia) return true; // Paso 2: Categoría
-    if (activeStep === 3 && titulo && descripcion) return true; // Paso 3: Detalles
-    if (activeStep === 4 && imagenAntes) return true; // Paso 4: Imagen
+    const { lugar, categoria, urgencia, titulo, descripcion, imagenAntes } = formData;
+    if (activeStep === 1 && lugar) return true;
+    if (activeStep === 2 && categoria && urgencia) return true;
+    if (activeStep === 3 && titulo && descripcion) return true;
+    if (activeStep === 4 && imagenAntes) return true;
     return false;
   };
 
-  // Función para cambiar al siguiente paso
   const handleNextStep = () => {
     if (isFormComplete()) {
-      setActiveStep(activeStep + 1);
+      setActiveStep((prev) => prev + 1);
     }
   };
 
-  // Función para manejar el envío del formulario
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Evita la recarga de la página
+    e.preventDefault();
     setAlertMessage(null);
 
-    // Usamos FormData para enviar tanto los datos de texto como la imagen
-    const formData = new FormData();
-    formData.append("titulo", titulo);
-    formData.append("descripcion", descripcion);
-    formData.append("categoria", categoria);
-    formData.append("urgencia",urgencia)
-    formData.append("lugar", lugar);
-    formData.append("imagenAntes", imagenAntes); // Añadir la imagen seleccionada
-     // Depurar el contenido de FormData
-  for (const [key, value] of formData.entries()) {
-    console.log(`${key}: ${value}`);
-  }
+    const formDataToSend = new FormData();
+    Object.keys(formData).forEach((key) => {
+      formDataToSend.append(key, formData[key]);
+    });
+
     try {
-      // Enviar la solicitud al backend
       const response = await fetch("/api/manitas/tareas/crear", {
         method: "POST",
-        body: formData, // Usamos FormData en lugar de JSON.stringify
+        body: formDataToSend,
       });
 
       if (response.ok) {
-        const data = await response.json();
-        setAlertMessage({
-          type: "success",
-          message: "Tarea creada exitosamente.",
+        // Muestra el toast de éxito
+        toast("Tarea creada exitosamente",{description: "La tarea de mantenimiento ha sido registrada correctamente.",});
+
+        setFormData({
+          lugar: "",
+          categoria: "",
+          urgencia: "",
+          titulo: "",
+          descripcion: "",
+          imagenAntes: null,
         });
-        // Reiniciar campos del formulario
-        setTitulo("");
-        setDescripcion("");
-        setCategoria("");
-        setUrgencia("");
-        setLugar("");
-        setImagenAntes(null); // Reiniciar la imagen
-        setImagenPreview(null)
-        setActiveStep(1); // Reiniciar el flujo de pasos
+        setImagenPreview(null);
+        setActiveStep(1);
+        router.push("/dashboard/mantenimiento/tareas");
       } else {
-        setAlertMessage({
-          type: "error",
-          message: "Error al crear la tarea",
-        });
+        toast.error("La tarea no se creado",{description: "Error al crear la tarea"});
+        setAlertMessage({ type: "error", message: "Error al crear la tarea" });
       }
     } catch (error) {
-      setAlertMessage({
-        type: "error",
-        message: error.message,
-      });
+      toast.error("La tarea no se creado",{description: "Error al crear la tarea"});
+      setAlertMessage({ type: "error", message: error.message });
     }
   };
 
   return (
-    <>
-      {alertMessage && (
-        <Alert
-          type={alertMessage.type}
-          title={alertMessage.type === "error" ? "Error" : "Éxito"}
-          message={alertMessage.message}
-          onClose={() => setAlertMessage(null)}
-          className="mb-2"
-        />
-      )}
+    <div className="max-w-2xl mx-auto p-4">
 
-      {/* Indicador de pasos */}
-      <div className="mb-3 flex flex-col items-center">
-        <StepIndicator activeStep={activeStep} steps={totalSteps} />
-      </div>
-
-
-      <div className="mb-2 flex flex-col items-center">
-        <h1 className="text-2xl font-bold mb-2 text-center">Crear tarea de mantenimieto</h1>
-        <p className="text-muted-foreground text-center">
-          Utiliza este formulario para crear una tarea de mantenimiento
-        </p>
-      </div>
-      {/* Formulario dinámico basado en el paso activo */}
-      {activeStep === 1 && (
-        <Card className="mt-2">
-          <CardHeader>
-            <CardTitle>Seleccionar Lugar</CardTitle>
-            <CardDescription>Selecciona el lugar para la tarea</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {/* Selector de lugar */}
-            <Select onValueChange={setLugar}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Selecciona un lugar" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectLabel>Lugar</SelectLabel>
-                  {lugares.length > 0 ? (
-                    lugares.map((lugar) => (
-                      <SelectItem key={lugar._id} value={lugar._id}>
-                        {lugar.nombre}
-                      </SelectItem>
-                    ))
-                  ) : (
-                    <SelectItem disabled>No hay lugares disponibles</SelectItem>
-                  )}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-
-            <Button
-              type="button"
-              className="w-full mt-3"
-              disabled={!isFormComplete()}
-              onClick={handleNextStep}
-            >
-              Siguiente
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
-      {activeStep === 2 && (
-        <Card className="mt-2">
-          <CardHeader>
-            <CardTitle>Seleccionar Categoria</CardTitle>
-            <CardDescription>Selecciona la categoria para la tarea</CardDescription>
-          </CardHeader>
-          <CardContent>
-          <div className="mb-4">
-          <Label>Categoria</Label>
-            <Select onValueChange={setCategoria} >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Selecciona una Categoria" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectLabel>Categoria</SelectLabel>
-                  {categorias.length > 0 ? (
-                    categorias.map((categoria) => (
-                      <SelectItem key={categoria._id} value={categoria._id}>
-                        {categoria.titulo}
-                      </SelectItem>
-                    ))
-                  ) : (
-                    <SelectItem disabled>No hay categorias disponibles</SelectItem>
-                  )}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-center">Crear tarea de mantenimiento</CardTitle>
+          <CardDescription className="text-center">
+            Completa el formulario para crear una nueva tarea de mantenimiento
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-6">
+            <div className="flex justify-between mb-2">
+              {[1, 2, 3, 4].map((step) => (
+                <div
+                  key={step}
+                  className={`w-1/4 h-2 rounded-full ${
+                    step <= activeStep ? 'bg-primary' : 'bg-gray-200'
+                  }`}
+                />
+              ))}
             </div>
-            {/* Selector de categoria */}
-            <div className="mb-4">
-            <Label>Urgencia</Label>
-            <Select onValueChange={setUrgencia}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Selecciona Urgencia" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectLabel>Categoria</SelectLabel>
-                    <SelectItem value="baja">Baja</SelectItem>
-                    <SelectItem value="media">Media</SelectItem>
-                    <SelectItem value="alta">Alta</SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
+            <p className="text-center text-sm text-gray-500">
+              Paso {activeStep} de {totalSteps}
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit}>
+            {activeStep === 1 && (
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="lugar">Lugar</Label>
+                  <Select name="lugar" value={formData.lugar} onValueChange={(value) => handleInputChange({ target: { name: 'lugar', value } })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona un lugar" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Lugares disponibles</SelectLabel>
+                        {lugares.map((lugar) => (
+                          <SelectItem key={lugar._id} value={lugar._id}>
+                            {lugar.nombre}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
+
+            {activeStep === 2 && (
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="categoria">Categoría</Label>
+                  <Select name="categoria" value={formData.categoria} onValueChange={(value) => handleInputChange({ target: { name: 'categoria', value } })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona una categoría" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Categorías disponibles</SelectLabel>
+                        {categorias.map((categoria) => (
+                          <SelectItem key={categoria._id} value={categoria._id}>
+                            {categoria.titulo}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="urgencia">Urgencia</Label>
+                  <Select name="urgencia" value={formData.urgencia} onValueChange={(value) => handleInputChange({ target: { name: 'urgencia', value } })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona la urgencia" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Nivel de urgencia</SelectLabel>
+                        <SelectItem value="baja">Baja</SelectItem>
+                        <SelectItem value="media">Media</SelectItem>
+                        <SelectItem value="alta">Alta</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
+
+            {activeStep === 3 && (
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="titulo">Título</Label>
+                  <Input
+                    id="titulo"
+                    name="titulo"
+                    value={formData.titulo}
+                    onChange={handleInputChange}
+                    placeholder="Ingrese el título de la tarea"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="descripcion">Descripción</Label>
+                  <Textarea
+                    id="descripcion"
+                    name="descripcion"
+                    value={formData.descripcion}
+                    onChange={handleInputChange}
+                    placeholder="Describa la tarea en detalle"
+                    rows={4}
+                  />
+                </div>
+              </div>
+            )}
+
+            {activeStep === 4 && (
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="imagenAntes">Imagen Antes</Label>
+                  <div className="mt-2 flex items-center justify-center w-full">
+                    <label
+                      htmlFor="imagenAntes"
+                      className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100"
+                    >
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <Camera className="w-10 h-10 mb-3 text-gray-400" />
+                        <p className="mb-2 text-sm text-gray-500">
+                          <span className="font-semibold">Haz clic para subir</span> o arrastra y suelta
+                        </p>
+                        <p className="text-xs text-gray-500">PNG, JPG, GIF hasta 10MB</p>
+                      </div>
+                      <Input
+                        id="imagenAntes"
+                        name="imagenAntes"
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        className="hidden"
+                        onChange={handleImageChange}
+                      />
+                    </label>
+                  </div>
+                </div>
+                {imagenPreview && (
+                  <div className="mt-4">
+                    <img src={imagenPreview} alt="Vista previa" className="max-w-full h-auto rounded-lg shadow-md" />
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="mt-6 flex justify-between">
+              {activeStep > 1 && (
+                <Button type="button" variant="outline" onClick={() => setActiveStep(prev => prev - 1)}>
+                  Anterior
+                </Button>
+              )}
+              {activeStep < totalSteps ? (
+                <Button type="button" onClick={handleNextStep} disabled={!isFormComplete()}>
+                  Siguiente
+                </Button>
+              ) : (
+                <Button type="submit" disabled={!isFormComplete()}>
+                  Crear Tarea
+                </Button>
+              )}
             </div>
-
-
-            <Button
-              type="button"
-              className="w-full mt-3"
-              disabled={!isFormComplete()}
-              onClick={handleNextStep}
-            >
-              Siguiente
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
-      {activeStep === 3 && (
-        <Card className="mt-2">
-          <CardHeader>
-            <CardTitle>Detalles de la Tarea</CardTitle>
-            <CardDescription>
-              Ingresa el título y descripción de la tarea
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="mb-4">
-              <Label>Título</Label>
-              <Input
-                value={titulo}
-                onChange={(e) => setTitulo(e.target.value)}
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <Label>Descripción</Label>
-              <Input
-                value={descripcion}
-                onChange={(e) => setDescripcion(e.target.value)}
-                required
-              />
-            </div>
-            <Button
-              type="button"
-              className="w-full mt-3"
-              disabled={!isFormComplete()}
-              onClick={handleNextStep}
-            >
-              Siguiente
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
-{activeStep === 4 && (
-  <Card className="mt-2">
-    <CardHeader>
-      <CardTitle>Subir Imagen Antes</CardTitle>
-      <CardDescription>
-        Sube la imagen antes de realizar la tarea
-      </CardDescription>
-    </CardHeader>
-    <CardContent>
-      <div className="mb-4">
-        <Label>Imagen Antes</Label>
-        <Input 
-          type="file" 
-          accept="image/*"  // Acepta solo imágenes
-          capture="environment" // Utiliza la cámara trasera del dispositivo
-          onChange={handleImageChange} 
-          required 
-        />
-        {/* El campo de carga de imagen */}
-      </div>
-
-      {/* Mostrar la vista previa de la imagen seleccionada */}
-      {imagenPreview ? (
-        <div className="mb-4 flex justify-center">
-          <img
-            src={imagenPreview}
-            alt="Vista previa"
-            className="w-full h-auto max-w-xs rounded-md"
-          />
-        </div>
-      ) : (
-        <div className="text-center text-gray-500">
-          No se ha seleccionado ninguna imagen
-        </div>
-      )}
-      <Button
-        type="button"
-        className="w-full mt-3"
-        disabled={!imagenAntes}  // Deshabilita el botón si no hay imagen
-        onClick={handleSubmit}
-      >
-        Crear Tarea
-      </Button>
-    </CardContent>
-  </Card>
-)}
-
-    </>
-  );
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  )
 }
