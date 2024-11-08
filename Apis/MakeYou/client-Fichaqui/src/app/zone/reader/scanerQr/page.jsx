@@ -4,7 +4,7 @@ import CardEmployed from "@/components/component/card-employed";
 import { useRouter } from "next/navigation";
 import QRScanner from "@/components/component/QRScanner";
 import { Alert } from "@/components/component/alert";
-import useGeolocation from "@/hooks/useGeoLocation";
+import useGeolocation from "@/hooks/useGeolocation";
 
 
 export default function Page() {
