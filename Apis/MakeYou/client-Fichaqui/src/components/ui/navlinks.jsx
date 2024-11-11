@@ -8,62 +8,68 @@ import { HomeIcon, UserRound, ChevronDown } from "lucide-react";
 import { decode } from 'jsonwebtoken';
 import Cookies from 'js-cookie';
 
-// Definir enlaces para el usuario
+// Definir enlaces comunes para todos los usuarios
 const usuarioLinks = [
   { 
-    name: 'Home', 
+    name: 'Inicio', 
     href: '/dashboard', 
     icon: HomeIcon 
   },
 ];
 
-// Definir enlaces según roles
+// Definir enlaces para recursos humanos
+const recursosHumanosLinks = [
+  { 
+    name: 'Inicio', 
+    href: '/dashboard', 
+    icon: HomeIcon 
+  },
+  { 
+    name: 'Personal', 
+    href: '/dashboard/recursoshumanos', 
+    icon: UserRound,
+    subLinks: [
+      { 
+        name: 'Lista', 
+        href: '/dashboard/recursoshumanos/employed/list' 
+      },
+      { 
+        name: 'Agregar', 
+        href: '/dashboard/recursoshumanos/employed/add' 
+      },
+      { 
+        name: 'Modificar asistencia', 
+        href: '/dashboard/recursoshumanos/employed/attendance/modify' 
+      },
+    ] 
+  },
+];
+
+// Definir enlaces para admin (incluye los enlaces de recursos humanos)
+const adminLinks = [
+  ...recursosHumanosLinks,  // Usar spread operator para incluir enlaces de recursos humanos
+  { 
+    name: 'Admin', 
+    href: '/dashboard/admin', 
+    icon: UserRound,
+    subLinks: [
+      { 
+        name: 'Zona', 
+        href: '/dashboard/admin/zone' 
+      },
+      { 
+        name: 'Crear zona', 
+        href: '/dashboard/admin/zone/create' 
+      },
+    ] 
+  },
+];
+
+// Definir enlaces según el rol
 const linksByRole = {
-  recursos_humanos: [
-    { 
-      name: 'Home', 
-      href: '/dashboard', 
-      icon: HomeIcon 
-    },
-    { 
-      name: 'Employed', 
-      href: '/dashboard/recursoshumanos', 
-      icon: UserRound,
-      subLinks: [
-        { 
-          name: 'List Employees', 
-          href: '/dashboard/recursoshumanos/employed/list' 
-        },
-        { 
-          name: 'Add Employee', 
-          href: '/dashboard/recursoshumanos/employed/add' 
-        },
-        { 
-          name: 'Modify Attendance', 
-          href: '/dashboard/recursoshumanos/employed/attendance/modify' 
-        },
-      ] 
-    },
-  ],
+  recursos_humanos: recursosHumanosLinks,
+  admin: adminLinks,
   usuario: usuarioLinks,
-  admin: [
-    ...usuarioLinks,  // Usar spread operator para combinar enlaces de 'usuario'
-    { 
-      name: 'Admin', 
-      href: '/dashboard/admin', 
-      icon: UserRound,
-      subLinks: [
-        { 
-          name: 'Zona', 
-          href: '/dashboard/admin/zone' 
-        },
-        { 
-          name: 'Crear zona', 
-          href: '/dashboard/admin/zone/create' 
-        },
-      ] 
-    },
-  ],
 };
 
 export function NavLinks() {
