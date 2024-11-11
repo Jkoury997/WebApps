@@ -118,7 +118,6 @@ async function fetchTokensForAllCompanies() {
             };
         }
 
-        console.log('Tokens actualizados para todas las empresas:', JSON.stringify(tokens, null, 2));
     } catch (error) {
         console.error('Error al actualizar tokens de empresas:', error.message);
     }

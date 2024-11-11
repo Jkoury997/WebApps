@@ -5,6 +5,9 @@ const morgan = require('morgan');
 const cors = require('cors');
 const { startTokenRenewal,tokens} = require('./utils/tokenManager');
 require('dotenv').config();
+const cron = require('node-cron');
+
+const { generarSalidaAutomatica } = require('./services/attendanceService');
 
 const { errorHandler } = require('./middlewares/errorMiddleware');
 
@@ -16,10 +19,14 @@ const socketIO = require("socket.io");
 const http = require("http");
 
 
-
-
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Ejecutar cada hora
+cron.schedule('0 * * * *', () => {
+    console.log("Ejecutando tarea de cierre automático");
+    generarSalidaAutomatica();
+});
 
 // Middleware
 app.use(express.json());

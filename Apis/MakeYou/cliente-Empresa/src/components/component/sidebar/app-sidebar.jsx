@@ -61,17 +61,10 @@ export function AppSidebar({ ...props }) {
         icon: LayoutList,
         items: [
           {
-            title: "Genesis",
-            url: "#",
+            title: "Tareas",
+            url: "/mantenimiento/tareas/listado",
           },
-          {
-            title: "Explorer",
-            url: "#",
-          },
-          {
-            title: "Quantum",
-            url: "#",
-          },
+
         ],
       },
      

@@ -167,7 +167,7 @@ export default function Component() {
 
     const data = {
       Tienda: tienda,
-      Almacen: "LAN",
+      Almacen: "WEB",
       Items: Object.values(scannedItems), // Convierte el objeto en un array de items
     };
 
@@ -291,7 +291,7 @@ export default function Component() {
         <CardFooter className="flex justify-end p-2 pb-4">
           <Button
             onClick={finalizePedido}
-            disabled={Object.keys(scannedItems).length <= 1}
+            disabled={scannedItems.length <= 1}
           >
             <PackageCheck className="mr-2 h-4 w-4" />
             Finalizar Pedido

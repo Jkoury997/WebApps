@@ -45,7 +45,29 @@ const userDetails = async (userId) => {
     }
 }
 
+const userByEmpresa = async (empresaId) => {
+    try {
+        const response = await fetch(`${AUTH_API}/api/user/empresa/${empresaId}`);
+
+        // Si la respuesta no es exitosa, lanzamos un error
+        if (!response.ok) {
+            if (response.status === 404) {
+                return false; // No encontrado
+            }
+            throw new Error('Error al contactar con la API de autenticación');
+        }
+
+        const data = await response.json();
+
+        return data  // Asumiendo que la API de autenticación devuelve un campo 'exists'
+    } catch (error) {
+        console.error('Error al obtener users:', error.message);
+        throw new Error('No se pudo verificar el userId.');
+    }
+}
+
 module.exports = {
     verifyUserId,
-    userDetails
+    userDetails,
+    userByEmpresa
 };

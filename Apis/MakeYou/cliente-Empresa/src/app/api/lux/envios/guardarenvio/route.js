@@ -12,6 +12,7 @@ export async function POST(req) {
   try {
     // Obtener los datos del cuerpo de la solicitud
     const body = await req.json();
+    console.log(body)
 
     // Hacer la solicitud a la API externa
     const response = await fetch(`${NEXT_PUBLIC_URL_API_LUX}/api/Envios/GuardarEnvio`, {

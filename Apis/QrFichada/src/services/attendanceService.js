@@ -92,10 +92,44 @@ const getAttendanceByZone = async (zoneId) => {
     return attendances;
 };
 
+// Función para generar una salida automática
+const generarSalidaAutomatica = async () => {
+    try {
+        // Obtener todas las entradas que no tienen salida en las últimas 12 horas
+        const hace12Horas = new Date(Date.now() - 12 * 60 * 60 * 1000);
+        
+        // Buscar entradas sin una salida correspondiente
+        const entradasSinSalida = await Attendance.find({
+            type: 'entrada',
+            timestamp: { $lte: hace12Horas },
+            hasAutomaticClosure: { $ne: true } // Asegura que no se cierre dos veces automáticamente
+        });
+
+        // Crear una salida automática para cada entrada encontrada
+        for (const entrada of entradasSinSalida) {
+            await Attendance.create({
+                userId: entrada.userId,
+                zoneId: entrada.zoneId,
+                type: 'salida',
+                timestamp: new Date(), // Marca la hora actual como la salida
+                automaticClosure: true // Marca que es un cierre automático
+            });
+
+            // Marcar la entrada con `hasAutomaticClosure` para evitar cierres duplicados
+            await Attendance.updateOne({ _id: entrada._id }, { hasAutomaticClosure: true });
+        }
+        
+        console.log(`Cierre automático completado para ${entradasSinSalida.length} fichadas.`);
+    } catch (error) {
+        console.error("Error al realizar el cierre automático:", error.message);
+    }
+};
+
 
 
 module.exports = {
     createAttendance,
     getAttendanceByUser,
-    getAttendanceByZone
+    getAttendanceByZone,
+    generarSalidaAutomatica
 };
