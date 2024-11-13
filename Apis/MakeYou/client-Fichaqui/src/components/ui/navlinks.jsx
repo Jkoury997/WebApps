@@ -34,10 +34,6 @@ const recursosHumanosLinks = [
         href: '/dashboard/recursoshumanos/employed/list' 
       },
       { 
-        name: 'Agregar', 
-        href: '/dashboard/recursoshumanos/employed/add' 
-      },
-      { 
         name: 'Modificar asistencia', 
         href: '/dashboard/recursoshumanos/employed/attendance/modify' 
       },

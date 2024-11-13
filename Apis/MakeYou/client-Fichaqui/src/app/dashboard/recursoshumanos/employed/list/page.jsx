@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import Link from 'next/link'
 
 export default function UserManagement() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -116,16 +117,22 @@ export default function UserManagement() {
                 <p className="text-sm text-muted-foreground break-words">{user.email}</p>
               </CardContent>
             </div>
-            <CardFooter className="bg-muted/50 p-5">
-              <Button 
-                variant="outline" 
-                className="w-full"
-                onClick={() => handleEdit(user._id)}
-              >
-                <Edit className="w-4 h-4 mr-2" />
-                Modificar datos
-              </Button>
-            </CardFooter>
+            <CardFooter className="bg-muted/50 p-5 flex flex-col">
+  <Button 
+    variant="outline" 
+    className="w-full"
+    onClick={() => handleEdit(user._id)}
+  >
+    <Edit className="w-4 h-4 mr-2" />
+    Modificar datos
+  </Button>
+  <Link href={`/dashboard/recursoshumanos/employed/reporte?userId=${user._id}`} className="w-full">
+    <Button variant="ghost" className="w-full">
+      Ver Reporte
+    </Button>
+  </Link>
+</CardFooter>
+
           </Card>
         ))}
       </div>
@@ -204,6 +211,7 @@ export default function UserManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
     </div>
   )
 }

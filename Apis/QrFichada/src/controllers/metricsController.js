@@ -1,115 +1,83 @@
 const metricsService = require('../services/metricsService');
 
-const getTotalFichadas = async (req, res) => {
-    try {
-        const { empresaId } = req.query;
-        const total = await metricsService.obtenerTotalFichadas(empresaId);
-        res.json({ total });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-
 const getAsistenciaDiaria = async (req, res) => {
     try {
-        const { fecha, empresaId } = req.query;
-        const asistencia = await metricsService.obtenerAsistenciaDiaria(empresaId, new Date(fecha));
+        const { fechaInicio, fechaFin, userId } = req.query;
+
+
+
+        // Convertir la fecha a un objeto Date si es necesario
+        const asistencia = await metricsService.obtenerDetalleAsistenciaPorDia(userId, fechaInicio, fechaFin);
+
+        // Enviar la respuesta en formato JSON
         res.json({ asistencia });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
 
-const getAsistenciaSemanal = async (req, res) => {
+// Controlador para obtener lugares frecuentes de entrada y salida de un usuario
+const getLugaresFrecuentes = async (req, res) => {
     try {
-        const { fechaInicio, fechaFin, empresaId } = req.query;
-        const asistencia = await metricsService.obtenerAsistenciaSemanal(empresaId, new Date(fechaInicio), new Date(fechaFin));
-        res.json({ asistencia });
+        const { userId, fechaInicio, fechaFin } = req.query;
+        const lugaresFrecuentes = await metricsService.obtenerLugaresFrecuentes(userId, fechaInicio, fechaFin);
+        res.json(lugaresFrecuentes);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
 
-const getAsistenciaMensual = async (req, res) => {
+// Controlador para obtener estadísticas de días trabajados, horas totales y horas promedio de un usuario
+const getEstadisticasTrabajo = async (req, res) => {
     try {
-        const { mes, anio, empresaId } = req.query;
-        const asistencia = await metricsService.obtenerAsistenciaMensual(empresaId, parseInt(mes), parseInt(anio));
-        res.json({ asistencia });
+        const { userId, fechaInicio, fechaFin } = req.query;
+
+        // Llamar al servicio para obtener las estadísticas
+        const estadisticas = await metricsService.obtenerEstadisticasTrabajo(userId, fechaInicio, fechaFin);
+        
+        // Enviar la respuesta en formato JSON
+        res.json(estadisticas);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
 
-const getFichadasPorZona = async (req, res) => {
+const getMovimientosEntreZonas = async (req, res) => {
     try {
-        const { empresaId } = req.query;
-        const zonas = await metricsService.obtenerFichadasPorZona(empresaId);
-        res.json({ zonas });
+        const { userId, fechaInicio, fechaFin } = req.query;
+        const movimientos = await metricsService.obtenerMovimientosEntreZonas(userId, fechaInicio, fechaFin);
+        res.json(movimientos);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
 
-const getHorarioPico = async (req, res) => {
+const getTurnosIrregulares = async (req, res) => {
     try {
-        const horario = await metricsService.obtenerHorarioPico();
-        res.json({ horario });
+        const { userId, fechaInicio, fechaFin, horaInicio = 9, horaFin =20} = req.query;
+        const turnosIrregulares = await metricsService.obtenerTurnosIrregulares(userId, fechaInicio, fechaFin, parseInt(horaInicio), parseInt(horaFin));
+        res.json(turnosIrregulares);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
 
-const getTiempoEstadiaPromedio = async (req, res) => {
+const getTiemposZonas = async (req, res) => {
     try {
-        const { userId } = req.query;
-        const tiempoPromedio = await metricsService.obtenerTiempoEstadiaPromedio(userId);
-        res.json({ tiempoPromedio });
+        const { userId, fechaInicio, fechaFin} = req.query;
+        const tiemposZonas = await metricsService.obtenerTiempoEnZonas(userId, fechaInicio, fechaFin);
+        res.json(tiemposZonas);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
-
-// Controlador para el súper reporte del empleado
-const getSuperReporteEmpleado = async (req, res) => {
-    try {
-        const { userId } = req.query;
-        const reporte = await metricsService.generarSuperReporteEmpleado(userId);
-        res.json(reporte);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-
-const obtenerReporteMovimientos = async (req, res) => {
-    try {
-        const { userId, fecha } = req.query;
-        const reporte = await metricsService.obtenerMovimientosPorFecha(userId, new Date(fecha));
-        res.json(reporte);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-const getMovimientosPorUsuario = async (req, res) => {
-    try {
-        const { userId } = req.query;
-        const reporte = await metricsService.obtenerTodosLosMovimientos(userId);
-        res.json(reporte);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-
-
 
 module.exports = {
-    getTotalFichadas,
     getAsistenciaDiaria,
-    getAsistenciaSemanal,
-    getAsistenciaMensual,
-    getFichadasPorZona,
-    getHorarioPico,
-    getTiempoEstadiaPromedio,
-    getSuperReporteEmpleado,
-    obtenerReporteMovimientos,
-    getMovimientosPorUsuario
+    getLugaresFrecuentes,
+    getEstadisticasTrabajo,
+    getMovimientosEntreZonas,
+    getTurnosIrregulares,
+    getTiemposZonas
+
 };

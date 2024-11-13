@@ -1,350 +1,406 @@
 const Attendance = require('../database/models/Attendance');
-const { userByEmpresa, userDetails } = require('../utils/authUtils');
-require('../utils/dateUtils'); // Asegúrate de ajustar la ruta según la ubicación del archivo
+const { userDetails } = require('../utils/authUtils');
+
+// Obtener detalles de asistencia diaria para un usuario en un rango de fechas
+const obtenerDetalleAsistenciaPorDia = async (userId, fechaInicio, fechaFin) => {
+    // Obtener datos básicos del usuario (opcional, según tus necesidades)
+    const user = await userDetails(userId);
+
+    // Asegurar que las fechas se establezcan en el inicio y fin del día correspondiente
+    const inicio = new Date(fechaInicio);
+    inicio.setHours(0, 0, 0, 0);
+    
+    const fin = new Date(fechaFin);
+    fin.setHours(23, 59, 59, 999);
 
 
-
-// Contar total de fichadas para una empresa específica
-const obtenerTotalFichadas = async (empresaId) => {
-    const users = await userByEmpresa(empresaId);
-    const userIds = users.map(user => user._id);
-    return await Attendance.countDocuments({ userId: { $in: userIds } });
-};
-
-// Contar asistencia diaria para una empresa en una fecha específica
-const obtenerAsistenciaDiaria = async (empresaId, fecha) => {
-    const users = await userByEmpresa(empresaId);
-    const userIds = users.map(user => user._id);
-    return await Attendance.countDocuments({
-        userId: { $in: userIds },
-        timestamp: {
-            $gte: new Date(fecha.setHours(0, 0, 0, 0)),
-            $lt: new Date(fecha.setHours(23, 59, 59, 999))
-        }
-    });
-};
-
-// Contar asistencia semanal para una empresa en un rango de fechas
-const obtenerAsistenciaSemanal = async (empresaId, fechaInicioSemana, fechaFinSemana) => {
-    const users = await userByEmpresa(empresaId);
-    const userIds = users.map(user => user._id);
-    return await Attendance.countDocuments({
-        userId: { $in: userIds },
-        timestamp: {
-            $gte: fechaInicioSemana,
-            $lt: fechaFinSemana
-        }
-    });
-};
-
-// Contar asistencia mensual para una empresa en un mes y año específicos
-const obtenerAsistenciaMensual = async (empresaId, mes, anio) => {
-    const users = await userByEmpresa(empresaId);
-    const userIds = users.map(user => user._id);
-    const inicioMes = new Date(anio, mes - 1, 1);
-    const finMes = new Date(anio, mes, 0, 23, 59, 59, 999);
-    return await Attendance.countDocuments({
-        userId: { $in: userIds },
-        timestamp: {
-            $gte: inicioMes,
-            $lt: finMes
-        }
-    });
-};
-
-// Fichadas agrupadas por zona para todos los usuarios
-const obtenerFichadasPorZona = async () => {
-    return await Attendance.aggregate([
-        { $group: { _id: "$zoneId", totalFichadas: { $sum: 1 } } },
-        { $sort: { totalFichadas: -1 } }
-    ]);
-};
-
-// Horario pico de fichadas (hora más frecuentada)
-const obtenerHorarioPico = async () => {
-    return await Attendance.aggregate([
-        { $project: { hora: { $hour: "$timestamp" } } },
-        { $group: { _id: "$hora", totalFichadas: { $sum: 1 } } },
-        { $sort: { totalFichadas: -1 } },
-        { $project: { hora: "$_id", totalFichadas: 1, _id: 0 } } // Renombrar `_id` a `hora`
-    ]);
-};
-
-
-// Calcular tiempo promedio entre entradas y salidas para un usuario específico
-const obtenerTiempoEstadiaPromedio = async (userId) => {
-    const asistencias = await Attendance.find({ userId }).sort({ timestamp: 1 });
-    let totalTiempo = 0;
-    let entradas = 0;
-
-    for (let i = 0; i < asistencias.length - 1; i++) {
-        if (asistencias[i].type === 'entrada' && asistencias[i + 1].type === 'salida') {
-            const tiempoEstadia = asistencias[i + 1].timestamp - asistencias[i].timestamp;
-            totalTiempo += tiempoEstadia;
-            entradas++;
-        }
-    }
-
-    return entradas > 0 ? (totalTiempo / entradas) / 1000 / 60 : 0; // en minutos
-};
-
-// Función principal para generar el reporte completo del empleado
-const generarSuperReporteEmpleado = async (userId) => {
-    try {
-        // 1. Obtener datos básicos del empleado
-        const user = await userDetails(userId);
-
-        // 2. Obtener métricas de asistencia
-        const totalFichadas = await Attendance.countDocuments({ userId });
-        const asistenciaDiaria = await calcularPromedioAsistenciaDiaria(userId);
-        const asistenciaSemanal = await calcularPromedioAsistenciaSemanal(userId);
-        const asistenciaMensual = await calcularAsistenciaMensual(userId);
-
-        // 3. Obtener patrones de entrada y salida
-        const horaEntradaPromedio = await obtenerHoraPromedioEntrada(userId);
-        const horaSalidaPromedio = await obtenerHoraPromedioSalida(userId);
-
-        // 4. Calcular tiempo promedio de estadía diario
-        const tiempoPromedio = await obtenerTiempoEstadiaPromedio(userId);
-
-        // 5. Consistencia en la asistencia
-        const frecuenciaAsistencia = await obtenerFrecuenciaAsistencia(userId);
-        const porcentajePuntualidad = calcularPorcentajePuntualidad(userId);
-
-        // 6. Movimientos entre zonas
-        const movimientos = await obtenerMovimientosEntreZonas(userId);
-        const zonaEntradaFrecuente = calcularZonaFrecuente(movimientos, 'entrada');
-        const zonaSalidaFrecuente = calcularZonaFrecuente(movimientos, 'salida');
-        const rutasComunes = calcularRutasComunes(movimientos);
-        const tiempoPromedioDesplazamiento = calcularTiempoPromedioDesplazamiento(movimientos);
-        const porcentajeDesplazamientosZonasDistintas = calcularPorcentajeDesplazamientosZonasDistintas(movimientos);
-
-        // 7. Compilación del reporte
-        return {
-            empleado: {
-                nombre: `${user.firstName} ${user.lastName}`,
-                dni: user.dni,
-                email: user.email,
-                empresa: user.empresa,
-            },
-            asistencia: {
-                totalFichadas,
-                asistenciaDiaria,
-                asistenciaSemanal,
-                asistenciaMensual,
-                horaEntradaPromedio,
-                horaSalidaPromedio,
-                tiempoPromedio,
-                frecuenciaAsistencia,
-                porcentajePuntualidad,
-            },
-            movimientos: {
-                zonaEntradaFrecuente,
-                zonaSalidaFrecuente,
-                rutasComunes,
-                tiempoPromedioDesplazamiento,
-                porcentajeDesplazamientosZonasDistintas
-            }
-        };
-    } catch (error) {
-        console.error('Error al generar el súper reporte del empleado:', error.message);
-        throw new Error('No se pudo generar el súper reporte del empleado');
-    }
-};
-
-// Funciones de apoyo (a definir en el mismo archivo o en otros servicios según convenga)
-
-// Ejemplo de función para calcular el porcentaje de puntualidad
-const calcularPorcentajePuntualidad = async (userId) => {
-    const horarioEntradaEsperado = new Date();
-    horarioEntradaEsperado.setHours(9, 0, 0, 0); // 9:00 AM, ajusta según tu horario laboral
-
-    const asistencias = await Attendance.find({ userId, type: 'entrada' });
-    const puntualidad = asistencias.filter(asistencia => asistencia.timestamp <= horarioEntradaEsperado).length;
-    return ((puntualidad / asistencias.length) * 100).toFixed(2) + '%';
-};
-
-// Ejemplo de función para calcular la zona más frecuente
-const calcularZonaFrecuente = (movimientos, tipo) => {
-    const zonas = movimientos.map(mov => (tipo === 'entrada' ? mov.zonaEntrada : mov.zonaSalida));
-    return zonas.reduce((acc, zona) => {
-        acc[zona] = (acc[zona] || 0) + 1;
-        return acc;
-    }, {});
-};
-
-// Ejemplo de función para calcular rutas comunes entre zonas
-const calcularRutasComunes = (movimientos) => {
-    const rutas = movimientos.map(mov => `${mov.zonaEntrada} -> ${mov.zonaSalida}`);
-    const frecuenciaRutas = rutas.reduce((acc, ruta) => {
-        acc[ruta] = (acc[ruta] || 0) + 1;
-        return acc;
-    }, {});
-    return frecuenciaRutas;
-};
-
-// Ejemplo de función para calcular el tiempo promedio de desplazamiento entre zonas
-const calcularTiempoPromedioDesplazamiento = (movimientos) => {
-    const totalTiempo = movimientos.reduce((acc, mov) => acc + mov.tiempoDesplazamiento, 0);
-    return (totalTiempo / movimientos.length).toFixed(2) + ' minutos';
-};
-
-// Ejemplo de función para calcular el porcentaje de desplazamientos entre zonas distintas
-const calcularPorcentajeDesplazamientosZonasDistintas = (movimientos) => {
-    const distintos = movimientos.filter(mov => mov.zonaEntrada !== mov.zonaSalida).length;
-    return ((distintos / movimientos.length) * 100).toFixed(2) + '%';
-};
-
-
-const calcularPromedioAsistenciaDiaria = async (userId) => {
-    const totalFichadas = await Attendance.countDocuments({ userId });
-    const diasActivos = await Attendance.distinct('timestamp', { userId })
-        .then(timestamps => new Set(timestamps.map(ts => ts.toDateString())).size);
-    return (totalFichadas / diasActivos).toFixed(2); // Promedio diario
-};
-
-const calcularPromedioAsistenciaSemanal = async (userId) => {
-    const totalFichadas = await Attendance.countDocuments({ userId });
-    const semanasActivas = await Attendance.distinct('timestamp', { userId })
-        .then(timestamps => new Set(timestamps.map(ts => `${ts.getFullYear()}-${ts.getWeek()}`)).size);
-    return (totalFichadas / semanasActivas).toFixed(2); // Promedio semanal
-};
-
-const calcularAsistenciaMensual = async (userId) => {
-    const totalFichadas = await Attendance.countDocuments({ userId });
-    const mesesActivos = await Attendance.distinct('timestamp', { userId })
-        .then(timestamps => new Set(timestamps.map(ts => `${ts.getFullYear()}-${ts.getMonth()}`)).size);
-    return (totalFichadas / mesesActivos).toFixed(2); // Promedio mensual
-};
-
-const obtenerHoraPromedioEntrada = async (userId) => {
-    const entradas = await Attendance.find({ userId, type: 'entrada' });
-    if (entradas.length === 0) return "N/A";
-
-    const totalMinutos = entradas.reduce((acc, entrada) => {
-        const date = entrada.timestamp;
-        return acc + date.getHours() * 60 + date.getMinutes();
-    }, 0);
-
-    const promedioMinutos = totalMinutos / entradas.length;
-    const horas = Math.floor(promedioMinutos / 60);
-    const minutos = Math.round(promedioMinutos % 60);
-
-    return `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}`;
-};
-
-const obtenerHoraPromedioSalida = async (userId) => {
-    const salidas = await Attendance.find({ userId, type: 'salida' });
-    if (salidas.length === 0) return "N/A";
-
-    const totalMinutos = salidas.reduce((acc, salida) => {
-        const date = salida.timestamp;
-        return acc + date.getHours() * 60 + date.getMinutes();
-    }, 0);
-
-    const promedioMinutos = totalMinutos / salidas.length;
-    const horas = Math.floor(promedioMinutos / 60);
-    const minutos = Math.round(promedioMinutos % 60);
-
-    return `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}`;
-};
-
-const obtenerFrecuenciaAsistencia = async (userId) => {
-    const diasAsistidos = await Attendance.distinct('timestamp', { userId })
-        .then(timestamps => new Set(timestamps.map(ts => ts.toDateString())).size);
-    return diasAsistidos;
-};
-
-const obtenerMovimientosEntreZonas = async (userId) => {
-    // Obtener todas las asistencias del usuario, ordenadas por fecha
-    const asistencias = await Attendance.find({ userId }).sort({ timestamp: 1 });
-    const movimientos = [];
-
-    // Iterar sobre las asistencias para identificar entradas y salidas
-    for (let i = 0; i < asistencias.length - 1; i++) {
-        if (asistencias[i].type === 'entrada' && asistencias[i + 1].type === 'salida') {
-            // Registrar movimiento entre la zona de entrada y la de salida
-            const movimiento = {
-                zonaEntrada: asistencias[i].zoneId,
-                zonaSalida: asistencias[i + 1].zoneId,
-                tiempoDesplazamiento: (asistencias[i + 1].timestamp - asistencias[i].timestamp) / 1000 / 60 // en minutos
-            };
-            movimientos.push(movimiento);
-        }
-    }
-
-    return movimientos;
-};
-
-const obtenerMovimientosPorFecha = async (userId, fecha) => {
-
-    const user = await userDetails(userId)
-
-
-
-    // Establecer el rango de tiempo para el día especificado
-    const inicioDia = new Date(fecha);
-    inicioDia.setHours(0, 0, 0, 0);
-
-    const finDia = new Date(fecha);
-    finDia.setHours(23, 59, 59, 999);
-
-
-    // Consultar las fichadas del usuario en el rango de tiempo especificado
-    const movimientos = await Attendance.find({
+    console.log(userId, fechaInicio, fechaFin)
+    // Filtrar registros de asistencia para el usuario y el rango de fechas
+    const asistencias = await Attendance.find({
         userId,
-        timestamp: {
-            $gte: inicioDia,
-            $lt: finDia
-        }
+        timestamp: { $gte: inicio, $lte: fin }
     }).sort({ timestamp: 1 }); // Ordenar cronológicamente
 
-    console.log(movimientos)
+    // Agrupar registros por fecha y calcular métricas
+    const detalleAsistencia = {};
+    asistencias.forEach(asistencia => {
+        const fecha = asistencia.timestamp.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+        
+        if (!detalleAsistencia[fecha]) {
+            detalleAsistencia[fecha] = {
+                primeraEntrada: null,
+                ultimaSalida: null,
+                lugarEntrada: null,
+                lugarSalida: null,
+                horasTrabajadas: 0,
+                salidaAutomatica: false // Indicar si la última salida fue automática
+            };
+        }
 
-    // Formatear el reporte
-    const reporteMovimientos = movimientos.map(mov => ({
-        tipo: mov.type, // 'entrada' o 'salida'
-        zona: mov.zoneId,
-        fechaHora: mov.timestamp
-    }));
+        // Asignar primera entrada y lugar de entrada
+        if (asistencia.type === 'entrada' && !detalleAsistencia[fecha].primeraEntrada) {
+            detalleAsistencia[fecha].primeraEntrada = asistencia.timestamp;
+            detalleAsistencia[fecha].lugarEntrada = asistencia.zoneId;
+        }
+
+        // Asignar última salida, lugar de salida y verificar si fue automática
+        if (asistencia.type === 'salida') {
+            detalleAsistencia[fecha].ultimaSalida = asistencia.timestamp;
+            detalleAsistencia[fecha].lugarSalida = asistencia.zoneId;
+            detalleAsistencia[fecha].salidaAutomatica = asistencia.automatic || false; // Marcar si la salida fue automática
+        }
+    });
+
+    // Calcular horas trabajadas por día (si hay entrada y salida)
+    for (const fecha in detalleAsistencia) {
+        const { primeraEntrada, ultimaSalida } = detalleAsistencia[fecha];
+        if (primeraEntrada && ultimaSalida) {
+            const horasTrabajadas = (ultimaSalida - primeraEntrada) / (1000 * 60 * 60); // Convertir a horas
+            detalleAsistencia[fecha].horasTrabajadas = horasTrabajadas.toFixed(2);
+        }
+    }
+
+    return detalleAsistencia;
+};
+
+
+// Obtener lugares frecuentes de entrada y salida para un usuario específico en un rango de fechas, incluyendo nombres de zona y sus IDs
+const obtenerLugaresFrecuentes = async (userId, fechaInicio, fechaFin) => {
+    // Asegurar que las fechas se establezcan en el inicio y fin del día correspondiente
+    const inicio = new Date(fechaInicio);
+    inicio.setHours(0, 0, 0, 0);
+    
+    const fin = new Date(fechaFin);
+    fin.setHours(23, 59, 59, 999);
+
+    // Filtrar registros de asistencia para el usuario en el rango de fechas y agrupar por zona de entrada y salida
+    const lugaresFrecuentes = await Attendance.aggregate([
+        { 
+            $match: {
+                userId,
+                timestamp: { $gte: inicio, $lte: fin } // Filtrar por rango de fechas
+            } 
+        },
+        { 
+            $group: {
+                _id: {
+                    type: "$type",     // 'entrada' o 'salida'
+                    zoneId: "$zoneId"  // Zona de la entrada o salida
+                },
+                frecuencia: { $sum: 1 } // Contar la frecuencia de cada combinación
+            }
+        },
+        { $sort: { frecuencia: -1 } }, // Ordenar por frecuencia descendente
+        {
+            $lookup: {
+                from: "zones",               // Nombre de la colección de zonas
+                localField: "_id.zoneId",    // Campo de zoneId en la agrupación
+                foreignField: "_id",         // Campo _id en la colección de Zones
+                as: "zonaInfo"               // Nombre del campo de salida
+            }
+        },
+        { $unwind: "$zonaInfo" } // Desenrollar el array zonaInfo para obtener el objeto
+    ]);
+
+    // Separar lugares frecuentes de entrada y salida
+    const lugaresEntrada = [];
+    const lugaresSalida = [];
+    lugaresFrecuentes.forEach(lugar => {
+        const { type } = lugar._id;
+        const zoneData = {
+            id: lugar._id.zoneId,                // ID de la zona
+            nombre: lugar.zonaInfo.nombre,       // Nombre de la zona
+            frecuencia: lugar.frecuencia         // Frecuencia de entradas o salidas
+        };
+
+        if (type === 'entrada') {
+            lugaresEntrada.push(zoneData);
+        } else if (type === 'salida') {
+            lugaresSalida.push(zoneData);
+        }
+    });
+
+    return { lugaresEntrada, lugaresSalida };
+};
+
+
+const obtenerEstadisticasTrabajo = async (userId, fechaInicio, fechaFin) => {
+    // Asegurar que las fechas se establezcan en el inicio y fin del día correspondiente
+    const inicio = new Date(fechaInicio);
+    inicio.setHours(0, 0, 0, 0);
+
+    const fin = new Date(fechaFin);
+    fin.setHours(23, 59, 59, 999);
+
+    console.log(`Obteniendo estadísticas para userId: ${userId}, desde ${inicio} hasta ${fin}`);
+
+    // Filtrar registros de asistencia para el usuario en el rango de fechas y agrupar solo por día
+    const asistenciaPorDia = await Attendance.aggregate([
+        {
+            $match: {
+                userId,
+                timestamp: { $gte: inicio, $lte: fin }
+            }
+        },
+        {
+            $group: {
+                _id: { dia: { $dateToString: { format: "%Y-%m-%d", date: "$timestamp" } } }, // Agrupar solo por día
+                primeraEntrada: { $min: { $cond: [{ $eq: ["$type", "entrada"] }, "$timestamp", null] } },
+                ultimaSalida: { $max: { $cond: [{ $eq: ["$type", "salida"] }, "$timestamp", null] } }
+            }
+        }
+    ]);
+
+    // Variables para acumular estadísticas
+    let diasTrabajados = 0;
+    let horasTotales = 0;
+
+    asistenciaPorDia.forEach(dia => {
+        const { primeraEntrada, ultimaSalida } = dia;
+        if (primeraEntrada && ultimaSalida) {
+            // Calcular horas trabajadas en el día
+            const horasTrabajadasDia = (ultimaSalida - primeraEntrada) / (1000 * 60 * 60);
+            horasTotales += horasTrabajadasDia;
+            diasTrabajados++;
+        }
+    });
+
+    // Calcular el promedio de horas trabajadas por día
+    const horasPromedio = diasTrabajados > 0 ? (horasTotales / diasTrabajados).toFixed(2) : 0;
+
 
     return {
-        user,
-        fecha: inicioDia.toDateString(),
-        movimientos: reporteMovimientos
+        diasTrabajados,
+        horasTotales: horasTotales.toFixed(2),
+        horasPromedio
     };
 };
 
-const obtenerTodosLosMovimientos = async (userId) => {
+// Obtener movimientos entre zonas para un usuario en un rango de fechas
+const obtenerMovimientosEntreZonas = async (userId, fechaInicio, fechaFin) => {
+    const inicio = new Date(fechaInicio);
+    inicio.setHours(0, 0, 0, 0);
+    
+    const fin = new Date(fechaFin);
+    fin.setHours(23, 59, 59, 999);
 
-    const user = await userDetails(userId)
-    // Consultar todas las fichadas del usuario ordenadas cronológicamente
-    const movimientos = await Attendance.find({ userId }).sort({ timestamp: 1 });
+    // Filtrar registros de asistencia para el usuario en el rango de fechas y ordenarlos cronológicamente
+    const asistencias = await Attendance.aggregate([
+        { 
+            $match: {
+                userId,
+                timestamp: { $gte: inicio, $lte: fin }
+            }
+        },
+        { $sort: { timestamp: 1 } }, // Ordenar cronológicamente
+        {
+            $lookup: {
+                from: "zones",             // Nombre de la colección de zonas
+                localField: "zoneId",      // Campo zoneId en Attendance
+                foreignField: "_id",       // Campo _id en Zones
+                as: "zonaInfo"             // Salida del campo con la información de la zona
+            }
+        },
+        { $unwind: "$zonaInfo" }         // Desenrollar el array zonaInfo para obtener un objeto
+    ]);
 
-    // Formatear el reporte
-    const reporteMovimientos = movimientos.map(mov => ({
-        tipo: mov.type, // 'entrada' o 'salida'
-        zona: mov.zoneId,
-        fechaHora: mov.timestamp
+    const movimientos = [];
+    for (let i = 0; i < asistencias.length - 1; i++) {
+        // Verificar que se trate de un movimiento entre una salida y la siguiente entrada
+        if (asistencias[i].type === 'salida' && asistencias[i + 1].type === 'entrada') {
+            const ruta = {
+                zonaSalida: {
+                    id: asistencias[i].zonaInfo._id,
+                    nombre: asistencias[i].zonaInfo.nombre
+                },
+                zonaEntrada: {
+                    id: asistencias[i + 1].zonaInfo._id,
+                    nombre: asistencias[i + 1].zonaInfo.nombre
+                },
+                tiempoDesplazamiento: (asistencias[i + 1].timestamp - asistencias[i].timestamp) / (1000 * 60) // En minutos
+            };
+            movimientos.push(ruta);
+        }
+    }
+
+    // Contabilizar la frecuencia de cada ruta y calcular tiempo promedio de desplazamiento
+    const frecuenciaRutas = {};
+    movimientos.forEach(movimiento => {
+        const rutaKey = `${movimiento.zonaSalida.nombre} -> ${movimiento.zonaEntrada.nombre}`;
+        
+        if (frecuenciaRutas[rutaKey]) {
+            // Acumular tiempos de desplazamiento y aumentar la frecuencia
+            frecuenciaRutas[rutaKey].tiempoDesplazamientoTotal += movimiento.tiempoDesplazamiento;
+            frecuenciaRutas[rutaKey].frecuencia++;
+        } else {
+            // Inicializar un nuevo registro de ruta
+            frecuenciaRutas[rutaKey] = { 
+                ...movimiento, 
+                tiempoDesplazamientoTotal: movimiento.tiempoDesplazamiento, 
+                frecuencia: 1 
+            };
+        }
+    });
+
+    // Calcular el tiempo promedio de desplazamiento para cada ruta
+    const resultado = Object.values(frecuenciaRutas).map(ruta => ({
+        zonaSalida: ruta.zonaSalida,
+        zonaEntrada: ruta.zonaEntrada,
+        tiempoDesplazamientoPromedio: (ruta.tiempoDesplazamientoTotal / ruta.frecuencia).toFixed(2), // Promedio en minutos
+        frecuencia: ruta.frecuencia
     }));
 
-    return {
-        user,
-        movimientos: reporteMovimientos
-    };
+    return resultado;
 };
 
+const obtenerTurnosIrregulares = async (userId, fechaInicio, fechaFin, horaInicio, horaFin, toleranciaMinutos = 15) => {
+    const inicio = new Date(fechaInicio);
+    inicio.setHours(0, 0, 0, 0);
+
+    const fin = new Date(fechaFin);
+    fin.setHours(23, 59, 59, 999);
+
+    const asistenciaPorDia = await Attendance.aggregate([
+        {
+            $match: {
+                userId,
+                timestamp: { $gte: inicio, $lte: fin }
+            }
+        },
+        {
+            $group: {
+                _id: { dia: { $dateToString: { format: "%Y-%m-%d", date: "$timestamp" } } },
+                primeraEntrada: { $min: { $cond: [{ $eq: ["$type", "entrada"] }, "$timestamp", null] } },
+                ultimaSalida: { $max: { $cond: [{ $eq: ["$type", "salida"] }, "$timestamp", null] } }
+            }
+        }
+    ]);
+
+    const diasIrregulares = asistenciaPorDia
+        .filter(dia => {
+            const { primeraEntrada, ultimaSalida } = dia;
+            if (!primeraEntrada || !ultimaSalida) return false;
+
+            const entradaHora = primeraEntrada.getHours();
+            const entradaMinuto = primeraEntrada.getMinutes();
+            const salidaHora = ultimaSalida.getHours();
+            const salidaMinuto = ultimaSalida.getMinutes();
+
+            dia.motivo = [];
+
+            // Convertir tiempos a minutos para simplificar la comparación
+            const entradaActual = entradaHora * 60 + entradaMinuto;
+            const salidaActual = salidaHora * 60 + salidaMinuto;
+            const entradaLimiteMin = horaInicio * 60;  // Hora de entrada en minutos
+            const entradaLimiteMax = entradaLimiteMin + toleranciaMinutos;  // Hora de entrada + tolerancia
+            const salidaLimiteMin = horaFin * 60 - toleranciaMinutos;  // Hora de salida - tolerancia
+            const salidaLimiteMax = horaFin * 60;  // Hora de salida en minutos
+
+            // Lógica de entrada con tolerancia
+            if (entradaActual < entradaLimiteMin) {
+                dia.motivo.push("entrada temprana");
+            } else if (entradaActual <= entradaLimiteMax) {
+                dia.motivo.push("entrada dentro de tolerancia");
+            } else {
+                dia.motivo.push("entrada tardía");
+            }
+
+            // Lógica de salida con tolerancia
+            if (salidaActual < salidaLimiteMin) {
+                dia.motivo.push("salida temprana");
+            } else if (salidaActual <= salidaLimiteMax) {
+                dia.motivo.push("salida dentro de tolerancia");
+            } else {
+                dia.motivo.push("salida tardía");
+            }
+
+            return dia.motivo.length > 0; // Incluir siempre días con algún motivo
+        })
+        .map(dia => ({
+            fecha: dia._id.dia,
+            entrada: dia.primeraEntrada 
+                ? new Date(dia.primeraEntrada).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "America/Argentina/Buenos_Aires" }) 
+                : null,
+            salida: dia.ultimaSalida 
+                ? new Date(dia.ultimaSalida).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "America/Argentina/Buenos_Aires" }) 
+                : null,
+            motivo: dia.motivo
+        }));
+
+    return diasIrregulares;
+};
+
+
+
+
+const obtenerTiempoEnZonas = async (userId, fechaInicio, fechaFin) => {
+    const inicio = new Date(fechaInicio);
+    inicio.setHours(0, 0, 0, 0);
+    
+    const fin = new Date(fechaFin);
+    fin.setHours(23, 59, 59, 999);
+
+    // Filtrar registros de asistencia para el usuario en el rango de fechas y ordenarlos cronológicamente
+    const asistencias = await Attendance.aggregate([
+        { 
+            $match: {
+                userId,
+                timestamp: { $gte: inicio, $lte: fin }
+            }
+        },
+        { $sort: { timestamp: 1 } }, // Ordenar cronológicamente
+        {
+            $lookup: {
+                from: "zones",             // Nombre de la colección de zonas
+                localField: "zoneId",      // Campo zoneId en Attendance
+                foreignField: "_id",       // Campo _id en Zones
+                as: "zonaInfo"             // Salida del campo con la información de la zona
+            }
+        },
+        { $unwind: "$zonaInfo" }         // Desenrollar el array zonaInfo para obtener un objeto
+    ]);
+
+    const tiempoPorZona = {};
+
+    for (let i = 0; i < asistencias.length - 1; i++) {
+        // Identificar una estancia en la misma zona (entrada y salida consecutivos)
+        if (asistencias[i].type === 'entrada' && asistencias[i + 1].type === 'salida' && asistencias[i].zoneId === asistencias[i + 1].zoneId) {
+            const zonaId = asistencias[i].zoneId;
+            const zonaNombre = asistencias[i].zonaInfo.nombre;
+
+            // Calcular tiempo de permanencia en minutos
+            const tiempoEstadia = (asistencias[i + 1].timestamp - asistencias[i].timestamp) / (1000 * 60 *60);
+
+            if (tiempoPorZona[zonaId]) {
+                tiempoPorZona[zonaId].tiempoTotal += tiempoEstadia;
+                tiempoPorZona[zonaId].frecuencia++;
+            } else {
+                tiempoPorZona[zonaId] = {
+                    nombre: zonaNombre,
+                    tiempoTotal: tiempoEstadia,
+                    frecuencia: 1
+                };
+            }
+        }
+    }
+
+    // Convertir el objeto en un array para una salida estructurada
+    const resultado = Object.keys(tiempoPorZona).map(zonaId => ({
+        zonaId,
+        nombre: tiempoPorZona[zonaId].nombre,
+        tiempoTotal: tiempoPorZona[zonaId].tiempoTotal.toFixed(2), // Tiempo total en minutos, redondeado
+        frecuencia: tiempoPorZona[zonaId].frecuencia
+    }));
+
+    return resultado;
+};
 
 
 module.exports = {
-    obtenerTotalFichadas,
-    obtenerAsistenciaDiaria,
-    obtenerAsistenciaSemanal,
-    obtenerAsistenciaMensual,
-    obtenerFichadasPorZona,
-    obtenerHorarioPico,
-    obtenerTiempoEstadiaPromedio,
-    generarSuperReporteEmpleado,
-    obtenerMovimientosPorFecha,
-    obtenerTodosLosMovimientos
+    obtenerDetalleAsistenciaPorDia,
+    obtenerLugaresFrecuentes,
+    obtenerEstadisticasTrabajo,
+    obtenerMovimientosEntreZonas,
+    obtenerTurnosIrregulares,
+    obtenerTiempoEnZonas
 };
