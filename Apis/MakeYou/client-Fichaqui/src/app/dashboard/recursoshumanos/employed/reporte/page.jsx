@@ -98,7 +98,7 @@ const attendanceData = [
   },
 ];
 
-export default function PersonalAttendanceReport() {
+export default function Page() {
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [fechaInicio, setFechaInicio] = useState(
     format(
@@ -113,16 +113,15 @@ export default function PersonalAttendanceReport() {
     )
   );
   const [employee, setEmployee] = useState(null);
-  const [asistenciaDiaria, setAsistenciaDiaria] = useState(null);
-  const [estadisticasTrabajo,setEstadisticasTrabajo]= useState(null);
-  const [lugaresfrecuentes,setLugaresfrecuentes]= useState(null);
-  const [movimientosZonas,setMovimientosZonas]= useState(null);
+  const [estadisticasTrabajo, setEstadisticasTrabajo] = useState({});
+  const [lugaresfrecuentes, setLugaresfrecuentes] = useState({ lugaresEntrada: [], lugaresSalida: [] });
+  const [movimientosZonas, setMovimientosZonas] = useState([]);
+  const [asistenciaDiaria, setAsistenciaDiaria] = useState({});
 
 
-  lugaresfrecuentes
-
-  const searchParams = useSearchParams();
-  const userId = searchParams.get("userId"); // Obtiene el userId desde la URL
+  // Para evitar errores en SSR con `useSearchParams`
+  const searchParams = typeof window !== "undefined" ? useSearchParams() : null;
+  const userId = searchParams ? searchParams.get("userId") : null;
 
   const fetchUserDetails = async () => {
     if (!userId) return;
@@ -180,17 +179,17 @@ export default function PersonalAttendanceReport() {
 
   const fetchEstadisticasTrabajo = async () => {
     if (!userId) return;
-
+  
     try {
       const response = await fetch(
         `/api/qrfichaqui/metrics/estadisticastrabajos?userId=${userId}&fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`
       );
       if (!response.ok) throw new Error("Failed to fetch attendance details");
-
+  
       const estadisticasTrabajo = await response.json();
       console.log(estadisticasTrabajo);
       setEstadisticasTrabajo(estadisticasTrabajo);
-    } catch {
+    } catch (error) {
       console.error("Error:", error.message);
     }
   };
