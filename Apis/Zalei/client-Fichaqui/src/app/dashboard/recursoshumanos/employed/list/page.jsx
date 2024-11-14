@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import { useState, useEffect } from 'react'
 import { Input } from "@/components/ui/input"
@@ -16,21 +16,23 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import Link from 'next/link'
+import { useToast } from "@/hooks/use-toast" // Importa el hook de toast
 
 export default function UserManagement() {
   const [searchTerm, setSearchTerm] = useState('')
   const [users, setUsers] = useState([])
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [editingUser, setEditingUser] = useState(null)
+  const { toast } = useToast() // Usa el hook de toast
 
-  // Función para obtener los usuarios desde la API
   const fetchUsers = async () => {
     try {
       const response = await fetch("/api/auth/info/userbyempresa");
       if (response.ok) {
         const data = await response.json();
         console.log(data);
-        setUsers(data); // Asignamos los usuarios obtenidos al estado
+        setUsers(data);
       } else {
         console.error("Error al obtener los usuarios:", response.statusText);
       }
@@ -40,7 +42,7 @@ export default function UserManagement() {
   };
 
   useEffect(() => {
-    fetchUsers(); // Llamamos a fetchUsers cuando se monta el componente
+    fetchUsers();
   }, []);
 
   const filteredUsers = users.filter(user =>
@@ -48,7 +50,7 @@ export default function UserManagement() {
     user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.dni.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  );
 
   const handleEdit = (userId) => {
     const user = users.find(u => u._id === userId)
@@ -57,31 +59,33 @@ export default function UserManagement() {
   }
 
   const handleSaveEdit = async () => {
-
     try {
-      // Hacer la solicitud para actualizar el usuario
       const response = await fetch(`/api/auth/user/edit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(editingUser) // Enviar los datos editados del usuario
+        body: JSON.stringify(editingUser)
       });
 
       const responseData = await response.json();
 
       if (response.ok) {
-        await fetchUsers(); // Recargar la lista de usuarios para reflejar los cambios
+        await fetchUsers();
+        toast({
+          title: "Usuario actualizado",
+          description: "Los datos del usuario se han modificado correctamente.",
+          variant: "success",
+        }); // Muestra el toast de éxito
       } else {
         console.error("Error al actualizar el usuario:", responseData.error);
       }
     } catch (error) {
       console.error("Error en la solicitud de actualización:", error.message);
     } finally {
-      setIsEditDialogOpen(false); // Cerrar el diálogo de edición
+      setIsEditDialogOpen(false);
     }
   };
-
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -116,7 +120,7 @@ export default function UserManagement() {
                 <p className="text-sm text-muted-foreground break-words">{user.email}</p>
               </CardContent>
             </div>
-            <CardFooter className="bg-muted/50 p-5">
+            <CardFooter className="bg-muted/50 p-5 flex flex-col">
               <Button 
                 variant="outline" 
                 className="w-full"
@@ -125,6 +129,11 @@ export default function UserManagement() {
                 <Edit className="w-4 h-4 mr-2" />
                 Modificar datos
               </Button>
+              <Link href={`/dashboard/recursoshumanos/employed/reporte?userId=${user._id}`} className="w-full">
+                <Button variant="ghost" className="w-full">
+                  Ver Reporte
+                </Button>
+              </Link>
             </CardFooter>
           </Card>
         ))}

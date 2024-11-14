@@ -3,16 +3,28 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from 'next/navigation';
 import { QrCodeIcon, TrashIcon, EditIcon } from "lucide-react";
-import * as Dialog from '@radix-ui/react-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import QRCode from 'react-qr-code';
+import { useToast } from "@/hooks/use-toast"; // Importa el hook de toast
 
 export default function Page() {
   const [zones, setZones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [open, setOpen] = useState(false);
+  const [openQR, setOpenQR] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [zoneToDelete, setZoneToDelete] = useState(null); // ID de la zona a eliminar
   const [currentQR, setCurrentQR] = useState('');
   const router = useRouter();
+  const { toast } = useToast(); // Usa el hook de toast
 
   useEffect(() => {
     fetchZones();
@@ -25,15 +37,8 @@ export default function Page() {
         throw new Error('Error fetching zones');
       }
       const data = await response.json();
-      if (Array.isArray(data)) {
-        setZones(data);
-        if (data.length === 0) {
-          // Redirigir a la página de crear zona si no hay zonas
-          router.push('/dashboard/admin/zone/create');
-        }
-      } else {
-        setZones([]);
-        // Redirigir a la página de crear zona si no hay zonas
+      setZones(Array.isArray(data) ? data : []);
+      if (Array.isArray(data) && data.length === 0) {
         router.push('/dashboard/admin/zone/create');
       }
     } catch (error) {
@@ -45,14 +50,19 @@ export default function Page() {
   };
 
   const handleDelete = async (id) => {
-    setLoading(true);  // Mostrar cargando al eliminar
+    setLoading(true);
     try {
       const response = await fetch(`/api/qrfichaqui/zones/delete?id=${id}`, {
         method: 'DELETE',
       });
 
       if (response.ok) {
-        fetchZones();  // Recargar la lista de zonas después de eliminar
+        fetchZones();
+        toast({
+          title: "Zona eliminada",
+          description: "La zona se ha eliminado correctamente.",
+          variant: "success",
+        });
       } else {
         throw new Error('Error deleting zone');
       }
@@ -60,7 +70,8 @@ export default function Page() {
       console.error('Error deleting zone:', error);
       setError('Error eliminando la zona');
     } finally {
-      setLoading(false);  // Ocultar cargando
+      setLoading(false);
+      setOpenDeleteDialog(false); // Cierra el diálogo de confirmación
     }
   };
 
@@ -70,7 +81,7 @@ export default function Page() {
 
   const handleQR = (id) => {
     setCurrentQR(id);
-    setOpen(true);
+    setOpenQR(true);
   };
 
   const handleAdd = () => {
@@ -88,9 +99,8 @@ export default function Page() {
           <Button onClick={handleAdd}>Agregar Zona</Button>
         </div>
 
-        {/* Mostrar mensaje si no hay zonas */}
         {zones.length === 0 ? (
-          <p>No hay zonas disponibles.</p> // Este mensaje no será visible si se redirige.
+          <p>No hay zonas disponibles.</p>
         ) : (
           <div className="grid gap-4">
             {zones.map((zone) => (
@@ -111,34 +121,17 @@ export default function Page() {
                     <EditIcon className="w-4 h-4" />
                     <span className="sr-only">Editar</span>
                   </Button>
-                  <Button size="sm" variant="outline" onClick={() => handleDelete(zone._id)} className="md:hidden">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setZoneToDelete(zone._id);
+                      setOpenDeleteDialog(true);
+                    }}
+                    className="md:hidden"
+                  >
                     <TrashIcon className="w-4 h-4" />
                     <span className="sr-only">Eliminar</span>
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleQR(zone._id)}
-                    className="hidden md:inline-flex"
-                  >
-                    Ver QR
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleEdit(zone._id)}
-                    className="hidden md:inline-flex"
-                    disabled
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleDelete(zone._id)}
-                    className="hidden md:inline-flex"
-                  >
-                    Eliminar
                   </Button>
                 </div>
               </div>
@@ -146,21 +139,40 @@ export default function Page() {
           </div>
         )}
       </div>
-      <Dialog.Root open={open} onOpenChange={setOpen}>
-        <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
-        <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded shadow-lg">
-          <Dialog.Title className="text-lg font-bold">Código QR</Dialog.Title>
-          <Dialog.Description className="mt-2">
-            Escanee este código QR para configurar la zona.
-          </Dialog.Description>
+
+      {/* Diálogo de QR */}
+      <Dialog open={openQR} onOpenChange={setOpenQR}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Código QR</DialogTitle>
+            <DialogDescription>
+              Escanee este código QR para configurar la zona.
+            </DialogDescription>
+          </DialogHeader>
           <div className="flex justify-center mt-4">
             <QRCode value={currentQR} size={256} />
           </div>
-          <Dialog.Close asChild>
-            <Button className="mt-4" variant="outline">Cerrar</Button>
-          </Dialog.Close>
-        </Dialog.Content>
-      </Dialog.Root>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpenQR(false)}>Cerrar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Diálogo de confirmación de eliminación */}
+      <Dialog open={openDeleteDialog} onOpenChange={setOpenDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>¿Estás seguro?</DialogTitle>
+            <DialogDescription>
+              ¿Estás seguro de que deseas eliminar esta zona? Esta acción no se puede deshacer.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpenDeleteDialog(false)}>Cancelar</Button>
+            <Button variant="destructive" onClick={() => handleDelete(zoneToDelete)}>Eliminar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }

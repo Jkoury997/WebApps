@@ -12,13 +12,13 @@ export async function POST(request) {
   try {
     let { email } = await request.json();
 
+
     if (!email) {
       return NextResponse.json({ error: 'Correo electrónico es requerido' }, { status: 400 });
     }
 
-      // Convertir email a minúsculas
-      email = toLowerCaseString(email);
-
+    // Convertir email a minúsculas
+    email = toLowerCaseString(email);
 
     const response = await fetch(`${URL_API_AUTH}/api/recovery/generate-otp`, {
       method: 'POST',

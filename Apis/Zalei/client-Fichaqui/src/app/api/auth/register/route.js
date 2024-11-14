@@ -5,6 +5,7 @@ import { cookies } from 'next/headers';
 const URL_API_AUTH = process.env.NEXT_PUBLIC_URL_API_AUTH;
 const NEXT_PUBLIC_EMPRESA_ID = process.env.NEXT_PUBLIC_EMPRESA_ID
 
+
 function capitalizeFirstLetter(str) {
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 }
@@ -17,7 +18,6 @@ export async function POST(req) {
         const cookieStore = cookies();
 
 
-        
         // Transformar a primera letra en mayúscula
         firstName = capitalizeFirstLetter(firstName);
         lastName = capitalizeFirstLetter(lastName);

@@ -53,7 +53,8 @@ export default function Page() {
   }, [isLinkingNewQR]);
 
   const handleScan = async (event) => {
-    const qrGeneralUUID = event.target.value.trim(); // Obtenemos el valor del input
+    const qrGeneralUUID = event.target.value.trim().replace(/[´_,’'–—\s]/g, '-');
+// Obtenemos el valor del input
     if (qrGeneralUUID) {
       setZoneUUID(qrGeneralUUID);
       try {
