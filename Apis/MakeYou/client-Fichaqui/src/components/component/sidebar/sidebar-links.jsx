@@ -81,6 +81,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { useRouter } from 'next/navigation';
+import { disconnectSocket } from '@/hooks/useSocket';
 const data = {
     user: {
       name: "shadcn",
@@ -170,36 +171,34 @@ const data = {
 
 
   export default function SideBarLinks() {
-    const [role, setRole] = useState(null);
-    const router = useRouter();
-    const [user, setUser] =useState(null)
-
+    const [role, setRole] = useState(null)
+    const [user, setUser] = useState(null)
+    const [userId, setUserId] = useState(null)
+    const router = useRouter()
+  
     const fetchUserDetails = async (userId) => {
-  
       try {
-        const response = await fetch(`/api/auth/info/user?userId=${userId}`);
-        if (!response.ok) throw new Error("Failed to fetch user details");
-  
-        const employeeData = await response.json();
-        console.log(employeeData);
-        setUser(employeeData);
+        const response = await fetch(`/api/auth/info/user?userId=${userId}`)
+        if (!response.ok) throw new Error("Failed to fetch user details")
+        const employeeData = await response.json()
+        setUser(employeeData)
       } catch (error) {
-        console.error("Error:", error.message);
+        console.error("Error:", error.message)
       }
-    };
-
+    }
   
     useEffect(() => {
-      const token = Cookies.get("accessToken");
-      const userId = Cookies.get("userId");
+      const token = Cookies.get("accessToken")
+      const storedUserId = Cookies.get("userId")
       if (token) {
-        const decodedToken = decode(token);
-        setRole(decodedToken?.role);
+        const decodedToken = decode(token)
+        setRole(decodedToken?.role)
       }
-      if(userId) {
-        fetchUserDetails(userId)
+      if (storedUserId) {
+        setUserId(storedUserId)
+        fetchUserDetails(storedUserId)
       }
-    }, []);
+    }, [])
   
     if (!role) return null;
   
@@ -217,11 +216,18 @@ const data = {
         try {
           const response = await fetch('/api/auth/logout');
           const data = await response.json();
+          disconnectSocket()
           window.location.href = "/auth/login";
         } catch (error) {
           console.error("Error during logout:", error);
         }
       };
+
+      const handleProfile = () => {
+        if (userId) {
+          router.push(`/dashboard/profile?userId=${userId}`)
+        }
+      }
     return (
       <Sidebar variant="inset">
         <SidebarHeader>
@@ -339,9 +345,9 @@ const data = {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
-                  <DropdownMenuItem className="hover:bg-gray-100">
+                  <DropdownMenuItem className="hover:bg-gray-100" onClick={handleProfile}>
                     <User  className='mr-1'/>
-                    Account - Proximamente
+                    Perfil
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
@@ -362,3 +368,4 @@ const data = {
       </Sidebar>
     );
   }
+  

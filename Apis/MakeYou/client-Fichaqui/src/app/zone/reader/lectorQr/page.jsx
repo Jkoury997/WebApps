@@ -118,7 +118,8 @@ export default function Page() {
   }
 
   const handleScan = async (scannedCode) => {
-    scannedCode = scannedCode.replace(/'/g, "-"); // Reemplazar caracteres no válidos
+    scannedCode = scannedCode.replace(/[´_,’'–—\s]/g, '-'); // Reemplazar caracteres no válidos
+
 
     if (scannedCode && !scanning) {
       setScanning(true);
