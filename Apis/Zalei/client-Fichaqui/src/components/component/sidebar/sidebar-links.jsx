@@ -240,7 +240,7 @@ const data = {
                   </div>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-semibold">Fichaqui</span>
-                    <span className="truncate text-xs">Make You S.R.L.</span>
+                    <span className="truncate text-xs">Zalei Agropecuaria S.A.</span>
                   </div>
                 </a>
               </SidebarMenuButton>
