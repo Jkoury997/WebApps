@@ -92,38 +92,66 @@ const getAttendanceByZone = async (zoneId) => {
     return attendances;
 };
 
-// Función para generar una salida automática
+// Función para generar salidas automáticas
 const generarSalidaAutomatica = async () => {
     try {
-        // Obtener todas las entradas que no tienen salida en las últimas 12 horas
         const hace12Horas = new Date(Date.now() - 12 * 60 * 60 * 1000);
-        
-        // Buscar entradas sin una salida correspondiente
+
+        // Buscar todas las entradas sin salida correspondiente y sin cierre automático
         const entradasSinSalida = await Attendance.find({
             type: 'entrada',
             timestamp: { $lte: hace12Horas },
-            hasAutomaticClosure: { $ne: true } // Asegura que no se cierre dos veces automáticamente
+            hasAutomaticClosure: { $ne: true } // Solo las entradas que no tienen cierre automático
         });
 
-        // Crear una salida automática para cada entrada encontrada
-        for (const entrada of entradasSinSalida) {
-            await Attendance.create({
-                userId: entrada.userId,
-                zoneId: entrada.zoneId,
-                type: 'salida',
-                timestamp: new Date(), // Marca la hora actual como la salida
-                automaticClosure: true // Marca que es un cierre automático
-            });
+        console.log(`Se encontraron ${entradasSinSalida.length} entradas sin salida para cerrar automáticamente.`);
 
-            // Marcar la entrada con `hasAutomaticClosure` para evitar cierres duplicados
-            await Attendance.updateOne({ _id: entrada._id }, { hasAutomaticClosure: true });
+        for (const entrada of entradasSinSalida) {
+            try {
+                // Verificar si ya existe una salida reciente para esta entrada
+                const salidaExistente = await Attendance.findOne({
+                    userId: entrada.userId,
+                    zoneId: entrada.zoneId,
+                    type: 'salida',
+                    timestamp: { $gte: entrada.timestamp }, // Después de la entrada
+                });
+
+                if (salidaExistente) {
+                    console.log(`La entrada ${entrada._id} ya tiene una salida registrada.`);
+                    continue; // Saltar a la siguiente entrada
+                }
+
+                // Crear una salida automática
+                await Attendance.create({
+                    userId: entrada.userId,
+                    zoneId: entrada.zoneId,
+                    type: 'salida',
+                    timestamp: new Date(), // Hora actual como salida automática
+                    automaticClosure: true, // Marca que es un cierre automático
+                });
+
+                // Marcar la entrada como cerrada automáticamente
+                await Attendance.updateOne(
+                    { _id: entrada._id },
+                    { hasAutomaticClosure: true }
+                );
+
+                console.log(`Cierre automático realizado para userId: ${entrada.userId}, zoneId: ${entrada.zoneId}`);
+            } catch (entryError) {
+                console.error(
+                    `Error al procesar la entrada userId: ${entrada.userId}, zoneId: ${entrada.zoneId}:`,
+                    entryError.message
+                );
+            }
         }
-        
-        console.log(`Cierre automático completado para ${entradasSinSalida.length} fichadas.`);
+
+        console.log("Proceso de cierre automático completado.");
     } catch (error) {
-        console.error("Error al realizar el cierre automático:", error.message);
+        console.error("Error general al realizar el cierre automático:", error.message);
     }
 };
+
+
 
 
 
