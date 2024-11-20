@@ -1,25 +1,34 @@
 const Attendance = require('../database/models/Attendance');
+const WorkGroup = require('../database/models/WorkGroup');
+const UserExtra = require('../database/models/UserExtra');
 const { userDetails } = require('../utils/authUtils');
 
 // Obtener detalles de asistencia diaria para un usuario en un rango de fechas
 const obtenerDetalleAsistenciaPorDia = async (userId, fechaInicio, fechaFin) => {
-    // Obtener datos básicos del usuario (opcional, según tus necesidades)
+    // Obtener datos básicos del usuario
     const user = await userDetails(userId);
+
+    // Obtener el grupo de trabajo del usuario
+    const userExtra = await UserExtra.findOne({ userId }).populate('workGroupId');
+    if (!userExtra) {
+        throw new Error('El usuario no tiene un grupo de trabajo asignado.');
+    }
+
+    const workGroup = userExtra.workGroupId;
+    const horasAsignadas = workGroup.workHours;
 
     // Asegurar que las fechas se establezcan en el inicio y fin del día correspondiente
     const inicio = new Date(fechaInicio);
     inicio.setHours(0, 0, 0, 0);
-    
+
     const fin = new Date(fechaFin);
     fin.setHours(23, 59, 59, 999);
 
-
-    console.log(userId, fechaInicio, fechaFin)
     // Filtrar registros de asistencia para el usuario y el rango de fechas
     const asistencias = await Attendance.find({
         userId,
-        timestamp: { $gte: inicio, $lte: fin }
-    }).sort({ timestamp: 1 }); // Ordenar cronológicamente
+        timestamp: { $gte: inicio, $lte: fin },
+    }).sort({ timestamp: 1 });
 
     // Agrupar registros por fecha y calcular métricas
     const detalleAsistencia = {};
@@ -33,7 +42,9 @@ const obtenerDetalleAsistenciaPorDia = async (userId, fechaInicio, fechaFin) => 
                 lugarEntrada: null,
                 lugarSalida: null,
                 horasTrabajadas: 0,
-                salidaAutomatica: false // Indicar si la última salida fue automática
+                horasAsignadas,
+                salidaAutomatica: false, // Indicar si la última salida fue automática
+                cumplimiento: false, // Indicador de cumplimiento de horas asignadas
             };
         }
 
@@ -47,16 +58,17 @@ const obtenerDetalleAsistenciaPorDia = async (userId, fechaInicio, fechaFin) => 
         if (asistencia.type === 'salida') {
             detalleAsistencia[fecha].ultimaSalida = asistencia.timestamp;
             detalleAsistencia[fecha].lugarSalida = asistencia.zoneId;
-            detalleAsistencia[fecha].salidaAutomatica = asistencia.automatic || false; // Marcar si la salida fue automática
+            detalleAsistencia[fecha].salidaAutomatica = asistencia.automatic || false;
         }
     });
 
-    // Calcular horas trabajadas por día (si hay entrada y salida)
+    // Calcular horas trabajadas por día y verificar cumplimiento
     for (const fecha in detalleAsistencia) {
-        const { primeraEntrada, ultimaSalida } = detalleAsistencia[fecha];
+        const { primeraEntrada, ultimaSalida, horasAsignadas } = detalleAsistencia[fecha];
         if (primeraEntrada && ultimaSalida) {
             const horasTrabajadas = (ultimaSalida - primeraEntrada) / (1000 * 60 * 60); // Convertir a horas
-            detalleAsistencia[fecha].horasTrabajadas = horasTrabajadas.toFixed(2);
+            detalleAsistencia[fecha].horasTrabajadas = parseFloat(horasTrabajadas.toFixed(2)); // Convertir a número con 2 decimales
+            detalleAsistencia[fecha].cumplimiento = horasTrabajadas >= horasAsignadas; // Verificar cumplimiento
         }
     }
 

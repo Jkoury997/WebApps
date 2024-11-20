@@ -1,44 +1,29 @@
-const { v4: uuidv4 } = require('uuid'); // Importa la librería UUID
 const mongoose = require('mongoose');
+const { v4: uuidv4 } = require('uuid');
 
 const workGroupSchema = new mongoose.Schema(
   {
     _id: {
-      type: String,
-      default: uuidv4, // Genera un UUID automáticamente
-      unique: true,
-      required: true,
+      type: String, // Usamos String como identificador principal
+      default: uuidv4, // Genera automáticamente un UUID único
     },
     name: {
       type: String,
-      required: true,
-      unique: true,
+      required: true, // Nombre del grupo de trabajo (ej. Full Time, Part Time 6 horas)
     },
-    allowedHours: {
-      type: [Number],
-      required: true,
-      validate: {
-        validator: function (hours) {
-          return hours.every((hour) => hour > 0 && hour <= 24);
-        },
-        message: 'Las horas permitidas deben estar entre 1 y 24.',
-      },
+    workHours: {
+      type: Number, // Número de horas asignadas al grupo
+      required: true, // Obligatorio para cada grupo de trabajo
     },
-    isActive: {
-      type: Boolean,
-      default: true,
+    empresaId: {
+      type: String, // UUID de la empresa asociada
+      required: true, // Es obligatorio vincular a una empresa
+      ref: 'Empresa', // Relación con la tabla Empresa
     },
-    empresId: { type: String, required: true, ref: 'Empresa' },
   },
   {
-    timestamps: true,
+    timestamps: true, // Incluye createdAt y updatedAt automáticamente
   }
 );
 
-// Métodos personalizados
-workGroupSchema.methods.isHourAllowed = function (hour) {
-  return this.allowedHours.includes(hour);
-};
-
 module.exports = mongoose.model('WorkGroup', workGroupSchema);
-

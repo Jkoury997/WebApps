@@ -23,7 +23,9 @@ export default function UserManagement() {
   const [searchTerm, setSearchTerm] = useState('')
   const [users, setUsers] = useState([])
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [workGroups, setWorkGroups] = useState(null)
   const [editingUser, setEditingUser] = useState(null)
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false); // Controla el diálogo de creación
   const { toast } = useToast() // Usa el hook de toast
 
   const fetchUsers = async () => {
@@ -31,7 +33,6 @@ export default function UserManagement() {
       const response = await fetch("/api/auth/info/userbyempresa");
       if (response.ok) {
         const data = await response.json();
-        console.log(data);
         setUsers(data);
       } else {
         console.error("Error al obtener los usuarios:", response.statusText);
@@ -41,8 +42,24 @@ export default function UserManagement() {
     }
   };
 
+  const fetchWorkGroups = async () => {
+    try {
+      const response = await fetch("/api/qrfichaqui/workgroup/list");
+      if (response.ok) {
+        const data = await response.json();
+        setWorkGroups(data);
+        console.log(data)
+      } else {
+        console.error("Error al obtener los workGroup:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error al hacer la petición:", error);
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
+    fetchWorkGroups()
   }, []);
 
   const filteredUsers = users.filter(user =>
@@ -52,40 +69,170 @@ export default function UserManagement() {
     user.dni.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleEdit = (userId) => {
-    const user = users.find(u => u._id === userId)
-    setEditingUser(user)
-    setIsEditDialogOpen(true)
-  }
-
-  const handleSaveEdit = async () => {
+  const fetchUserExtra = async (userId) => {
+    
     try {
-      const response = await fetch(`/api/auth/user/edit`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(editingUser)
-      });
+      const response = await fetch(`/api/qrfichaqui/userextra/info?userId=${userId}`);
 
       const responseData = await response.json();
 
       if (response.ok) {
-        await fetchUsers();
-        toast({
-          title: "Usuario actualizado",
-          description: "Los datos del usuario se han modificado correctamente.",
-          variant: "success",
-        }); // Muestra el toast de éxito
+        return responseData
       } else {
         console.error("Error al actualizar el usuario:", responseData.error);
       }
     } catch (error) {
       console.error("Error en la solicitud de actualización:", error.message);
+    }
+  }
+
+  const handleEdit = async (userId) => {
+    const user = users.find((u) => u._id === userId); // Encuentra al usuario
+    setEditingUser({ ...user, workGroupId: '' }); // Establece temporalmente el usuario con un workGroupId vacío
+  
+    try {
+      const userExtra = await fetchUserExtra(userId);
+      if (!userExtra) {
+        toast({
+          title: "Error",
+          description: "No se pudo obtener información extra del usuario. Asigna un horario.",
+          variant: "destructive",
+        });
+        setIsCreateDialogOpen(true); // Abre el diálogo de creación
+        return;
+      }
+  
+      setEditingUser({ ...user, workGroupId: userExtra.workGroupId });
+      setIsEditDialogOpen(true); // Abre el diálogo de edición
+    } catch (error) {
+      console.error("Error en handleEdit:", error);
+      toast({
+        title: "Error",
+        description: "Hubo un problema al intentar editar el usuario.",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  
+
+  const handleSaveEdit = async () => {
+
+    console.log(editingUser)
+    if (!editingUser || !editingUser.workGroupId) {
+      toast({
+        title: "Error",
+        description: "Faltan datos requeridos para actualizar el usuario.",
+        variant: "destructive",
+      });
+      return;
+    }
+  
+    try {
+      const response = await fetch(`/api/auth/user/edit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editingUser),
+      });
+  
+      const responseData = await response.json();
+
+      const responseUserExtra = await fetch(`/api/qrfichaqui/userextra/edit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editingUser),
+      });
+  
+      if (response.ok &&responseUserExtra.ok ) {
+        await fetchUsers();
+        await fetchUserExtra(editingUser._id)
+        toast({
+          title: "Usuario actualizado",
+          description: "Los datos del usuario se han modificado correctamente.",
+          variant: "success",
+        });
+      } else {
+        console.error("Error al actualizar el usuario:", responseData.error);
+        toast({
+          title: "Error",
+          description: responseData.error || "Hubo un problema al actualizar el usuario.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error en la solicitud de actualización:", error.message);
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar el usuario.",
+        variant: "destructive",
+      });
     } finally {
       setIsEditDialogOpen(false);
     }
   };
+
+  const handleCreateEdit = async () => {
+
+    if (!editingUser || !editingUser.workGroupId) {
+      toast({
+        title: "Error",
+        description: "Faltan datos requeridos para actualizar el usuario.",
+        variant: "destructive",
+      });
+      return;
+    }
+  
+    console.log(editingUser)
+    try {
+      const payload = {
+        userId: editingUser._id, // Incluye el userId
+        workGroupId: editingUser.workGroupId,
+      };
+  
+      const responseUserExtra = await fetch(`/api/qrfichaqui/userextra/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+  
+      if (responseUserExtra.ok) {
+        await fetchUsers(); // Recargar lista de usuarios
+        toast({
+          title: "Usuario actualizado",
+          description: "El horario de trabajo se asignó correctamente.",
+          variant: "success",
+        });
+      } else {
+        const errorData = await responseUserExtra.json();
+        console.error("Error al actualizar el usuario:", errorData.error);
+        toast({
+          title: "Error",
+          description: errorData.error || "Hubo un problema al asignar el horario.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error en la solicitud de actualización:", error.message);
+      toast({
+        title: "Error",
+        description: "No se pudo asignar el horario. Inténtalo nuevamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCreateDialogOpen(false);
+      setIsEditDialogOpen(true);
+    }
+  };
+  
+
+
+  
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -206,6 +353,21 @@ export default function UserManagement() {
                   </div>
                 </RadioGroup>
               </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+  <Label className="text-right">Horas de trabajo</Label>
+  <select
+    value={editingUser.workGroupId._id}
+    onChange={(e) => setEditingUser({ ...editingUser, workGroupId: e.target.value })}
+    className="col-span-3 p-2 border rounded-md"
+  >
+   {workGroups.map((workGroup) => (
+    <option key={workGroup._id} value={workGroup._id}>
+      {workGroup.name}
+    </option>
+  ))}
+  </select>
+</div>
+
             </div>
           )}
           <DialogFooter>
@@ -213,6 +375,53 @@ export default function UserManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+          
+      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+  <DialogContent className="sm:max-w-[425px]">
+    <DialogHeader>
+      <DialogTitle>Asignar Horario de Trabajo</DialogTitle>
+    </DialogHeader>
+    <div className="grid gap-4 py-4">
+      <div className="grid grid-cols-4 items-center gap-4">
+        {workGroups ? (
+          <>
+            <Label className="text-right">Grupo</Label>
+            <select
+              value={editingUser?.workGroupId || ''} // Establecer el valor seleccionado
+              onChange={(e) =>
+                setEditingUser({ ...editingUser, workGroupId: e.target.value }) // Actualizar el workGroupId
+              }
+              className="col-span-3 p-2 border rounded-md"
+            >
+              <option value="" disabled>
+                Selecciona un grupo
+              </option>
+              {workGroups.map((workGroup) => (
+                <option key={workGroup._id} value={workGroup._id}>
+                  {workGroup.name}
+                </option>
+              ))}
+            </select>
+          </>
+        ) : (
+          <p>Cargando...</p>
+        )}
+      </div>
+    </div>
+    <DialogFooter>
+      <Button
+        type="submit"
+        onClick={handleCreateEdit}
+        disabled={!editingUser?.workGroupId} // Deshabilitar si no hay un grupo seleccionado
+      >
+        Guardar cambios
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+
+
+
     </div>
   )
 }

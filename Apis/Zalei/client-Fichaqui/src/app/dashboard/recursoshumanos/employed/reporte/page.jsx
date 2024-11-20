@@ -131,7 +131,6 @@ export default function Page() {
       if (!response.ok) throw new Error("Failed to fetch user details");
 
       const employeeData = await response.json();
-      console.log(employeeData);
       setEmployee(employeeData);
     } catch (error) {
       console.error("Error:", error.message);
@@ -148,7 +147,6 @@ export default function Page() {
       if (!response.ok) throw new Error("Failed to fetch attendance details");
 
       const attendanceData = await response.json();
-      console.log(attendanceData.asistencia);
       setAsistenciaDiaria(attendanceData.asistencia);
     } catch (error) {
       console.error("Error:", error.message);
@@ -187,7 +185,6 @@ export default function Page() {
       if (!response.ok) throw new Error("Failed to fetch attendance details");
   
       const estadisticasTrabajo = await response.json();
-      console.log(estadisticasTrabajo);
       setEstadisticasTrabajo(estadisticasTrabajo);
     } catch (error) {
       console.error("Error:", error.message);
@@ -204,7 +201,6 @@ export default function Page() {
       if (!response.ok) throw new Error("Failed to fetch lugares frecuentes");
 
       const lugaresfrecuentes = await response.json();
-      console.log(lugaresfrecuentes);
       setLugaresfrecuentes(lugaresfrecuentes);
     } catch {
       console.error("Error:", error.message);
@@ -221,7 +217,6 @@ export default function Page() {
       if (!response.ok) throw new Error("Failed to fetch movimientos zonas");
 
       const movimientosZonas = await response.json();
-      console.log("Movimet6os: " ,movimientosZonas);
       setMovimientosZonas(movimientosZonas);
     } catch {
       console.error("Error:", error.message);
@@ -229,36 +224,24 @@ export default function Page() {
   };
 
   useEffect(() => {
-    fetchAsistenciaDiaria();
-    fetchEstadisticasTrabajo();
-    fetchLugaresFrecuentes();
-    fetchMovimientosZonas()
-  }, [fechaInicio, fechaFin]);
+    const fetchAllData = async () => {
+        try {
+            // Ejecutar todas las funciones asíncronas simultáneamente
+            await Promise.all([
+                fetchAsistenciaDiaria(),
+                fetchEstadisticasTrabajo(),
+                fetchLugaresFrecuentes(),
+                fetchMovimientosZonas()
+            ]);
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        }
+    };
 
-  const filteredAttendance = attendanceData.filter(
-    (record) =>
-      record.date.getMonth() === selectedMonth.getMonth() &&
-      record.date.getFullYear() === selectedMonth.getFullYear()
-  );
+    fetchAllData();
+}, [fechaInicio, fechaFin]);
 
-  const totalDays = filteredAttendance.length;
-  const presentDays = filteredAttendance.filter(
-    (record) => record.status === "Presente"
-  ).length;
-  const lateDays = filteredAttendance.filter(
-    (record) => record.status === "Tarde"
-  ).length;
-  const absentDays = filteredAttendance.filter(
-    (record) => record.status === "Ausente"
-  ).length;
-  const totalHoursWorked = filteredAttendance.reduce(
-    (sum, record) => sum + record.hoursWorked,
-    0
-  );
-  const averageWorkTime = totalHoursWorked / (presentDays + lateDays);
-  const irregularShifts = filteredAttendance.filter(
-    (record) => record.isIrregular
-  ).length;
+
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -272,44 +255,19 @@ export default function Page() {
         return "bg-gray-500";
     }
   };
+  const getHorasColor = (horasTrabajadas, horasAsignadas) => {
+    if (horasTrabajadas >= horasAsignadas) {
+        return "bg-green-500";
+    } else if (horasTrabajadas < horasAsignadas) {
+        return "bg-red-500";
+    } else {
+        return "bg-gray-500";
+    }
+};
 
-  const getFrequentLocations = (type) => {
-    const locationCounts = filteredAttendance.reduce((acc, record) => {
-      const location =
-        type === "checkIn" ? record.checkInLocation : record.checkOutLocation;
-      if (location) {
-        acc[location] = (acc[location] || 0) + 1;
-      }
-      return acc;
-    }, {});
 
-    return Object.entries(locationCounts)
-      .map(([location, count]) => ({ location, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 3);
-  };
 
-  const getZoneMovements = () => {
-    const movementCounts = filteredAttendance
-      .flatMap((record) => record.zoneMovements)
-      .reduce((acc, movement) => {
-        const key = `${movement.from}-${movement.to}`;
-        acc[key] = (acc[key] || 0) + 1;
-        return acc;
-      }, {});
 
-    return Object.entries(movementCounts)
-      .map(([key, count]) => {
-        const [from, to] = key.split("-");
-        return { from, to, count };
-      })
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 5);
-  };
-
-  const frequentCheckInLocations = getFrequentLocations("checkIn");
-  const frequentCheckOutLocations = getFrequentLocations("checkOut");
-  const frequentZoneMovements = getZoneMovements();
 
   return (
     <div className="container mx-auto px-2 py-8 max-w-4xl">
@@ -500,7 +458,7 @@ export default function Page() {
                 <AlertTriangle className="h-4 w-4 mr-2 text-yellow-500" />
                 Total de turnos irregulares
               </span>
-              <Badge variant="outline" className="bg-yellow-100">{irregularShifts}</Badge>
+              <Badge variant="outline" className="bg-yellow-100">0</Badge>
             </div>
             <p className="text-sm text-muted-foreground mt-2">
               Los turnos irregulares pueden indicar cambios en el horario habitual o situaciones excepcionales.
@@ -553,7 +511,11 @@ export default function Page() {
                         </Badge>
                       </TableCell>
                       <TableCell >
-                        {parseFloat(record.horasTrabajadas).toFixed(2)}
+                      <Badge
+                          className={getHorasColor(record.horasTrabajadas,record.horasAsignadas)}
+                        >
+                          {parseFloat(record.horasTrabajadas)} / {parseInt(record.horasAsignadas)}
+                        </Badge>
                       </TableCell>
                     </TableRow>
                   )
