@@ -17,12 +17,19 @@ export default function Page() {
 
     // useEffect para manejar la verificación de huella digital
     useEffect(() => {
-        
         const verifyDevice = async () => {
             try {
                 // Genera la huella digital
                 const resultFingerprint = await generateFingerprint();
                 console.log("Generated Fingerprint:", resultFingerprint);
+
+                // Guardar el fingerprint en localStorage solo si no existe
+                if (!localStorage.getItem("localFingerprint")) {
+                    localStorage.setItem("localFingerprint", resultFingerprint);
+                    console.log("Fingerprint guardado en localStorage:", resultFingerprint);
+                } else {
+                    console.log("Fingerprint ya existe en localStorage:", localStorage.getItem("localFingerprint"));
+                }
 
                 // Intentar verificar el dispositivo enviando la huella digital al backend
                 const fingerprintResponse = await fetch(`/api/auth/trustdevice/verify`, {
@@ -38,14 +45,37 @@ export default function Page() {
                 const fingerprintData = await fingerprintResponse.json();
                 console.log("Fingerprint Data:", fingerprintData);
 
-                // Redirigir al dashboard si el dispositivo es de confianza
+                // Si la verificación inicial es exitosa
                 if (fingerprintData.isTrusted) {
                     setIsVerified(true);
                 } else {
-                    setIsVerified(true); // Solo marca como verificado si el dispositivo no es de confianza
+                    // Si falla, realizar la verificación extra
+                    console.log("Realizando verificación extra...");
+                    const localFingerprint = localStorage.getItem("localFingerprint")
+                    const extraVerificationResponse = await fetch(`/api/auth/trustdevice/verifyextra`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            localFingerprint: localFingerprint,
+                            newFingerprint: resultFingerprint
+                        }),
+                    });
+
+                    const extraVerificationData = await extraVerificationResponse.json();
+                    console.log("Extra Verification Data:", extraVerificationData);
+
+                    if (extraVerificationData.isTrusted) {
+                        localStorage.setItem("localFingerprint", resultFingerprint);
+                        setIsVerified(true);
+                    } else {
+                        setIsVerified(true); // Falló la verificación extra
+                    }
                 }
             } catch (error) {
                 console.error("Error verifying device:", error);
+                setIsVerified(true); // Manejo de errores
             }
         };
 
@@ -55,7 +85,11 @@ export default function Page() {
 
     return (
         <>
-            {isVerified ? <QRPresentismo /> : <p>Verificando dispositivo...</p>}
+            {isVerified ? (
+                <QRPresentismo />
+            ) : (
+                <p>Verificando dispositivo...</p>
+            )}
         </>
     );
 }

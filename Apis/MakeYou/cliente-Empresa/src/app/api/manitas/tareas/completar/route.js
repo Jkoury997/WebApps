@@ -9,7 +9,6 @@ const NEXT_PUBLIC_EMPRESA_ID_MANITAS = process.env.NEXT_PUBLIC_EMPRESA_ID_MANITA
 
 export async function POST(req) {
 
-    console.log("Hola")
     try {
 
 

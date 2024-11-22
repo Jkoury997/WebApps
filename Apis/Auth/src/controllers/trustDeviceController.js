@@ -32,38 +32,95 @@ const verifyTrustedDevice = async (req, res) => {
     }
 };
 
+// Verificar si un dispositivo es de confianza
+const verifyTrustedDeviceExtra = async (req, res) => {
+    try {
+        const { userId, localFingerprint, newFingerprint } = req.body;
+
+        // Validar entrada
+        if (!userId || !localFingerprint || !newFingerprint) {
+            return res.status(400).json({ 
+                message: 'Faltan datos requeridos (userId, localFingerprint o newFingerprint).' 
+            });
+        }
+
+        // Verificar si el dispositivo es de confianza
+        const isTrusted = await trustDeviceService.isTrustedDevice(userId, localFingerprint);
+        
+        if (isTrusted) {
+            try {
+                const updatedDevice = await trustDeviceService.updateTrustedDevice(userId, newFingerprint);
+                return res.status(200).json({ 
+                    message: 'El dispositivo era de confianza y se actualizó correctamente.', 
+                    isTrusted: true, 
+                    updatedDevice 
+                });
+            } catch (error) {
+                return res.status(500).json({ 
+                    message: 'El dispositivo era de confianza, pero ocurrió un error al actualizarlo.', 
+                    error: error.message 
+                });
+            }
+        } else {
+            return res.status(403).json({ 
+                message: 'El dispositivo nunca fue de confianza.', 
+                isTrusted: false 
+            });
+        }
+    } catch (error) {
+        return res.status(500).json({ 
+            message: 'Error al verificar el dispositivo de confianza.', 
+            error: error.message 
+        });
+    }
+};
+
 // Actualizar un dispositivo de confianza mediante OTP
 const updateDeviceWithOTP = async (req, res) => {
-    
-        const { email,empresaId, fingerprint, otpCode } = req.body;
+    try {
+        const { email, empresaId, fingerprint, otpCode } = req.body;
+
+        // Validar entrada
+        if (!email || !empresaId || !fingerprint || !otpCode) {
+            return res.status(400).json({ message: 'Faltan datos requeridos: email, empresaId, fingerprint o otpCode.' });
+        }
 
         // Verificar si el OTP es válido
-        const {isValidOTP} = await otpService.verifyOTP(email, empresaId,otpCode);
-        
+        const { isValidOTP } = await otpService.verifyOTP(email, empresaId, otpCode);
         if (!isValidOTP) {
             return res.status(403).json({ message: 'OTP inválido o expirado.' });
         }
 
-        const user = await userService.getUserByEmailAndEmpresa(email,empresaId)
+        // Buscar al usuario
+        const user = await userService.getUserByEmailAndEmpresa(email, empresaId);
         if (!user) {
-            return res.status(403).json({ message: 'Email no encontrado.' });
+            return res.status(404).json({ message: 'Usuario no encontrado para el email y empresa proporcionados.' });
         }
-
 
         // Intentar actualizar el dispositivo de confianza
         const updatedDevice = await trustDeviceService.updateTrustedDevice(user._id, fingerprint);
-        try {
         if (!updatedDevice) {
             return res.status(404).json({ message: 'No se encontró un dispositivo de confianza para actualizar.' });
         }
-        res.status(200).json({ message: 'Dispositivo de confianza actualizado con éxito.', updatedDevice });
+
+        // Respuesta exitosa
+        return res.status(200).json({
+            message: 'Dispositivo de confianza actualizado con éxito.',
+            updatedDevice,
+        });
     } catch (error) {
-        res.status(500).json({ message: 'Error al actualizar el dispositivo de confianza.', error: error.message });
+        console.error('Error en updateDeviceWithOTP:', error.message);
+        return res.status(500).json({
+            message: 'Error interno al actualizar el dispositivo de confianza.',
+            error: error.message,
+        });
     }
 };
+
 
 module.exports = {
     registerTrustedDevice,
     verifyTrustedDevice,
-    updateDeviceWithOTP
+    updateDeviceWithOTP,
+    verifyTrustedDeviceExtra
 };

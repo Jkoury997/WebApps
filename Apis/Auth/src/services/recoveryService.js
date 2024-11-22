@@ -36,29 +36,44 @@ const generateOTP = async (email, empresaId) => {
 
 // Servicio para verificar OTP sin cambiar la contraseña
 const verifyOTP = async (email, empresaId, otpCode) => {
-    // Buscar al usuario por email y empresaId
-    const user = await User.findOne({ email, empresa: empresaId });
-    if (!user) {
-        throw new Error('Usuario no encontrado para la empresa proporcionada.');
+    try {
+        // Validar entrada
+        if (!email || !empresaId || !otpCode) {
+            throw new Error('Faltan datos requeridos: email, empresaId o otpCode.');
+        }
+
+        // Buscar al usuario por email y empresaId
+        const user = await User.findOne({ email, empresa: empresaId });
+        if (!user) {
+            throw new Error('Usuario no encontrado para la empresa proporcionada.');
+        }
+
+        // Buscar el OTP correspondiente en la base de datos
+        const otp = await OTP.findOne({ otpCode, userId: user._id, isUsed: false });
+        if (!otp) {
+            throw new Error('OTP inválido o ya utilizado.');
+        }
+
+        // Verificar si el OTP ha expirado
+        if (otp.expiresAt < new Date()) {
+            throw new Error('OTP expirado.');
+        }
+
+        // Marcar el OTP como utilizado
+        otp.isUsed = true;
+        await otp.save();
+
+        return {
+            message: 'OTP verificado correctamente.',
+            isValidOTP: true,
+        };
+    } catch (error) {
+        console.error('Error en verifyOTP:', error.message);
+        throw error; // Propagar el error al controlador
     }
-
-    // Buscar el OTP correspondiente en la base de datos
-    const otp = await OTP.findOne({ otpCode, userId: user._id, isUsed: false });
-    if (!otp) {
-        throw new Error('OTP inválido o ya utilizado.');
-    }
-
-    // Verificar si el OTP ha expirado
-    if (otp.expiresAt < new Date()) {
-        throw new Error('OTP expirado.');
-    }
-
-    // Marcar el OTP como utilizado
-    otp.isUsed = true;
-    await otp.save();
-
-    return { message: 'OTP verificado correctamente.',isValidOTP: true};
 };
+
+
 
 // Servicio para verificar OTP y cambiar la contraseña
 const changePasswordWithOTP = async (email, empresaId, otpCode, newPassword) => {

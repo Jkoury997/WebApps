@@ -8,6 +8,7 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { useRouter } from "next/navigation";
 import FingerprintJS from '@fingerprintjs/fingerprintjs';
 
+
 export default function Page() {
   const [formData, setFormData] = useState({
     email: "",

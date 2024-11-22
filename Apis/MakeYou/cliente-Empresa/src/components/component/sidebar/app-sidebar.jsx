@@ -64,6 +64,10 @@ export function AppSidebar({ ...props }) {
             title: "Tareas",
             url: "/mantenimiento/tareas/listado",
           },
+          {
+            title: "Crear tarea",
+            url: "/mantenimiento/tareas/crear",
+          },
 
         ],
       },
