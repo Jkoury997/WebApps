@@ -23,10 +23,10 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Ejecutar cada hora
-/* cron.schedule('0 * * * *', () => {
+ cron.schedule('0 * * * *', () => {
     console.log("Ejecutando tarea de cierre automático");
     generarSalidaAutomatica();
-}); */
+}); 
 
 // Middleware
 app.use(express.json());
