@@ -30,6 +30,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import Loading from "@/components/ui/loading";
 
+export const dynamic = "force-dynamic";
+
 export default function Component() {
   const searchParams = useSearchParams();
   const tienda = searchParams.get("tienda");
