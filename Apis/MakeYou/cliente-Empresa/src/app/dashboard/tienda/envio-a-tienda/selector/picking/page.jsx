@@ -29,14 +29,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import Loading from "@/components/ui/loading";
-import { Suspense } from 'react'
 
 export const dynamic = "force-dynamic";
 
 export default function Component() {
   const searchParams = useSearchParams();
-
-  const [tienda,setTienda] = useState("");
+  const [tienda, setTienda] = useState("");
   const [loading, setLoading] = useState(true); // Estado de carga
   const [scannedItems, setScannedItems] = useState({});
   const [barcode, setBarcode] = useState("");
@@ -48,7 +46,7 @@ export default function Component() {
   const productRefs = useRef({});
   const [selectedRubro, setSelectedRubro] = useState(""); // Estado para el rubro seleccionado
 
-
+  // Obtener la tienda desde los parámetros de búsqueda
   useEffect(() => {
     const tiendaParam = searchParams.get("tienda");
     if (tiendaParam && tiendaParam !== tienda) {
@@ -56,11 +54,16 @@ export default function Component() {
     }
   }, [searchParams]);
 
+  // Cargar los productos de la tienda seleccionada
+  useEffect(() => {
+    if (tienda) {
+      fetchTienda(tienda);
+    }
+  }, [tienda]);
+
   const fetchTienda = async (tienda) => {
     try {
-      const response = await fetch(
-        `/api/lux/envios/consultarenvio?tienda=${tienda}`
-      );
+      const response = await fetch(`/api/lux/envios/consultarenvio?tienda=${tienda}`);
       const data = await response.json();
 
       const filteredProducts = Array.isArray(data.Articulos)
@@ -78,17 +81,11 @@ export default function Component() {
     }
   };
 
-  useEffect(() => {
-    if (tienda) fetchTienda(tienda);
-  }, [tienda]);
-
-  useEffect(() => {
-    if (inputRef.current) inputRef.current.focus();
-  }, [barcode, scannedItems, isDialogOpen]);
-
   const handleScan = (e) => {
     e.preventDefault();
-    if (barcode.trim()) processScan(barcode);
+    if (barcode.trim()) {
+      processScan(barcode);
+    }
     setBarcode("");
   };
 
@@ -118,22 +115,6 @@ export default function Component() {
       setErrorProduct(code);
       setIsDialogOpen(true);
     }
-  };
-
-  const handleForceAdd = () => {
-    const product = products.find((p) => p.CodigoBarras === errorProduct);
-    if (product) {
-      setScannedItems((prev) => ({
-        ...prev,
-        [errorProduct]: {
-          IdArticulo: product.IdArticulo,
-          CodigoBarras: errorProduct,
-          Cantidad: (prev[errorProduct]?.Cantidad || 0) + 1,
-        },
-      }));
-    }
-    setIsDialogOpen(false);
-    setErrorProduct(null);
   };
 
   const finalizePedido = async () => {
@@ -177,11 +158,8 @@ export default function Component() {
   const handleRubroChange = (event) => setSelectedRubro(event.target.value);
 
   return loading ? (
-    <Suspense>
     <Loading />
-    </Suspense>
   ) : (
-    <Suspense>
     <div className="min-h-screen bg-gray-100">
       <Card className="max-w-4xl mx-auto border-none">
         <CardHeader className="p-3">
@@ -265,11 +243,15 @@ export default function Component() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogAction onClick={handleForceAdd}>Agregar de todas formas</AlertDialogAction>
+            <AlertDialogAction onClick={() => setIsDialogOpen(false)}>
+              Cerrar
+            </AlertDialogAction>
+            <AlertDialogAction onClick={handleForceAdd}>
+              Agregar de todas formas
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
-    </Suspense>
   );
 }
