@@ -29,6 +29,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import Loading from "@/components/ui/loading";
+import { Suspense } from 'react'
 
 export const dynamic = "force-dynamic";
 
@@ -176,8 +177,11 @@ export default function Component() {
   const handleRubroChange = (event) => setSelectedRubro(event.target.value);
 
   return loading ? (
+    <Suspense>
     <Loading />
+    </Suspense>
   ) : (
+    <Suspense>
     <div className="min-h-screen bg-gray-100">
       <Card className="max-w-4xl mx-auto border-none">
         <CardHeader className="p-3">
@@ -266,5 +270,6 @@ export default function Component() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+    </Suspense>
   );
 }
