@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
 export async function GET() {
+    const cookieStore = cookies();
     try {
-        const cookieStore = cookies();
+        
 
         // Eliminación de cookies
         cookieStore.set('AccessKey', '', { path: '/', expires: new Date(0) });
@@ -13,7 +14,7 @@ export async function GET() {
     } catch (error) {
         // Manejo de errores generales y eliminación de cookies si ocurre un error
         try {
-            const cookieStore = cookies();
+
             cookieStore.set('AccessKey', '', { path: '/', expires: new Date(0) });
             cookieStore.set('Token', '', { path: '/', expires: new Date(0) });
             cookieStore.set('User', '', { path: '/', expires: new Date(0) });

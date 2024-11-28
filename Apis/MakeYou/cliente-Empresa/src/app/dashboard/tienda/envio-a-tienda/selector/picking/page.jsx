@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { useSearchParams } from "next/navigation";
 import React, { useState, useRef, useEffect } from "react";
 import {
@@ -30,7 +32,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import Loading from "@/components/ui/loading";
 
-export const dynamic = "force-dynamic";
+
 
 export default function Component() {
   const searchParams = useSearchParams();
