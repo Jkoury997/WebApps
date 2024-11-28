@@ -34,7 +34,8 @@ export const dynamic = "force-dynamic";
 
 export default function Component() {
   const searchParams = useSearchParams();
-  const tienda = searchParams.get("tienda");
+
+  const [tienda,setTienda] = useState("");
   const [loading, setLoading] = useState(true); // Estado de carga
   const [scannedItems, setScannedItems] = useState({});
   const [barcode, setBarcode] = useState("");
@@ -45,6 +46,14 @@ export default function Component() {
   const dialogInputRef = useRef(null);
   const productRefs = useRef({});
   const [selectedRubro, setSelectedRubro] = useState(""); // Estado para el rubro seleccionado
+
+
+  useEffect(() => {
+    const tiendaParam = searchParams.get("tienda");
+    if (tiendaParam && tiendaParam !== tienda) {
+      setTienda(tiendaParam);
+    }
+  }, [searchParams]);
 
   const fetchTienda = async (tienda) => {
     try {
