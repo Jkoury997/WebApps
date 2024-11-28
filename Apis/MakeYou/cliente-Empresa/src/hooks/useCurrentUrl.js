@@ -1,15 +1,14 @@
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 
 export function useCurrentUrl() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [currentUrl, setCurrentUrl] = useState('');
 
-  useEffect(() => {
+  const currentUrl = useMemo(() => {
+    if (typeof window === 'undefined') return '';
     const queryString = searchParams.toString();
-    const url = `${pathname}${queryString ? `?${queryString}` : ''}`;
-    setCurrentUrl(url);
+    return `${window.location.origin}${pathname}${queryString ? `?${queryString}` : ''}`;
   }, [pathname, searchParams]);
 
   return currentUrl;
