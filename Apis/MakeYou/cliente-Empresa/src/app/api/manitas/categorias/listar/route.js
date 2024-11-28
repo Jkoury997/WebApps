@@ -23,7 +23,7 @@ export async function GET(req) {
 
         // Obtener los datos de la respuesta
         const responseData = await response.json();
-
+        console.log(responseData)
         // Verificar si la solicitud fue exitosa
         if (response.ok) {
             return NextResponse.json(responseData);

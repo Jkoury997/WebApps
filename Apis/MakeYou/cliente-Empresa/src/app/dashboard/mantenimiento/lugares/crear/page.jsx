@@ -32,7 +32,7 @@ export default function Page() {
 
         try {
             // Enviar la solicitud al backend
-            const response = await fetch("/api/manitas/lugar/crear", {
+            const response = await fetch("/api/manitas/lugares/crear", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -53,6 +53,7 @@ export default function Page() {
                 setPais("");
                 setBarrio("");
                 setCiudad("");
+
             } else {
                 setAlertMessage({
                     type: "error",

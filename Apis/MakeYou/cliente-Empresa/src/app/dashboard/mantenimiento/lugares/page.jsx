@@ -16,10 +16,9 @@ export default function Page() {
     const fetchLugares = async () => {
       setLoading(true);
       try {
-        const response = await fetch("/api/manitas/lugar/listar"); // Reemplaza con tu endpoint real
+        const response = await fetch("/api/manitas/lugares/listar"); // Reemplaza con tu endpoint real
         const data = await response.json();
-        console.log(data);
-        setLugares(data);
+        setLugares(data.data);
       } catch {
         console.log("Error");
       } finally {
@@ -44,7 +43,7 @@ export default function Page() {
     <div className="w-full p-4">
       {/* Botón para CREAR NUEVO LUGAR */}
       <div className="flex justify-end mb-4">
-        <Link href="/dashboard/mantenimiento/lugar/crear">
+        <Link href="/dashboard/mantenimiento/lugares/crear">
           <Button variant="default">Crear Lugar</Button>
         </Link>
       </div>
@@ -69,7 +68,7 @@ export default function Page() {
                 <TableCell>{lugar.direccion}</TableCell>
                 <TableCell>{lugar.telefono}</TableCell>
                 <TableCell>
-                  <Link href={`/dashboard/mantenimiento/lugar/${lugar._id}`}>
+                  <Link href={`/dashboard/mantenimiento/lugares/${lugar._id}`}>
                     <Button variant="outline">
                       <EditIcon className="h-4 w-4" />
                     </Button>

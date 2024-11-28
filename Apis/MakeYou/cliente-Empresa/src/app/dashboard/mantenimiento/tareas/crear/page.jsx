@@ -36,9 +36,9 @@ export default function Page() {
 
   const fetchLugares = async () => {
     try {
-      const response = await fetch("/api/manitas/lugar/listar");
+      const response = await fetch("/api/manitas/lugares/listar");
       const data = await response.json();
-      setLugares(data);
+      setLugares(data.data);
     } catch (error) {
       setAlertMessage({ type: "error", message: "Error al cargar Lugares" });
     }
@@ -46,9 +46,9 @@ export default function Page() {
 
   const fetchCategorias = async () => {
     try {
-      const response = await fetch("/api/manitas/categoria/listar");
+      const response = await fetch("/api/manitas/categorias/listar");
       const data = await response.json();
-      setCategorias(data);
+      setCategorias(data.data);
     } catch (error) {
       setAlertMessage({ type: "error", message: "Error al cargar Categorias" });
     }
@@ -184,7 +184,7 @@ export default function Page() {
                         <SelectLabel>Categorías disponibles</SelectLabel>
                         {categorias.map((categoria) => (
                           <SelectItem key={categoria._id} value={categoria._id}>
-                            {categoria.titulo}
+                            {categoria.nombre}
                           </SelectItem>
                         ))}
                       </SelectGroup>

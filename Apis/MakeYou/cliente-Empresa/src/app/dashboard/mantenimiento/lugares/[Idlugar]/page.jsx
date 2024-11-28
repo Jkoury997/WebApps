@@ -21,15 +21,16 @@ export default function Page() {
         if (Idlugar) {
           const cargarLugar = async () => {
             try {
-              const response = await fetch(`/api/manitas/lugar/obtenerId?id=${Idlugar}`);
+              const response = await fetch(`/api/manitas/lugares/obtenerId?id=${Idlugar}`);
               if (response.ok) {
                 const data = await response.json();
-                setNombre(data.nombre);
-                setDireccion(data.direccion);
-                setTelefono(data.telefono);
-                setBarrio(data.barrio)
-                setPais(data.pais)
-                setCiudad(data.ciudad)
+
+                setNombre(data.lugar.nombre);
+                setDireccion(data.lugar.direccion);
+                setTelefono(data.lugar.telefono);
+                setBarrio(data.lugar.barrio)
+                setPais(data.lugar.pais)
+                setCiudad(data.lugar.ciudad)
 
 
               } else {
@@ -66,7 +67,7 @@ export default function Page() {
         };
 
         try {
-            const response = await fetch(`/api/manitas/lugar/editar?id=${Idlugar}`, {
+            const response = await fetch(`/api/manitas/lugares/editar?id=${Idlugar}`, {
               method: "PUT",
               headers: {
                 "Content-Type": "application/json",
