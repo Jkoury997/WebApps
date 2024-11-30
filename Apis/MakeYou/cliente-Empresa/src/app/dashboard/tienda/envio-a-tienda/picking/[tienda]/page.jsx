@@ -219,13 +219,17 @@ if (loading) {
               <div className="relative flex-grow">
                 <Barcode className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
-                  type="text"
-                  placeholder="Escanea el código de barras"
-                  value={barcode}
-                  onChange={(e) => setBarcode(e.target.value)}
-                  className="pl-10"
-                  ref={inputRef}
-                />
+  type="text"
+  placeholder="Escanea el código de barras"
+  value={barcode}
+  onChange={(e) => setBarcode(e.target.value)}
+  className="pl-10"
+  ref={inputRef}
+  readOnly // Evita que el teclado virtual se abra
+  inputMode="none" // Previene el teclado en dispositivos compatibles
+  autoFocus // Asegura que el input esté listo para el lector
+/>
+
               </div>
             </form>
             {/* Selección de rubro */}
