@@ -225,7 +225,7 @@ if (loading) {
   onChange={(e) => setBarcode(e.target.value)}
   className="pl-10"
   ref={inputRef}
-  readOnly // Evita que el teclado virtual se abra
+  
   inputMode="none" // Previene el teclado en dispositivos compatibles
   autoFocus // Asegura que el input esté listo para el lector
 />
