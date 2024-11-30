@@ -37,6 +37,7 @@ export default function Component() {
   const [loading, setLoading] = useState(true); // Estado de carga
   const [scannedItems, setScannedItems] = useState({});
   const [barcode, setBarcode] = useState("");
+  const [codebara, setCodeBara] = useState("");
   const [errorProduct, setErrorProduct] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [products, setProducts] = useState([]);
@@ -102,6 +103,7 @@ export default function Component() {
   };
 
   const processScan = (code) => {
+    setCodeBara(code)
     const product = products.find((p) => p.CodigoBarras === code);
     if (product) {
       if (scannedItems[code] && scannedItems[code].Cantidad >= product.Saldo) {
@@ -315,7 +317,7 @@ if (loading) {
             <AlertDialogDescription>
               El producto escaneado no es válido o ya se ha completado la
               cantidad requerida. Puedes eliminar una unidad escaneando
-              nuevamente el código o agregar el producto de todas formas. Codigo Leido: {barcode}
+              nuevamente el código o agregar el producto de todas formas. {codebara}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <form
