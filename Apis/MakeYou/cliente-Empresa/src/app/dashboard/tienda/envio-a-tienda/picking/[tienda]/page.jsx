@@ -225,8 +225,8 @@ if (loading) {
   onChange={(e) => setBarcode(e.target.value)}
   className="pl-10"
   ref={inputRef}
-  
   inputMode="none"
+  
 />
 
               </div>
@@ -310,12 +310,12 @@ if (loading) {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Producto no válido o ya completado
+              Producto no válido o ya completado 
             </AlertDialogTitle>
             <AlertDialogDescription>
               El producto escaneado no es válido o ya se ha completado la
               cantidad requerida. Puedes eliminar una unidad escaneando
-              nuevamente el código o agregar el producto de todas formas.
+              nuevamente el código o agregar el producto de todas formas. Codigo Leido: {barcode}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <form
