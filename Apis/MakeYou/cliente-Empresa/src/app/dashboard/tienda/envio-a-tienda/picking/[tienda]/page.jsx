@@ -226,8 +226,7 @@ if (loading) {
   className="pl-10"
   ref={inputRef}
   
-  inputMode="none" // Previene el teclado en dispositivos compatibles
-  autoFocus // Asegura que el input esté listo para el lector
+  inputMode="none"
 />
 
               </div>
