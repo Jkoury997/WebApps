@@ -54,7 +54,7 @@ export default function Page() {
   // Maneja la redirección al seleccionar una tienda
   const handleSubmit = () => {
     if (selectedStore) {
-      router.push(`/dashboard/tienda/envio-a-tienda/selector/picking?tienda=${selectedStore}`);
+      router.push(`/dashboard/tienda/envio-a-tienda/picking/${selectedStore}`);
     } else {
       console.log("Por favor, selecciona una tienda antes de continuar.");
     }

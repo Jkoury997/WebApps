@@ -79,7 +79,7 @@ export function AppSidebar({ ...props }) {
         items: [
           {
             title: "Envio a Tienda",
-            url: "/tienda/envio-a-tienda/selector",
+            url: "/tienda/envio-a-tienda/picking",
           }
         ],
       },
