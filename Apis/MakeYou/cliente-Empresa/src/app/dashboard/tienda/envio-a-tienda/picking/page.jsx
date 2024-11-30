@@ -27,24 +27,45 @@ export default function Page() {
 
   // Llamada a la API para obtener las tiendas
   useEffect(() => {
-    const fetchTiendas = async () => {
-      try {
-        const response = await fetch("/api/lux/catalogos/tienda");
-        const data = await response.json();
-        if (response.ok) {
-          setTiendas(Array.isArray(data.Lista) ? data.Lista : []);
-        } else {
-          console.error("Error al cargar las tiendas:", data.message || "Desconocido");
-        }
-      } catch (error) {
-        console.error("Error al cargar las tiendas:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
 
     fetchTiendas();
   }, []);
+
+  const fetchTiendas = async () => {
+    try {
+      // Realizar la solicitud a la API
+      const response = await fetch("/api/lux/catalogos/tienda");
+  
+      // Verificar si la respuesta HTTP es exitosa
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error(
+          `Error al cargar las tiendas: ${errorData.message || "Desconocido"}`
+        );
+        setTiendas([]); // Asegurarse de limpiar los datos en caso de error
+        return;
+      }
+  
+      // Intentar parsear los datos de la respuesta
+      const data = await response.json();
+  
+      // Verificar si los datos contienen la estructura esperada
+      if (Array.isArray(data.Lista)) {
+        setTiendas(data.Lista); // Actualizar el estado con las tiendas
+      } else {
+        console.error("La respuesta no contiene una lista válida.");
+        setTiendas([]); // Asegurarse de limpiar los datos en caso de estructura inesperada
+      }
+    } catch (error) {
+      // Manejo de errores generales, como problemas de red
+      console.error("Error al cargar las tiendas:", error.message || error);
+      setTiendas([]); // Asegurarse de limpiar los datos en caso de error general
+    } finally {
+      // Marcar como terminado el estado de carga
+      setLoading(false);
+    }
+  };
+  
 
   // Maneja la selección de una tienda
   const handleStoreSelect = (value) => {

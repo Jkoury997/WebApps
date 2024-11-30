@@ -22,11 +22,10 @@ export async function GET(req) {
 
         const responseData = await response.json();
 
-    try {
-
-        
+    try {  
 
         if (response.ok) {
+            console.log(responseData)
             // Devolver la respuesta en caso de éxito
             return NextResponse.json(responseData);
         } else {
