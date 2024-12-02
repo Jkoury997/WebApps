@@ -5,13 +5,20 @@ import { Button } from "@/components/ui/button";
 export default function QrScannerComponent({
   title,
   description,
-  onScanSuccess, // Callback prop para enviar el resultado escaneado
+  onScanSuccess, // Callback para el resultado del escaneo
+  stopScanner,   // Nueva propiedad para detener el escáner
 }) {
   const [scanning, setScanning] = useState(false);
   const [scannerStarted, setScannerStarted] = useState(false);
   const [isPaused, setIsPaused] = useState(false); // Estado para manejar la pausa
   const scannerId = 'html5qr-code-full-region';
   const html5QrCodeRef = useRef(null);
+
+  useEffect(() => {
+    if (stopScanner) {
+      stopScanner(() => stopScanning());
+    }
+  }, [stopScanner]);
 
   useEffect(() => {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -35,7 +42,7 @@ export default function QrScannerComponent({
     html5QrCodeRef.current.start(
       { facingMode: "environment" },
       {
-        fps: 10,
+        fps: 5,
         qrbox: 250
       },
       handleScan
@@ -52,7 +59,7 @@ export default function QrScannerComponent({
       html5QrCodeRef.current.stop().then(() => {
         html5QrCodeRef.current.clear();
       }).catch(err => {
-        console.error('Ocurrió un error al intentar detener el escaneo:', err);
+        console.error('Error al detener el escaneo:', err);
       });
     }
   };

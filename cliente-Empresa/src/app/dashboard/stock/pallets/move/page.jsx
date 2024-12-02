@@ -37,6 +37,14 @@ export default function Page() {
     };
   }, [isFirstScanComplete]);
 
+
+  const handleStopScanner = (scannerRef) => {
+    if (scannerRef && scannerRef.stopScanning) {
+      console.log("Escaner detenido")
+      scannerRef.stopScanning();
+    }
+  };
+
   const fetchDeposits = async () => {
     try {
       const response = await fetch("/api/syndra/catalogo/almacenespallets");
@@ -240,6 +248,7 @@ export default function Page() {
               onScanSuccess={handleScanOrigin}
               title="Deposito Origen"
               description="Escanar el QR del deposito de origen"
+              stopScanner={handleStopScanner}
             />
           )}
           {activeStep === 2 && (
@@ -249,6 +258,7 @@ export default function Page() {
                 onScanSuccess={handleScanFinal}
                 title="Depósito Final"
                 description="Escanar el QR del deposito de destino"
+                stopScanner={handleStopScanner}
               />
             </>
           )}
@@ -263,6 +273,7 @@ export default function Page() {
               <QrScannerComponent
                 onScanSuccess={handleScanPackage}
                 title="Escanear Paquete"
+                stopScanner={handleStopScanner}
               />
               {scannedPackages.length > 0 && (
                 <>
