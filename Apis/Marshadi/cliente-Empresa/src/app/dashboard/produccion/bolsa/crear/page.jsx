@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
 import { StepIndicator } from "@/components/component/step-indicartor";
+import QrScannerComponent from "@/components/component/qr-scanner";
 
 import {
   Table,
@@ -35,6 +36,8 @@ export default function Page() {
   const [pendiente, setPendiente] = useState(null);
   const [activeStep, setActiveStep] = useState(1);
   const [qrData, setQrData] = useState(null);
+  const [scanned, setScanned] = useState(false);
+  const [employe, setEmploye] = useState(null);
 
   const [primera, setPrimera] = useState("");
   const [segunda, setSegunda] = useState("");
@@ -50,6 +53,48 @@ export default function Page() {
 
   const handlePrimeraChange = (e) => {
     setPrimera(e.target.value);
+  };
+
+  const handleScanPersona = async (data) => {
+    setAlertMessage(null)
+    setLoading(true);
+    if (data) {
+      console.log(data);
+      try {
+        setScanned(false);
+        const parsedData = await JSON.parse(data);
+        console.log(parsedData)
+
+        const response = await fetch(
+          `/api/zyra/catalogo/personal?id=${parsedData.CodPersona}`,
+          {
+            method: "GET",
+            headers: {
+              Accept: "application/json",
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Error fetching data");
+        }
+
+        const result = await response.json();
+        console.log("API Result Personal:", result);
+        setEmploye(result);
+        setScanned(true);
+        setActiveStep(2);
+      } catch (error) {
+        console.error("Error:", error);
+        setAlertMessage({
+            type: "error",
+            message: "Por favor scane un QR de personal valido.",
+          });
+        setScanned(false);
+      } finally {
+        setLoading(false);
+      }
+    }
   };
 
   const handleSegundaChange = (e) => {
@@ -99,7 +144,7 @@ export default function Page() {
       } else {
         setAlertMessage(null);
         setPendientes(result.Pendientes);
-        setActiveStep(2);
+        setActiveStep(3);
       }
     } catch (error) {
       console.error("Error:", error);
@@ -115,7 +160,7 @@ export default function Page() {
   // Función para manejar acciones en la tabla
   const handleAccion = (pendiente) => {
     setPendiente(pendiente);
-    setActiveStep(3);
+    setActiveStep(4);
   };
 
   const handleStep3Submit = async () => {
@@ -128,7 +173,7 @@ export default function Page() {
       const data = {
         CodMaquina: maquina.trim(),
         IdArticulo: pendiente.IdArticulo,
-        CodPersonal: pendiente.CodPersonal.trim(),
+        CodPersonal: employe.Persona.CodPersona,
         ContadoPrimera: Number(primera),
         ContadoSegunda: Number(segunda),
         ContadoDescarte: Number(descarte),
@@ -176,7 +221,7 @@ export default function Page() {
 
         // Convertir el objeto a cadena JSON
         setQrData(JSON.stringify(qrObject));
-        setActiveStep(4);
+        setActiveStep(5);
 
         // Limpiar los campos
         setPrimera("");
@@ -205,12 +250,13 @@ export default function Page() {
     setSegunda("");
     setDescarte("");
     setQrData(null);
+    setEmploye(null)
   };
 
   return (
     <>
       <div className="mb-3 flex flex-col items-center">
-        <StepIndicator activeStep={activeStep} steps={4} />
+        <StepIndicator activeStep={activeStep} steps={5} />
       </div>
 
       <div className="mb-2 flex flex-col items-center">
@@ -230,7 +276,23 @@ export default function Page() {
         />
       )}
 
-      {activeStep === 1 && (
+{activeStep === 1 && (
+        <Card className="mt-2">
+          <CardHeader className="pb-2">
+            <CardTitle className="ms-2">Qr del Personal</CardTitle>
+            <CardDescription className="ms-2">
+              Scanea el código del personal
+            </CardDescription>
+          </CardHeader>
+          <CardContent >
+            <QrScannerComponent
+              onScanSuccess={handleScanPersona}
+            ></QrScannerComponent>
+          </CardContent>
+        </Card>
+      )}
+
+      {activeStep === 2 && (
         <Card className="mt-2">
                 <CardHeader>
               <CardTitle className="ms-2">Selecione la maquina</CardTitle>
@@ -263,7 +325,7 @@ export default function Page() {
         </Card>
       )}
 
-      {activeStep === 2 && (
+      {activeStep === 3 && (
         <Table className="bg-white mt-2 rounded-lg">
           <TableCaption>Lista de artículos pendientes.</TableCaption>
           <TableHeader>
@@ -291,7 +353,7 @@ export default function Page() {
         </Table>
       )}
 
-      {activeStep === 3 && pendiente && (
+      {activeStep === 4 && pendiente && (
         <>
           <ArticleDetails dataArticulo={pendiente} />
           <Card className="mt-2">
@@ -348,7 +410,7 @@ export default function Page() {
         </>
       )}
 
-{activeStep === 4 && (
+{activeStep === 5 && (
   <div className="flex flex-col items-center mt-3">
     {/* Utiliza el componente QrPrinter */}
     {qrData && (
