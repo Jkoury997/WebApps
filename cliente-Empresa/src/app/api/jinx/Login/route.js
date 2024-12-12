@@ -7,7 +7,7 @@ export async function POST(req) {
     try {
         const body = await req.json();
         const cookieStore = cookies();
-        
+
         // Supongamos que el cuerpo de la solicitud incluye el email y password
         const { email, password } = body;
 
@@ -24,8 +24,11 @@ export async function POST(req) {
         console.log(responseData);
 
         if (responseData.Estado) {
-            // Guardar tokens en cookies solo si Estado es true
-            cookieStore.set('AccessKey', responseData.AccessKey, { path: '/' });
+            // Guardar tokens en cookies con una duración de 8 horas
+            cookieStore.set('AccessKey', responseData.AccessKey, {
+                path: '/',
+                maxAge: 28800 // 8 horas en segundos
+            });
             return NextResponse.json(responseData);
         } else {
             // Manejo de errores específicos de la API
