@@ -1,0 +1,32 @@
+{
+    "name": "Marshadi S.R.L. App",
+    "short_name": "Marshadi App",
+"icons": [
+  {
+    "src": "/icons/icon-72x72.png",
+    "type": "image/png",
+    "sizes": "72x72"
+  },
+    {
+      "src": "/icons/icon-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icons/icon-384x384.png",
+      "type": "image/png",
+      "sizes": "384x384"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+    "theme_color": "#FFFFFF",
+    "background_color": "#FFFFFF",
+    "start_url": "/",
+    "display": "fullscreen",
+    "orientation": "portrait",
+    "form_factor": "seawide"
+  }

@@ -1,9 +1,9 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
 
-const APP_NAME = "Zalei Agropecuaria S.A.";
+const APP_NAME = "Zalei App";
 const APP_DEFAULT_TITLE = "Zalei Agropecuaria S.A. App";
-const APP_TITLE_TEMPLATE = "%s - PWA App";
+const APP_TITLE_TEMPLATE = "Zalei App";
 const APP_DESCRIPTION = "Best PWA app in the world!";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -17,11 +17,6 @@ export const metadata = {
   },
   description: APP_DESCRIPTION,
   manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: APP_DEFAULT_TITLE,
-  },
   formatDetection: {
     telephone: false,
   },
@@ -43,6 +38,7 @@ export const metadata = {
     description: APP_DESCRIPTION,
   },
 };
+
 
 export default function RootLayout({ children }) {
   return (

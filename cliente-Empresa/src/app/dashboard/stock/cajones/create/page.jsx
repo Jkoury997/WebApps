@@ -1,91 +1,103 @@
 "use client";
 
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import ScanBarcode from "@/components/component/scan-barcode";
-
 import { EnterGalpon } from "@/components/component/enter-galpon";
 import { EnterQuantity } from "@/components/component/enter-quantity";
 import { ArticleDetails } from "@/components/ui/articules-details";
-import dynamic from "next/dynamic"; // Para carga dinámica de componentes
-import { Card, CardContent } from "@/components/ui/card";
-import { StepIndicator } from "@/components/component/step-indicartor";
+import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
 import shortUUID from "short-uuid";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
+import { useToast } from "@/hooks/use-toast"; // Importa el hook de toast
 
-// Carga dinámica del componente QrPrinter, que solo se carga en el cliente
-const QrPrinter = dynamic(() => import('@/components/component/qr-pdf-generator'), { ssr: false });
-
+// Carga dinámica del componente QrPrinter
+const QrPrinter = dynamic(() => import("@/components/component/qr-pdf-generator"), { ssr: false });
 
 export default function Page() {
     const [isFirstScanComplete, setIsFirstScanComplete] = useState(false);
-    const [isScanning, setIsScanning] = useState(true); 
+    const [isScanning, setIsScanning] = useState(true);
     const [activeStep, setActiveStep] = useState(1);
     const [galpon, setGalpon] = useState("");
     const [cantidad, setCantidad] = useState("");
     const [dataArticulo, setDataArticulo] = useState(null);
-    const [qrData, setQrData] = useState(null); // Nuevo estado para los datos del QR
-    const [error, setError] = useState(null);
-    const [success, setSuccess] = useState(null); // Nuevo estado para manejar mensajes de éxito
+    const [qrData, setQrData] = useState(null);
+    const [isLoading, setIsLoading] = useState(false); // Estado para gestionar la carga
+    const { toast } = useToast(); // Usa el hook para mostrar el toast
+
+    const Steps = [1, 2, 3, 4];
 
     useEffect(() => {
         const handleBeforeUnload = (event) => {
-          if (isFirstScanComplete) {
-            event.preventDefault();
-            event.returnValue = ""; // Es necesario para mostrar la alerta en algunos navegadores
-          }
+            if (isFirstScanComplete) {
+                event.preventDefault();
+                event.returnValue = "";
+            }
         };
-    
+
         window.addEventListener("beforeunload", handleBeforeUnload);
-    
+
         return () => {
-          window.removeEventListener("beforeunload", handleBeforeUnload);
+            window.removeEventListener("beforeunload", handleBeforeUnload);
         };
-      }, [isFirstScanComplete]);
+    }, [isFirstScanComplete]);
 
-      
+    const handleScan = async (data) => {
+        setIsScanning(false);
+        setIsLoading(true);
 
-      const handleScan = async (data) => {
-        setIsScanning(false); // Desactivar el escáner mientras se procesa el escaneo
-        setError(null); // Resetear errores previos
-        console.log("Código escaneado:", data);
         try {
-            const response = await fetch('/api/syndra/catalogo/articulo', {
-                method: 'POST',
+            const response = await fetch("/api/syndra/catalogo/articulo", {
+                method: "POST",
                 headers: {
-                    'Content-Type': 'application/json',
+                    "Content-Type": "application/json",
                 },
                 body: JSON.stringify({ Codebar: data }),
             });
-    
+
             const result = await response.json();
-    
+
             if (response.ok) {
-                console.log(result);
                 setDataArticulo(result);
                 setActiveStep(2);
-                setIsFirstScanComplete(true); // Marcamos que el primer escaneo se ha completado
+                setIsFirstScanComplete(true);
             } else {
-                setError(result.error || 'Error al obtener los datos del artículo');
-                setIsScanning(true); // Reactivar el escáner si hay un error
+
+                toast({
+                    title: "Error Codigo de Barras",
+                    description: result.error || "Error al obtener los datos del artículo.",
+                    variant: "destructive",
+                  }); // Muestra el toast de error
+                setIsScanning(true);
             }
         } catch (err) {
-            setError('Error durante la solicitud a la API');
-            setIsScanning(true); // Reactivar el escáner si hay un error
+
+            toast({
+                title: "Error API",
+                description: "Error durante la solicitud a la API",
+                variant: "destructive",
+              }); // Muestra el toast de error
+            setIsScanning(true);
+        } finally {
+            setIsLoading(false);
         }
     };
-    
+
     const handlePrevious = () => {
-        setActiveStep(prev => prev - 1);
+        setActiveStep((prev) => prev - 1);
     };
 
     const handleCreate = async (IdArticulo, Cantidad) => {
-        setError(null); // Resetear errores previos
+
+        setIsLoading(true);
+
         try {
-            const response = await fetch('/api/syndra/avicola/cajon/create', {
-                method: 'POST',
+            const response = await fetch("/api/syndra/avicola/cajon/create", {
+                method: "POST",
                 headers: {
-                    'Content-Type': 'application/json',
+                    "Content-Type": "application/json",
                 },
                 body: JSON.stringify({ IdArticulo, Cantidad }),
             });
@@ -93,103 +105,136 @@ export default function Page() {
             const result = await response.json();
 
             if (response.ok) {
-                console.log('Cajón creado con éxito:', result);
                 const uuid = shortUUID.generate();
                 const qrDataObject = {
-                    uuid:uuid,
+                    uuid,
                     IdArticulo,
                     Cantidad,
                     Galpon: galpon,
-                    IdPaquete:result.IdPaquete,
-                    Fecha: new Date().toLocaleDateString('es-AR'),
+                    IdPaquete: result.IdPaquete,
+                    Fecha: new Date().toLocaleDateString("es-AR"),
                 };
+
                 setQrData(JSON.stringify(qrDataObject));
-                setSuccess('El cajón ha sido creado con éxito.');
+                
+                toast({
+                    title: "Cajon Creado",
+                    description:"El cajón ha sido creado con éxito.",
+                    variant: "success",
+                  });
                 setActiveStep(4);
             } else {
-                setError(result.error || 'Error al crear el cajón');
+                toast({
+                    title: "Error Cajon",
+                    description: result.error || "Error al crear el cajón.",
+                    variant: "destructive",
+                  }); // Muestra el toast de error
             }
         } catch (err) {
-            setError('Error durante la creación del cajón');
+            toast({
+                title: "Error Api",
+                description: result.error || "Error al crear el cajón.",
+                variant: "destructive",
+              }); // Muestra el toast de error
+
+        } finally {
+            setIsLoading(false);
         }
     };
 
     const handleCreateAnother = () => {
-        // Recargar la página para crear un nuevo cajón
-        setCantidad("")
-        setGalpon("")
-        setSuccess("")
-        setError("")
-        setQrData("")
-        setDataArticulo("")
-        setActiveStep(1)
-        setIsScanning(true); 
-        setIsFirstScanComplete(false)
-
+        setCantidad("");
+        setGalpon("");
+        setSuccess(null);
+        setError(null);
+        setQrData(null);
+        setDataArticulo(null);
+        setActiveStep(1);
+        setIsScanning(true);
+        setIsFirstScanComplete(false);
     };
 
     return (
         <div className="container mx-auto px-2 py-8">
-            <div className="max-w-2xl mx-auto">
-                <div className="mb-6 flex flex-col items-center">
-                    <StepIndicator activeStep={activeStep} />
-                    <h1 className="text-3xl font-bold mb-2 text-center">Crear Cajón</h1>
-                    <p className="text-muted-foreground text-center">
-                        Utiliza este formulario para crear un nuevo cajón en el sistema.
-                    </p>
-                </div>
-                {error && (
-                    <div className="mb-6">
-                        <Alert type="error" title="Error" message={error} />
-                    </div>
-                )}
-                {success && (
-                    <div className="mb-6">
-                        <Alert type="success" title="Éxito" message={success} />
-                    </div>
-                )}
-                <Card>
-                    <CardContent className="grid gap-4 p-1 pt-6">
-                        {activeStep === 1 && <ScanBarcode onScanSuccess={handleScan} />}
 
-                        {activeStep === 2 && (
-                            <>
-                                <ArticleDetails dataArticulo={dataArticulo} Galpon={galpon} />
-                                <EnterGalpon 
-                                    Galpon={galpon} 
-                                    setGalpon={setGalpon} 
-                                    onPrevious={handlePrevious}
-                                    onNext={() => setActiveStep(3)}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-2xl font-bold text-center">Crear Cajón</CardTitle>
+                    <CardDescription className="text-center">
+                        Utiliza este formulario para crear un nuevo cajón en el sistema.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="mb-6">
+                        <div className="flex justify-between mb-2">
+                            {Steps.map((step) => (
+                                <div
+                                    key={step}
+                                    className={`w-1/4 h-2 rounded-full ${
+                                        step <= activeStep ? "bg-primary" : "bg-gray-200"
+                                    }`}
                                 />
-                            </>
-                        )}
-                        {activeStep === 3 && (
-                            <>
-                                <ArticleDetails dataArticulo={dataArticulo} Galpon={galpon} Cantidad={cantidad} />
-                                <EnterQuantity 
-                                    Cantidad={cantidad} 
-                                    setCantidad={setCantidad} 
-                                    Galpon={galpon} 
-                                    IdArticulo={dataArticulo?.Articulo?.IdArticulo}
-                                    onPrevious={handlePrevious}
-                                    onCreate={handleCreate} 
-                                />
-                            </>
-                        )}
-                        {activeStep === 4 && (
-                            <>
-                                <QrPrinter qrData={qrData} apiResponse={dataArticulo} />
-                                <Button 
-                                    className="mt-1 bg-white text-gray-950 border-gray-950 border rounder hover:text-white" 
-                                    onClick={handleCreateAnother}
-                                >
-                                    Crear otro Cajón
-                                </Button>
-                            </>
-                        )}
-                    </CardContent>
-                </Card>
-            </div>
+                            ))}
+                        </div>
+                        <p className="text-center text-sm text-gray-500">
+                            Paso {activeStep} de {Steps.length}
+                        </p>
+                    </div>
+
+                    {isLoading ? (
+                        <div className="flex justify-center items-center">
+                            <Spinner size="lg"/>
+                        </div>
+                        
+                    ) : (
+                        <>
+                            {activeStep === 1 && <ScanBarcode onScanSuccess={handleScan} />}
+
+                            {activeStep === 2 && (
+                                <>
+                                    <ArticleDetails dataArticulo={dataArticulo} Galpon={galpon} />
+                                    <EnterGalpon
+                                        Galpon={galpon}
+                                        setGalpon={setGalpon}
+                                        onPrevious={handlePrevious}
+                                        onNext={() => setActiveStep(3)}
+                                    />
+                                </>
+                            )}
+
+                            {activeStep === 3 && (
+                                <>
+                                    <ArticleDetails
+                                        dataArticulo={dataArticulo}
+                                        Galpon={galpon}
+                                        Cantidad={cantidad}
+                                    />
+                                    <EnterQuantity
+                                        Cantidad={cantidad}
+                                        setCantidad={setCantidad}
+                                        Galpon={galpon}
+                                        IdArticulo={dataArticulo?.Articulo?.IdArticulo}
+                                        onPrevious={handlePrevious}
+                                        onCreate={handleCreate}
+                                    />
+                                </>
+                            )}
+
+                            {activeStep === 4 && (
+                                <>
+                                    <QrPrinter qrData={qrData} apiResponse={dataArticulo} />
+                                    <Button
+                                        className="mt-1 bg-white text-gray-950 border-gray-950 border rounded hover:text-white"
+                                        onClick={handleCreateAnother}
+                                    >
+                                        Crear otro Cajón
+                                    </Button>
+                                </>
+                            )}
+                        </>
+                    )}
+                </CardContent>
+            </Card>
         </div>
     );
 }

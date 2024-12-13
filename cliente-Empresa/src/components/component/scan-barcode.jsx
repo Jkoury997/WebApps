@@ -1,79 +1,109 @@
 import { useState, useEffect, useRef } from 'react';
-import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode'; // Importamos los formatos soportados
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { Button } from '../ui/button';
-
+import { Input } from '../ui/input';
+import { Barcode } from 'lucide-react';
 
 export default function ScanBarcode({
   title,
-  description ,
-  onScanSuccess, // Callback prop para enviar el resultado escaneado
+  description,
+  onScanSuccess, // Callback para enviar el resultado escaneado
 }) {
+  const [deviceType, setDeviceType] = useState(null); // Para determinar el tipo de dispositivo
   const [scanning, setScanning] = useState(false);
   const [scannerStarted, setScannerStarted] = useState(false);
-  const [isPaused, setIsPaused] = useState(false); // Estado para manejar la pausa
+  const [isPaused, setIsPaused] = useState(false); // Pausar escaneo
+  const [barcode, setBarcode] = useState(''); // Manejar el valor del input manual
   const scannerId = 'html5qr-code-full-region';
   const html5QrCodeRef = useRef(null);
 
+  // Detectar tipo de dispositivo desde localStorage
   useEffect(() => {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      console.error('Este dispositivo no soporta la API de getUserMedia necesaria para el escaneo de códigos de barra.');
+    const savedDeviceType = localStorage.getItem('device');
+    if (savedDeviceType) {
+      setDeviceType(savedDeviceType);
+    } else {
+      setDeviceType('camera'); // Default a cámara
+      localStorage.setItem('device', 'camera');
     }
   }, []);
 
+  // Manejar el escaneo si es cámara
   useEffect(() => {
-    if (scanning) {
+    if (scanning && deviceType === 'camera') {
       startScanning();
     }
 
     return () => stopScanning();
-  }, [scanning]);
+  }, [scanning, deviceType]);
 
   const startScanning = () => {
     if (!html5QrCodeRef.current) {
       html5QrCodeRef.current = new Html5Qrcode(scannerId);
     }
 
-    html5QrCodeRef.current.start(
-      { facingMode: "environment" }, // Usa la cámara trasera
-      {
-        fps: 10, // Fotogramas por segundo
-        qrbox: 250, // Tamaño del área de escaneo
-        formatsToSupport: [Html5QrcodeSupportedFormats.EAN_13], // Solo soporte para EAN-13
-      },
-      handleScan
-    ).then(() => {
-      setScannerStarted(true);
-    }).catch(err => {
-      console.error('Ocurrió un error al intentar iniciar el escaneo:', err);
-      setScanning(false);
-    });
+    html5QrCodeRef.current
+      .start(
+        { facingMode: 'environment' }, // Cámara trasera
+        {
+          fps: 10, // Fotogramas por segundo
+          qrbox: 250, // Tamaño del área de escaneo
+          formatsToSupport: [Html5QrcodeSupportedFormats.EAN_13], // Formato EAN-13
+        },
+        handleScan
+      )
+      .then(() => {
+        setScannerStarted(true);
+      })
+      .catch((err) => {
+        console.error('Error al iniciar el escaneo:', err);
+        setScanning(false);
+      });
   };
 
   const stopScanning = () => {
     if (html5QrCodeRef.current) {
-      html5QrCodeRef.current.stop().then(() => {
-        html5QrCodeRef.current.clear();
-      }).catch(err => {
-        console.error('Ocurrió un error al intentar detener el escaneo:', err);
-      });
-    }
-  };
-  const handleScan = (data) => {
-    console.log("Código escaneado: ", data); // Verifica qué datos están siendo capturados
-    if (data && !isPaused) {
-      onScanSuccess(data);
-      html5QrCodeRef.current.pause();
-      setIsPaused(true);
+      html5QrCodeRef.current
+        .stop()
+        .then(() => {
+          html5QrCodeRef.current.clear();
+        })
+        .catch((err) => {
+          console.error('Error al detener el escaneo:', err);
+        });
     }
   };
 
-  
+  const handleScan = (data) => {
+    console.log('Código escaneado:', data);
+    if (data && !isPaused) {
+      onScanSuccess(data);
+      
+            // Verificar que el escáner está inicializado antes de pausar
+            if (html5QrCodeRef.current) {
+              html5QrCodeRef.current.pause();
+            }
+      setIsPaused(true);
+    }
+  };
 
   const resumeScanning = () => {
     if (html5QrCodeRef.current) {
       html5QrCodeRef.current.resume();
       setIsPaused(false);
     }
+  };
+
+  const handleInputKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      // Enviar el código al presionar Enter
+      onScanSuccess(barcode);
+      setBarcode(''); // Limpiar el estado después de enviar
+    }
+  };
+
+  const handleInputChange = (e) => {
+    setBarcode(e.target.value); // Actualizar el estado mientras se escribe
   };
 
   return (
@@ -84,21 +114,41 @@ export default function ScanBarcode({
             <h1 className="text-xl font-bold tracking-tight">{title}</h1>
             <p className="mt-2 text-muted-foreground">{description}</p>
           </div>
-          {!scannerStarted && (
+
+          {/* Lector por cámara */}
+          {deviceType === 'camera' && !scannerStarted && (
             <Button size="lg" className="w-full" onClick={() => setScanning(true)}>
               Iniciar Escáner
             </Button>
           )}
-          {scanning && (
-            <div className='border p-2 rounded shadow-none bg-white' id={scannerId} style={{ width: '100%' }} />
+          {deviceType === 'camera' && scanning && (
+            <div className="border p-2 rounded shadow-none bg-white" id={scannerId} style={{ width: '100%' }} />
           )}
-          {isPaused && (
+          {deviceType === 'camera' && isPaused && (
             <Button size="m" className="w-full mt-1" onClick={resumeScanning}>
               Escanear de nuevo
             </Button>
+          )}
+
+          {/* Lector por PDA */}
+          {deviceType === 'reader' && (
+            <div className="relative flex-grow">
+              <Barcode className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                type="text"
+                placeholder="Escanea el código de barras"
+                value={barcode}
+                onChange={handleInputChange} // Actualiza el estado
+                onKeyDown={handleInputKeyDown} // Detecta Enter para enviar
+                className="pl-10"
+                inputMode="none"
+                autoFocus
+              />
+            </div>
           )}
         </div>
       </div>
     </div>
   );
 }
+

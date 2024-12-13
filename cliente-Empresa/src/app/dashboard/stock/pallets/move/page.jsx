@@ -1,32 +1,33 @@
-"use client";
-
-import { useState,useEffect} from "react";
+"use client"
+import React, { useState, useEffect } from "react";
 import QrScannerComponent from "@/components/component/qr-scanner";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Alert } from "@/components/ui/alert"; // Verifica que la ruta sea correcta
-import DepositoInfo from "@/components/ui/deposit-info"; // Verifica que la ruta sea correcta
-import { Button } from "@/components/ui/button"; // Verifica que la ruta sea correcta
+import { Card, CardContent } from "@/components/ui/card";
+import { Alert } from "@/components/ui/alert";
+import DepositoInfo from "@/components/ui/deposit-info";
+import { Button } from "@/components/ui/button";
 import ListPackets from "@/components/component/list-packed";
 import StatusBadge from "@/components/ui/badgeAlert";
+import { useToast } from "@/hooks/use-toast"; // Importa el hook de toast
+
 
 export default function Page() {
   const [isFirstScanComplete, setIsFirstScanComplete] = useState(false);
   const [activeStep, setActiveStep] = useState(1);
-  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false); // Estado para manejar el indicador de carga
   const [successBadge, setSuccessBadge] = useState(null);
   const [errorBadge, setErrorBadge] = useState(null);
-  const [success, setSuccess] = useState(null);
   const [availableDeposits, setAvailableDeposits] = useState([]);
   const [depositOrigin, setDepositOrigin] = useState(null);
   const [depositFinal, setDepositFinal] = useState(null);
   const [scannedPackages, setScannedPackages] = useState([]);
   const [scannedUUIDs, setScannedUUIDs] = useState([]);
+  const { toast } = useToast(); // Usa el hook para mostrar el toast
 
   useEffect(() => {
     const handleBeforeUnload = (event) => {
       if (isFirstScanComplete) {
         event.preventDefault();
-        event.returnValue = ""; // Es necesario para mostrar la alerta en algunos navegadores
+        event.returnValue = "";
       }
     };
 
@@ -37,15 +38,8 @@ export default function Page() {
     };
   }, [isFirstScanComplete]);
 
-
-  const handleStopScanner = (scannerRef) => {
-    if (scannerRef && scannerRef.stopScanning) {
-      console.log("Escaner detenido")
-      scannerRef.stopScanning();
-    }
-  };
-
   const fetchDeposits = async () => {
+    setIsLoading(true); // Activar loading
     try {
       const response = await fetch("/api/syndra/catalogo/almacenespallets");
       const data = await response.json();
@@ -53,23 +47,37 @@ export default function Page() {
         setAvailableDeposits(data.Almacenes);
         return data.Almacenes;
       } else {
-        setError(data.error || "Error al obtener los depósitos");
+        toast({
+          title: "Error",
+          description: data.error || "Error al obtener los depósitos",
+          variant: "destructive",
+        });
         return null;
       }
     } catch (err) {
-      setError("Error al realizar la solicitud");
+      toast({
+        title: "Error",
+        description: "Error al realizar la solicitud",
+        variant: "destructive",
+      });
       return null;
+    } finally {
+      setIsLoading(false); // Desactivar loading
     }
   };
 
   const handleScanOrigin = async (scannedData) => {
-    setError(null);
-    console.log("Depósito de origen escaneado:", scannedData);
 
+    setIsLoading(true); // Mostrar indicador de carga
     const deposits = await fetchDeposits();
 
     if (!deposits) {
-      setError("No se pudieron obtener los depósitos.");
+      toast({
+        title: "Error",
+        description: "No se pudieron obtener los depósitos.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
       return;
     }
 
@@ -79,91 +87,62 @@ export default function Page() {
 
     if (foundDeposit) {
       setDepositOrigin(foundDeposit);
-      setSuccess("Depósito Origen confirmado.");
+      toast({
+        title: "Depósito Confirmado",
+        description: "Depósito Origen confirmado.",
+        variant: "success",
+      });
       setActiveStep(2);
-      setIsFirstScanComplete(true); // Marcamos que el primer escaneo se ha completado
+      setIsFirstScanComplete(true);
     } else {
-      setError(
-        "Depósito de origen no encontrado en la lista de depósitos disponibles."
-      );
+      toast({
+        title: "Error",
+        description: "Depósito de origen no encontrado en la lista de depósitos disponibles.",
+        variant: "destructive",
+      });
     }
+
+    setIsLoading(false); // Ocultar indicador de carga
   };
 
   const handleScanFinal = async (scannedData) => {
-    setSuccess(null);
-    setError(null);
-    console.log("Depósito final escaneado:", scannedData);
+
+    setIsLoading(true); // Mostrar indicador de carga
 
     const foundDeposit = availableDeposits.find(
       (deposit) => deposit.Codigo === scannedData
     );
 
-    // Verificar si el depósito final es el mismo que el depósito de origen
     if (foundDeposit && foundDeposit.Codigo === depositOrigin?.Codigo) {
-      setError("Depósito Final no puede ser igual al Depósito Origen.");
+      toast({
+        title: "Error",
+        description: "Depósito Final no puede ser igual al Depósito Origen.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
       return;
     }
 
     if (foundDeposit) {
       setDepositFinal(foundDeposit);
-      setSuccess("Depósito Final confirmado.");
-      setActiveStep(3); // Avanzar al siguiente paso
-    } else {
-      setError(
-        "Depósito final no encontrado en la lista de depósitos disponibles."
-      );
-    }
-  };
-
-  const fetchCheckPaquete= async (IdPaquete) => {
-    try {
-      const response = await fetch(`/api/syndra/avicola/pallet/list/id?IdPallet=${IdPaquete}`, {
-        method: 'GET',
+      toast({
+        title: "Depósito Confirmado",
+        description: "Depósito Final confirmado.",
+        variant: "success",
       });
-
-      const data = await response.json();
-      return data.List
-    } catch (error) {
-      console.error("Error checking paquete:", error);
-      setSuccessBadge("")
-      setErrorBadge("Error al verificar el paquete.");
-      return false;
+      setActiveStep(3);
+    } else {
+      toast({
+        title: "Error",
+        description: "Depósito final no encontrado en la lista de depósitos disponibles.",
+        variant: "destructive",
+      });
     }
+
+    setIsLoading(false); // Ocultar indicador de carga
   };
-
-
-  const fetchMovePaquete = async (IdPaquete) => {
-    try {
-        const response = await fetch('/api/syndra/avicola/pallet/move', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                IdPallet: IdPaquete,
-                AlmacenOrigen: depositOrigin.Codigo,
-                AlmacenDestino: depositFinal.Codigo,
-            }),
-        });
-
-        const responseData = await response.json();
-
-        if (response.ok && responseData.Estado) {
-            return responseData.Estado;
-        }
-    } catch (error) {
-        console.error("Error moving paquete:", error);
-        setSuccessBadge("")
-        setErrorBadge("Error al mover el paquete.");
-        return false;
-    }
-};
-
-
-
   const handleScanPackage = async (scannedData) => {
-    setSuccess(null);
-    setError(null);
+
     setErrorBadge(null)
     setSuccessBadge(null);
 
@@ -215,11 +194,11 @@ export default function Page() {
     }
   };
 
-  const handleRestart = async () => {
-    setError(null);
-    setSuccess(null);
-    setSuccessBadge(null)
-    setErrorBadge(null)
+
+  const handleRestart = () => {
+
+    setSuccessBadge(null);
+    setErrorBadge(null);
     setAvailableDeposits([]);
     setDepositOrigin(null);
     setDepositFinal(null);
@@ -230,25 +209,20 @@ export default function Page() {
 
   return (
     <>
-      {error && (
+      {isLoading && (
         <div className="mb-4">
-          <Alert type="error" title="Error" message={error} />
-        </div>
-      )}
-      {success && (
-        <div className="mb-4">
-          <Alert type="success" title="Éxito" message={success} />
+          <Alert type="info" title="Cargando" message="Por favor, espera..." />
         </div>
       )}
 
       <Card>
         <CardContent className="grid gap-4 p-1 pt-4 pb-4">
+        
           {activeStep === 1 && (
             <QrScannerComponent
               onScanSuccess={handleScanOrigin}
               title="Deposito Origen"
               description="Escanar el QR del deposito de origen"
-              stopScanner={handleStopScanner}
             />
           )}
           {activeStep === 2 && (
@@ -258,7 +232,6 @@ export default function Page() {
                 onScanSuccess={handleScanFinal}
                 title="Depósito Final"
                 description="Escanar el QR del deposito de destino"
-                stopScanner={handleStopScanner}
               />
             </>
           )}
@@ -268,17 +241,15 @@ export default function Page() {
                 depositoOrigen={depositOrigin}
                 depositoFinal={depositFinal}
               />
-                {successBadge && <StatusBadge type="success" text={successBadge} />}
-                {errorBadge && <StatusBadge type="error" text={errorBadge} />}
+              {successBadge && <StatusBadge type="success" text={successBadge} />}
+              {errorBadge && <StatusBadge type="error" text={errorBadge} />}
               <QrScannerComponent
                 onScanSuccess={handleScanPackage}
                 title="Escanear Paquete"
-                stopScanner={handleStopScanner}
               />
               {scannedPackages.length > 0 && (
                 <>
-                  <ListPackets paquetes={scannedPackages} />{" "}
-                  {/* Mostrar los paquetes escaneados */}
+                  <ListPackets paquetes={scannedPackages} />
                   <Button className="ms-4 me-4" onClick={handleRestart}>
                     Finalizar
                   </Button>
