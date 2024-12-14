@@ -7,7 +7,6 @@ import { EnterQuantity } from "@/components/component/enter-quantity";
 import { ArticleDetails } from "@/components/ui/articules-details";
 import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
-import { Alert } from "@/components/ui/alert";
 import shortUUID from "short-uuid";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";

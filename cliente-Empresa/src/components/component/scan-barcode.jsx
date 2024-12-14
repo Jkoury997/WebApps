@@ -46,7 +46,7 @@ export default function ScanBarcode({
       .start(
         { facingMode: 'environment' }, // Cámara trasera
         {
-          fps: 10, // Fotogramas por segundo
+          fps: 5, // Fotogramas por segundo
           qrbox: 250, // Tamaño del área de escaneo
           formatsToSupport: [Html5QrcodeSupportedFormats.EAN_13], // Formato EAN-13
         },
