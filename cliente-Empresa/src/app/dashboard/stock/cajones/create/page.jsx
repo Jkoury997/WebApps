@@ -144,13 +144,12 @@ export default function Page() {
     const handleCreateAnother = () => {
         setCantidad("");
         setGalpon("");
-        setSuccess(null);
-        setError(null);
         setQrData(null);
         setDataArticulo(null);
         setActiveStep(1);
         setIsScanning(true);
         setIsFirstScanComplete(false);
+        setIsLoading(false); // Asegúrate de resetear el estado de carga también
     };
 
     return (
