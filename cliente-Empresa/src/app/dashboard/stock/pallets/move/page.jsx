@@ -194,6 +194,66 @@ export default function Page() {
     }
   };
 
+ // Función para verificar un paquete
+const fetchCheckPaquete = async (IdPaquete) => {
+  try {
+      const response = await fetch(`/api/syndra/avicola/pallet/list/id?IdPallet=${IdPaquete}`, {
+          method: 'GET',
+      });
+
+      if (!response.ok) {
+          // Manejo de error si el servidor devuelve un estado no exitoso
+          toast({
+              title: "Error",
+              description: "Depósito final no encontrado en la lista de depósitos disponibles.",
+              variant: "destructive",
+          });
+          return false;
+      }
+
+      const data = await response.json();
+      return data.List;
+  } catch (error) {
+      console.error("Error checking paquete:", error);
+      setSuccessBadge("");
+      setErrorBadge("Error al verificar el paquete.");
+      return false;
+  }
+};
+
+// Función para mover un paquete
+const fetchMovePaquete = async (IdPaquete) => {
+  try {
+      const response = await fetch('/api/syndra/avicola/pallet/move', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+              IdPallet: IdPaquete,
+              AlmacenOrigen: depositOrigin.Codigo,
+              AlmacenDestino: depositFinal.Codigo,
+          }),
+      });
+
+      const responseData = await response.json();
+
+      if (response.ok && responseData.Estado) {
+          return responseData.Estado;
+      } else {
+          setErrorBadge("Error al mover el paquete.");
+          return false;
+      }
+  } catch (error) {
+      console.error("Error moving paquete:", error);
+      setSuccessBadge("");
+      setErrorBadge("Error al mover el paquete.");
+      return false;
+  }
+};
+
+
+
 
   const handleRestart = () => {
 
