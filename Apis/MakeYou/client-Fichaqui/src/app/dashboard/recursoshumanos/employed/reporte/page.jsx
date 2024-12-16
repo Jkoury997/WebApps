@@ -147,6 +147,7 @@ export default function Page() {
       if (!response.ok) throw new Error("Failed to fetch attendance details");
 
       const attendanceData = await response.json();
+      console.log(attendanceData)
       setAsistenciaDiaria(attendanceData.asistencia);
     } catch (error) {
       console.error("Error:", error.message);
@@ -158,7 +159,8 @@ export default function Page() {
   }, [userId]);
 
   const handleMonthChange = (value) => {
-    const newDate = new Date(value);
+    const [year, month] = value.split("-").map(Number);
+const newDate = new Date(year, month - 1, 1);
     setSelectedMonth(newDate);
 
     const inicio = format(
@@ -504,10 +506,12 @@ export default function Page() {
                       <TableCell>
                         <Badge
                           className={getStatusColor(
-                            record.salidaAutomatica ? "Automática" : "Normal"
+                            record.
+                            automaticClosure ? "Automática" : "Normal"
                           )}
                         >
-                          {record.salidaAutomatica ? "Automática" : "Normal"}
+                          {record.
+automaticClosure ? "Automática" : "Normal"}
                         </Badge>
                       </TableCell>
                       <TableCell >

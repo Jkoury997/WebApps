@@ -5,8 +5,9 @@ const ACCESS_TOKEN_SECRET = process.env.JWT_ACCESS_SECRET;
 const REFRESH_TOKEN_SECRET = process.env.JWT_REFRESH_SECRET;
 
 // Tiempo de vida del Access Token y Refresh Token
-const ACCESS_TOKEN_EXPIRATION = '15m'; // 15 minutos
-const REFRESH_TOKEN_EXPIRATION = '7d'; // 7 días
+const ACCESS_TOKEN_EXPIRATION = 15 * 60; // 15 minutos en segundos
+const REFRESH_TOKEN_EXPIRATION = 7 * 24 * 60 * 60; // 7 días en segundos
+
 
 // Generar Access Token (vencimiento corto)
 const generateAccessToken = (userId,empresa, role) => {
