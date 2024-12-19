@@ -7,7 +7,7 @@ export async function GET(req) {
     // Obtener las cookies
     const cookieStore = cookies();
     const Token = cookieStore.get("Token");
-    
+
     // Obtener el parámetro `tienda` desde el query de la URL
     const { searchParams } = new URL(req.url);
     const tienda = searchParams.get('tienda');
@@ -29,7 +29,7 @@ export async function GET(req) {
         }
 
         // Enviar la solicitud al backend
-        const response = await fetch(`${NEXT_PUBLIC_URL_API_LUX}/api/Envios/ConsultarEnvio?Tienda=${tienda}`, {
+        const response = await fetch(`${NEXT_PUBLIC_URL_API_LUX}/api/Envios/ConsultarEnvio?Tienda=${tienda}&Rubro=TB`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
@@ -39,8 +39,23 @@ export async function GET(req) {
 
         // Validar si la respuesta es exitosa
         const responseData = await response.json();
+        const filteredProducts = responseData.Articulos
+            .filter((product) => product.Stock > 0)
+            .map(({ IdArticulo, CodigoBarras, Saldo, Cabecera,DescripDetalle,DescripMedida,Rubro }) => (
+                {
+                    IdArticulo,
+                    CodigoBarras,
+                    Saldo: Math.abs(Saldo),
+                    Cabecera,
+                    DescripDetalle,
+                    DescripMedida,
+                    Rubro
+
+                }));
+
+
         if (response.ok) {
-            return NextResponse.json(responseData);
+            return NextResponse.json(filteredProducts);
         } else {
             return NextResponse.json({ error: responseData.Mensaje || 'Error en la respuesta de la API' }, { status: response.status });
         }

@@ -500,9 +500,10 @@ const newDate = new Date(year, month - 1, 1);
                           "-"}
                       </TableCell>
                       <TableCell className="hidden sm:table-cell">
-                        {new Date(record.ultimaSalida).toLocaleTimeString() ||
-                          "-"}
-                      </TableCell>
+  {record.ultimaSalida 
+    ? new Date(record.ultimaSalida).toLocaleTimeString() 
+    : "Sin registró"}
+</TableCell>e
                       <TableCell>
                         <Badge
                           className={getStatusColor(

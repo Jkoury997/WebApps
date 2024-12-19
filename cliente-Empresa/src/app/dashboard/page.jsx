@@ -17,9 +17,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast"; // Importa el hook de toast
 
 export default function Page() {
   const [showDialog, setShowDialog] = useState(false);
+  const { toast } = useToast(); // Usa el hook para mostrar el toast
 
   // Check if the choice is already stored in localStorage
   useEffect(() => {
@@ -34,6 +37,7 @@ export default function Page() {
     localStorage.setItem("device", choice);
     setShowDialog(false);
   };
+
 
   const items = [
     { name: "Inicio", icon: HomeIcon, url: "/dashboard" },
@@ -66,6 +70,7 @@ export default function Page() {
 
       {/* Render the IconGrid */}
       <IconGrid items={items} />
+
     </>
   );
 }

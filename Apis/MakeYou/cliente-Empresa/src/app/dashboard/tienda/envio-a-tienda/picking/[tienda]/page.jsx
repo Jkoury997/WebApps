@@ -39,6 +39,7 @@ export default function Component() {
   const [barcode, setBarcode] = useState("");
   const [codebara, setCodeBara] = useState("");
   const [errorProduct, setErrorProduct] = useState(null);
+  const [productDict, setProductDict] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [products, setProducts] = useState([]);
   const inputRef = useRef(null);
@@ -52,12 +53,18 @@ export default function Component() {
     try {
       const response = await fetch(`/api/lux/envios/consultarenvio?tienda=${tienda}`);
       const data = await response.json();
-      const filteredProducts = data.Articulos.filter(
-        (product) => product.Stock > 0
-      ).map((product) => ({ ...product, Saldo: Math.abs(product.Saldo) }));
+      setProducts(data);
 
-      setProducts(filteredProducts);
-      console.log(filteredProducts);
+          // Crear el diccionario de productos
+    const productDict = {};
+    data.forEach((prod) => {
+      productDict[prod.CodigoBarras] = prod;
+    });
+
+    // Almacenas productDict en algún lugar, por ejemplo en un useRef o en el state
+    setProductDict(productDict);
+
+
     } catch (error) {
       console.error("Error al obtener productos:", error);
     } finally {
@@ -91,10 +98,6 @@ export default function Component() {
     }
   }, [barcode, scannedItems, isDialogOpen]);
 
-  // Condición para mostrar el componente de carga
-  if (loading) {
-    return <Loading />; // Muestra el componente de carga si loading es true
-  }
 
   const handleScan = (e) => {
     e.preventDefault();
@@ -104,7 +107,8 @@ export default function Component() {
 
   const processScan = (code) => {
     setCodeBara(code)
-    const product = products.find((p) => p.CodigoBarras === code);
+    const product = productDict[code]; // Esto obtiene el producto de inmediato
+
     if (product) {
       if (scannedItems[code] && scannedItems[code].Cantidad >= product.Saldo) {
         // Producto ya escaneado hasta su máximo - abrir diálogo para eliminar
@@ -300,7 +304,8 @@ if (loading) {
         <CardFooter className="flex justify-end p-2 pb-4">
           <Button
             onClick={finalizePedido}
-            disabled={scannedItems.length <= 1}
+            disabled={Object.keys(scannedItems).length <= 1}
+
           >
             <PackageCheck className="mr-2 h-4 w-4" />
             Finalizar Pedido

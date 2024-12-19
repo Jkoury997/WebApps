@@ -221,12 +221,14 @@ export default function Page() {
                             {activeStep === 4 && (
                                 <>
                                     <QrPrinter qrData={qrData} apiResponse={dataArticulo} />
-                                    <Button
-                                        className="mt-1 bg-white text-gray-950 border-gray-950 border rounded hover:text-white"
-                                        onClick={handleCreateAnother}
-                                    >
-                                        Crear otro Cajón
-                                    </Button>
+                                    <div className="flex justify-center mt-5">
+            <Button
+                className="bg-white text-gray-950 border-gray-950 border rounded hover:text-white"
+                onClick={handleCreateAnother}
+            >
+                Crear otro Cajón
+            </Button>
+        </div>
                                 </>
                             )}
                         </>
