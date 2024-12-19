@@ -496,8 +496,11 @@ const newDate = new Date(year, month - 1, 1);
                     <TableRow key={index}>
                       <TableCell>{date}</TableCell>
                       <TableCell className="hidden sm:table-cell">
-                        {new Date(record.primeraEntrada).toLocaleTimeString() ||
-                          "-"}
+
+{record.primeraEntrada 
+    ? new Date(record.primeraEntrada).toLocaleTimeString() 
+    : "Sin registró"}
+
                       </TableCell>
                       <TableCell className="hidden sm:table-cell">
   {record.ultimaSalida 
