@@ -503,7 +503,7 @@ const newDate = new Date(year, month - 1, 1);
   {record.ultimaSalida 
     ? new Date(record.ultimaSalida).toLocaleTimeString() 
     : "Sin registró"}
-</TableCell>e
+</TableCell>
                       <TableCell>
                         <Badge
                           className={getStatusColor(
@@ -511,8 +511,7 @@ const newDate = new Date(year, month - 1, 1);
                             automaticClosure ? "Automática" : "Normal"
                           )}
                         >
-                          {record.
-automaticClosure ? "Automática" : "Normal"}
+                          {record.automaticClosure ? "Automática" : "Normal"}
                         </Badge>
                       </TableCell>
                       <TableCell >
