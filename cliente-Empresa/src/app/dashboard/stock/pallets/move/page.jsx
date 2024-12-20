@@ -194,6 +194,10 @@ export default function Page() {
     } catch (error) {
       setErrorBadge("Error al procesar el paquete escaneado.");
     }finally {
+         // Desactivar el bloqueo después de 2 segundos
+    setTimeout(() => {
+      console.log("Escaneo desbloqueado. Listo para el siguiente escaneo.");
+    }, 1000);
       setIsLoading(false); // Desactivar loading
     }
   };
