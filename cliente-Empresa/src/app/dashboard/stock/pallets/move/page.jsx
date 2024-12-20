@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import ListPackets from "@/components/component/list-packed";
 import StatusBadge from "@/components/ui/badgeAlert";
 import { useToast } from "@/hooks/use-toast"; // Importa el hook de toast
+import { Spinner } from "@/components/ui/spinner";
 
 
 export default function Page() {
@@ -146,6 +147,7 @@ export default function Page() {
     setErrorBadge(null)
     setSuccessBadge(null);
 
+    setIsLoading(true); // Mostrar indicador de carga
     try {
       const parsedData = JSON.parse(scannedData);
       const { uuid, IdPaquete } = parsedData;
@@ -191,6 +193,8 @@ export default function Page() {
       setErrorBadge("")
     } catch (error) {
       setErrorBadge("Error al procesar el paquete escaneado.");
+    }finally {
+      setIsLoading(false); // Desactivar loading
     }
   };
 
@@ -278,45 +282,68 @@ const fetchMovePaquete = async (IdPaquete) => {
       <Card>
         <CardContent className="grid gap-4 p-1 pt-4 pb-4">
         
-          {activeStep === 1 && (
-            <QrScannerComponent
-              onScanSuccess={handleScanOrigin}
-              title="Deposito Origen"
-              description="Escanar el QR del deposito de origen"
-            />
-          )}
-          {activeStep === 2 && (
-            <>
-              <DepositoInfo depositoOrigen={depositOrigin} />
-              <QrScannerComponent
-                onScanSuccess={handleScanFinal}
-                title="Depósito Final"
-                description="Escanar el QR del deposito de destino"
-              />
-            </>
-          )}
-          {activeStep === 3 && (
-            <>
-              <DepositoInfo
-                depositoOrigen={depositOrigin}
-                depositoFinal={depositFinal}
-              />
-              {successBadge && <StatusBadge type="success" text={successBadge} />}
-              {errorBadge && <StatusBadge type="error" text={errorBadge} />}
-              <QrScannerComponent
-                onScanSuccess={handleScanPackage}
-                title="Escanear Paquete"
-              />
-              {scannedPackages.length > 0 && (
-                <>
-                  <ListPackets paquetes={scannedPackages} />
-                  <Button className="ms-4 me-4" onClick={handleRestart}>
-                    Finalizar
-                  </Button>
-                </>
-              )}
-            </>
-          )}
+        {activeStep === 1 && (
+  isLoading ? (
+    <div className="flex justify-center items-center">
+      <Spinner size="md" />
+    </div>
+  ) : (
+    <QrScannerComponent
+      onScanSuccess={handleScanOrigin}
+      title="Deposito Origen"
+      description="Escanear el QR del depósito de origen"
+    />
+  )
+)}
+
+{activeStep === 2 && (
+  <>
+    <DepositoInfo depositoOrigen={depositOrigin} />
+    {isLoading ? (
+      <div className="flex justify-center items-center">
+        <Spinner size="md" />
+      </div>
+    ) : (
+      <QrScannerComponent
+        onScanSuccess={handleScanFinal}
+        title="Depósito Final"
+        description="Escanear el QR del depósito de destino"
+      />
+    )}
+  </>
+)}
+
+{activeStep === 3 && (
+  <>
+    <DepositoInfo
+      depositoOrigen={depositOrigin}
+      depositoFinal={depositFinal}
+    />
+    {successBadge && <StatusBadge type="success" text={successBadge} />}
+    {errorBadge && <StatusBadge type="error" text={errorBadge} />}
+
+    {isLoading ? (
+      <div className="flex justify-center items-center">
+        <Spinner size="md" />
+      </div>
+    ) : (
+      <QrScannerComponent
+        onScanSuccess={handleScanPackage}
+        title="Escanear Paquete"
+      />
+    )}
+
+    {scannedPackages.length > 0 && (
+      <>
+        <ListPackets paquetes={scannedPackages} />
+        <Button className="ms-4 me-4" onClick={handleRestart}>
+          Finalizar
+        </Button>
+      </>
+    )}
+  </>
+)}
+
         </CardContent>
       </Card>
     </>
