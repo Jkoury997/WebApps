@@ -196,7 +196,7 @@ export default function Page() {
     }finally {
          // Desactivar el bloqueo después de 2 segundos
     setTimeout(() => {
-      console.log("Escaneo desbloqueado. Listo para el siguiente escaneo.");
+      console.log("Listo para el siguiente escaneo.");
     }, 2000);
       setIsLoading(false); // Desactivar loading
     }
