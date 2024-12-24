@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
 const URL_API_AUTH = process.env.NEXT_PUBLIC_URL_API_AUTH;
-const NEXT_PUBLIC_EMPRESA_ID = process.env.NEXT_PUBLIC_EMPRESA_ID
+
 
 export async function POST(req) {
     try {
@@ -18,7 +18,7 @@ export async function POST(req) {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ email, password,empresa:NEXT_PUBLIC_EMPRESA_ID})
+            body: JSON.stringify({ email, password})
         });
 
         const responseData = await response.json();
@@ -28,6 +28,7 @@ export async function POST(req) {
             cookieStore.set('accessToken', responseData.accessToken, { path: '/' });
             cookieStore.set('refreshToken', responseData.refreshToken, { path: '/' });
             cookieStore.set('userId', responseData.user._id, { path: '/' });
+            
 
             return NextResponse.json(responseData);
         } else {

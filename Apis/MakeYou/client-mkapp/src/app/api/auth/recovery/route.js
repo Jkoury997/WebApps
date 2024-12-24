@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 
 const URL_API_AUTH = process.env.NEXT_PUBLIC_URL_API_AUTH;
-const NEXT_PUBLIC_EMPRESA_ID = process.env.NEXT_PUBLIC_EMPRESA_ID
 
 function toLowerCaseString(str) {
   return str ? str.toLowerCase() : '';
@@ -25,7 +24,7 @@ export async function POST(request) {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ email, empresaId:NEXT_PUBLIC_EMPRESA_ID})
+      body: JSON.stringify({ email})
     });
 
     const data = await response.json()

@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -6,10 +6,12 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { AlertTitle, AlertDescription, Alert } from "@/components/ui/alert";
-import { login, register } from "@/utils/authUtils";
-import { AlarmClock, EyeIcon, EyeOffIcon, FlagIcon, LoaderIcon, TriangleAlertIcon } from "lucide-react";
-import FingerprintJS from '@fingerprintjs/fingerprintjs';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Loader2, Eye, EyeOff } from "lucide-react";
+
+import FingerprintJS from "@fingerprintjs/fingerprintjs";
 
 export default function Page() {
   const [showPassword, setShowPassword] = useState(false);
@@ -17,100 +19,109 @@ export default function Page() {
   const [isLoading, setIsLoading] = useState(false);
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [fingerprint, setFingerprint] = useState(null); // Estado para almacenar el fingerprint
+  const [fingerprint, setFingerprint] = useState(null);
+  const [acceptTerms, setAcceptTerms] = useState(false);
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     dni: "",
     email: "",
+    birthDate: "",
     password: "",
     confirmPassword: "",
     sex: ""
   });
+
   const router = useRouter();
 
-    // Generar fingerprint consistente
-    const generateAverageFingerprint = async () => {
-      const fingerprints = [];
-      const fp = await FingerprintJS.load();
+  // Generar fingerprint consistente
+  const generateAverageFingerprint = async () => {
+    const fingerprints = [];
+    const fp = await FingerprintJS.load();
     
-      // Generamos el fingerprint 10 veces con un intervalo breve
-      for (let i = 0; i < 10; i++) {
-        const result = await fp.get();
-        fingerprints.push(result.visitorId);
-        await new Promise((resolve) => setTimeout(resolve, 200)); // Intervalo reducido
-      }
+    for (let i = 0; i < 10; i++) {
+      const result = await fp.get();
+      fingerprints.push(result.visitorId);
+      await new Promise((resolve) => setTimeout(resolve, 200));
+    }
     
-      console.log("Fingerprints generados:", fingerprints); // Muestra todos los fingerprints generados
+    const commonFingerprint = fingerprints.reduce((acc, f) => {
+      acc[f] = (acc[f] || 0) + 1;
+      return acc;
+    }, {});
     
-      // Seleccionamos el fingerprint más repetido
-      const commonFingerprint = fingerprints.reduce((acc, fingerprint) => {
-        acc[fingerprint] = (acc[fingerprint] || 0) + 1;
-        return acc;
-      }, {});
+    const consistentFingerprint = Object.keys(commonFingerprint).reduce((a, b) =>
+      commonFingerprint[a] > commonFingerprint[b] ? a : b
+    );
     
-      const consistentFingerprint = Object.keys(commonFingerprint).reduce((a, b) =>
-        commonFingerprint[a] > commonFingerprint[b] ? a : b
-      );
-    
-      console.log("Fingerprint consistente seleccionado:", consistentFingerprint);
-      setFingerprint(consistentFingerprint); // Guardamos el fingerprint en el estado
-    };
+    setFingerprint(consistentFingerprint);
+  };
 
   useEffect(() => {
-    // Iniciar la generación del fingerprint al cargar la página
     generateAverageFingerprint();
   }, []);
 
-  const handleTogglePassword = () => {
-    setShowPassword(!showPassword);
-  };
-
-  const handleToggleConfirmPassword = () => {
-    setShowConfirmPassword(!showConfirmPassword);
-  };
-
   const handleChange = (e) => {
     const { id, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
+    setFormData((prev) => ({
+      ...prev,
       [id]: value,
     }));
   };
 
-  const handleSignUp = async (e) => {
+  const handleSexChange = (value) => {
+    setFormData((prev) => ({
+      ...prev,
+      sex: value,
+    }));
+  };
+
+  const handleRegister = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setShowError(false);
+    setErrorMessage("");
 
     if (formData.password !== formData.confirmPassword) {
-      setErrorMessage("Passwords do not match");
+      setErrorMessage("Las contraseñas no coinciden");
+      setShowError(true);
+      setIsLoading(false);
+      return;
+    }
+
+    if (!acceptTerms) {
+      setErrorMessage("Debes aceptar los términos y condiciones");
       setShowError(true);
       setIsLoading(false);
       return;
     }
 
     try {
-      // Registrar al usuario
-      const data = await register(formData);
-      console.log("Registration successful:", data);
 
-      // Enviar el fingerprint ya generado a tu API
-      await fetch('/api/auth/trustdevice', {
+      const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+            'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          fingerprint: fingerprint, // Usar el fingerprint generado previamente
-        }),
+        body: JSON.stringify(formData)
+      });
+      const data = await response.json();
+      
+
+      console.log("Registration successful:", data);
+
+      // Enviar el fingerprint a la API
+      await fetch('/api/auth/trustdevice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fingerprint })
       });
 
-      // Redirigir al login después de un registro exitoso
       router.push("/auth/login");
     } catch (error) {
       console.error("Error durante el registro:", error);
-      setErrorMessage(error.message);
+      setErrorMessage(error.message || "Error en el registro");
       setShowError(true);
     } finally {
       setIsLoading(false);
@@ -118,153 +129,185 @@ export default function Page() {
   };
 
   return (
-    <div className="flex h-screen w-full items-center justify-center bg-gray-100 dark:bg-gray-900">
-      <div className="mx-4 w-full max-w-md rounded-lg bg-white p-8 shadow-lg dark:bg-gray-800">
-        <div className="flex justify-center">
-          <AlarmClock className="h-12 w-12" />
-        </div>
-        <div className="space-y-6">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold">Registro</h1>
-            <p className="text-gray-500 dark:text-gray-400">Crea tu cuenta</p>
+    <div className="flex justify-center items-center min-h-screen bg-gray-50 p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+        <div className="flex justify-center mb-4">
+            <div className=" rounded-full overflow-hidden bg-white shadow-md flex items-center justify-center">
+              <img
+                src="https://http2.mlstatic.com/D_NQ_NP_631094-MLA79804429381_102024-O.webp"
+                alt="Logo de la marca"
+                className="w-20 h-20 object-cover"
+              />
+            </div>
           </div>
-          <form className="space-y-4" onSubmit={handleSignUp}>
-            {/* Formulario de registro */}
-            {/* Campos de entrada */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
+          <CardTitle className="text-2xl font-bold text-center">Crear Cuenta</CardTitle>
+          <CardDescription className="text-center">
+            Ingresa tus datos para crear una nueva cuenta
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleRegister}>
+            <div className="space-y-4">
+
+              <div className="space-y-2">
                 <Label htmlFor="firstName">Nombre</Label>
                 <Input
                   id="firstName"
-                  placeholder="John"
+                  placeholder="Juan"
                   required
-                  type="text"
                   value={formData.firstName}
                   onChange={handleChange}
                 />
               </div>
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="lastName">Apellido</Label>
                 <Input
                   id="lastName"
-                  placeholder="Doe"
+                  placeholder="Pérez"
                   required
-                  type="text"
                   value={formData.lastName}
                   onChange={handleChange}
                 />
               </div>
-            </div>
-            <div>
-              <Label htmlFor="dni">DNI</Label>
-              <Input
-                id="dni"
-                placeholder="12345678 sin puntos"
-                required
-                type="number"
-                value={formData.dni}
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                placeholder="name@example.com"
-                required
-                type="email"
-                value={formData.email}
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <Label htmlFor="sex">Sexo según DNI</Label>
-              <select
-                id="sex"
-                required
-                value={formData.sex}
-                onChange={handleChange}
-                className="w-full rounded-md border border-gray-300 p-2 text-gray-900 dark:bg-gray-700 dark:text-white"
-              >
-                <option value="" disabled>Seleccionar sexo</option>
-                <option value="Male">Masculino</option>
-                <option value="Female">Femenino</option>
-              </select>
-            </div>
-            <div className="relative">
-              <Label htmlFor="password">Contraseña</Label>
-              <Input
-                id="password"
-                placeholder="••••••••"
-                required
-                type={showPassword ? "text" : "password"}
-                value={formData.password}
-                onChange={handleChange}
-              />
-              <Button
-                className="absolute bottom-1 right-1 h-7 w-7"
-                size="icon"
-                variant="ghost"
-                type="button"
-                onClick={handleTogglePassword}
-              >
-                {showPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
-                <span className="sr-only">Toggle password visibility</span>
-              </Button>
-            </div>
-            <div className="relative">
-              <Label htmlFor="confirmPassword">Confirmar contraseña</Label>
-              <Input
-                id="confirmPassword"
-                placeholder="••••••••"
-                required
-                type={showConfirmPassword ? "text" : "password"}
-                value={formData.confirmPassword}
-                onChange={handleChange}
-              />
-              <Button
-                className="absolute bottom-1 right-1 h-7 w-7"
-                size="icon"
-                variant="ghost"
-                type="button"
-                onClick={handleToggleConfirmPassword}
-              >
-                {showConfirmPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
-                <span className="sr-only">Toggle confirm password visibility</span>
-              </Button>
-            </div>
-            {showError && (
-              <Alert variant="destructive">
-                <TriangleAlertIcon className="h-4 w-4" />
-                <AlertTitle>Error</AlertTitle>
-                <AlertDescription>{errorMessage}</AlertDescription>
-              </Alert>
-            )}
-            <div className="flex items-center justify-between">
-              <Button className="w-full" type="submit" disabled={isLoading}>
+              <div className="space-y-2">
+                <Label htmlFor="email">Correo electrónico</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="tu@ejemplo.com"
+                  required
+                  value={formData.email}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="birthDate">Fecha de nacimiento</Label>
+                <Input
+                  id="birthDate"
+                  type="date"
+                  required
+                  value={formData.birthDate}
+                  onChange={handleChange}
+                  className="w-full"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="dni">Documento de identidad</Label>
+                <Input
+                  id="dni"
+                  type="number"
+                  inputMode="numeric"
+                  placeholder="Número de documento"
+                  required
+                  value={formData.dni}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="sex">Sexo</Label>
+                <Select value={formData.sex} onValueChange={handleSexChange}>
+                  <SelectTrigger id="sex">
+                    <SelectValue placeholder="Selecciona tu sexo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Male">Masculino</SelectItem>
+                    <SelectItem value="Female">Femenino</SelectItem>
+                    <SelectItem value="Other">Otro</SelectItem>
+                    <SelectItem value="Other">Prefiero no decir</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Contraseña</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={formData.password}
+                    onChange={handleChange}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4 text-gray-500" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-gray-500" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirmar contraseña</Label>
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    required
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-4 w-4 text-gray-500" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-gray-500" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="terms"
+                  checked={acceptTerms}
+                  onCheckedChange={(checked) => setAcceptTerms(!!checked)}
+                />
+                <Label
+                  htmlFor="terms"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Acepto los términos y condiciones
+                </Label>
+              </div>
+              {showError && errorMessage && (
+                <p className="text-sm text-red-500 mt-2">{errorMessage}</p>
+              )}
+              <Button className="w-full bg-brand hover:bg-black" type="submit" disabled={isLoading}>
                 {isLoading ? (
                   <>
-                    <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
-                    Cargando
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creando cuenta...
                   </>
                 ) : (
-                  "Registrame"
+                  "Crear cuenta"
                 )}
               </Button>
             </div>
           </form>
-          <div className="text-center text-sm text-gray-500 dark:text-gray-400">
-            <Link className="font-medium underline" href="/auth/login">
-              Ya tengo cuenta. Iniciar sesión
+        </CardContent>
+        <CardFooter className="flex justify-center">
+          <p className="text-sm text-gray-600 text-center">
+            ¿Ya tienes una cuenta?{" "}
+            <Link href="/auth/login">
+              <Button variant="link" className="text-brand hover:text-pink-700 p-0">
+                Inicia sesión
+              </Button>
             </Link>
-          </div>
-          <div className="text-center text-sm text-gray-500 dark:text-gray-400">
-            <Link className="font-medium underline" href="/auth/login">
-              Recuperar contraseña o Dispositivo
-            </Link>
-          </div>
-        </div>
-      </div>
+          </p>
+        </CardFooter>
+      </Card>
     </div>
   );
-} 
+}

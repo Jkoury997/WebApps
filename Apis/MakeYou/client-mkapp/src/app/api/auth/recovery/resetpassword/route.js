@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
 const URL_API_AUTH = process.env.NEXT_PUBLIC_URL_API_AUTH;
-const NEXT_PUBLIC_EMPRESA_ID = process.env.NEXT_PUBLIC_EMPRESA_ID
 
 export async function POST(request) {
   const cookieStore = cookies();
@@ -15,14 +14,13 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Correo electrónico es requerido' }, { status: 400 });
     }
 
-    console.log(email,otp,password)
     const response = await fetch(`${URL_API_AUTH}/api/recovery/password`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token?.value}` // Access the value of the token
       },
-      body: JSON.stringify({email,otpCode:otp,newPassword:password,empresaId:NEXT_PUBLIC_EMPRESA_ID })
+      body: JSON.stringify({email,otpCode:otp,newPassword:password})
     });
 
     if (!response.ok) {

@@ -4,13 +4,13 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Make You - Fichaqui",
-  description: "App Creada unica y exclusivamente para fichar en MakeYou Srl",
+  title: "Marcela Koury Puntos",
+  description: "App Creada unica y exclusivamente para clientes de Marcela Koury by MakeYou Srl",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="es">
       <body className={inter.className}>{children}</body>
     </html>
   );

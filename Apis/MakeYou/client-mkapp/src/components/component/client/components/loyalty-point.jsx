@@ -7,7 +7,7 @@ export default function LoyaltyPoint({ Point }) {
   return (
     <div className="bg-white p-6 rounded-lg flex items-center justify-between shadow-sm">
       <div className="flex items-center">
-        <Coins className="w-8 h-8 text-pink-500 mr-3" />
+        <Coins className="w-8 h-8 text-brand mr-3" />
         <div>
           <h3 className="text-md font-semibold text-gray-800">Puntos Acumulados</h3>
           <p className="text-xs text-gray-600">Canjeables por dinero</p>
