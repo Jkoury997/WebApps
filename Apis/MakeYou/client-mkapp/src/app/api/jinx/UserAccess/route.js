@@ -8,7 +8,7 @@ export async function GET(req) {
     try {
         const cookieStore = cookies();
         const AccessKey = cookieStore.get("AccessKey");
-        const Token = cookieStore.get("Token");
+        const TokenCookie = cookieStore.get("Token");
         
         // Verificar si la cookie existe y no está vencida
         if (AccessKey) {
