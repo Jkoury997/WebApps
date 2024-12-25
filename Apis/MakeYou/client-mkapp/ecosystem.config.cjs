@@ -1,12 +1,14 @@
 module.exports = {
-    apps: [
-      {
-        name: 'PuntosMK',
-        script: 'node',
-        args: 'run start',  // Comando para iniciar tu aplicación Next.js en producción
-        cwd: './',  // Directorio de trabajo de tu proyecto Next.js
-        interpreter: 'none',  // Esto le dice a PM2 que no use Node.js para ejecutar este script
-      }
-    ]
-  };
-  
+  apps: [
+    {
+      name: 'PuntosMK', // Nombre de tu aplicación
+      script: 'npm', // Ejecutar npm
+      args: 'start', // Comando para iniciar la aplicación
+      cwd: './', // Directorio de trabajo de tu proyecto Next.js
+      interpreter: 'node', // Usa Node.js como intérprete
+      env: {
+        NODE_ENV: 'production', // Establece el entorno de producción
+      },
+    },
+  ],
+};
