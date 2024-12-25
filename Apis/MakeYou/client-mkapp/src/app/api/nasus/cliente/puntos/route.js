@@ -33,6 +33,7 @@ export async function GET(req) {
         }
 
         const responseData = await response.json();
+       
         
         return NextResponse.json(responseData);
     } catch (error) {

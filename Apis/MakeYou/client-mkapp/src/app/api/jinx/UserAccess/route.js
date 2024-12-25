@@ -5,18 +5,16 @@ const URL_API_JINX = process.env.NEXT_PUBLIC_URL_API_JINX;
 const Empresa = process.env.NEXT_PUBLIC_EMPRESA
 
 export async function GET(req) {
+    
     try {
         const cookieStore = cookies();
         const AccessKey = cookieStore.get("AccessKey");
         const TokenCookie = cookieStore.get("Token");
         
-        // Verificar si la cookie existe y no está vencida
-        if (AccessKey) {
-            return NextResponse.json({ message: 'AccessKey is still valid' });
-        }
 
         // Verificar si la cookie existe y no está vencida
         if (TokenCookie) {
+            console.log("Token")
             return NextResponse.json({ message: 'Token is still valid' });
         }
 
@@ -31,6 +29,7 @@ export async function GET(req) {
         });
 
         const responseData = await response.json();
+        console.log(responseData)
 
 
         if (responseData.Estado) {
