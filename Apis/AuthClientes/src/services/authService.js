@@ -86,7 +86,7 @@ const createAndSaveRefreshToken = async (user,role) => {
 
     // Guardar el Refresh Token en la base de datos
     const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7); // Token expira en 7 días
+    expiresAt.setDate(expiresAt.getDate() + 30); // Token expira en 7 días
 
     // Asegurarse de que el userId sea un ObjectId
     await RefreshToken.create({

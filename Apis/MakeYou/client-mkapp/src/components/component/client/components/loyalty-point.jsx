@@ -10,7 +10,7 @@ export default function LoyaltyPoint({ Point }) {
         <Coins className="w-8 h-8 text-brand mr-3" />
         <div>
           <h3 className="text-md font-semibold text-gray-800">Puntos Acumulados</h3>
-          <p className="text-xs text-gray-600">Canjeables por dinero</p>
+          <p className="text-xs text-gray-600">Canjeables por productos</p>
         </div>
       </div>
       <span className={`${textSize} font-bold text-gray-800`}>{formattedPoint}</span>

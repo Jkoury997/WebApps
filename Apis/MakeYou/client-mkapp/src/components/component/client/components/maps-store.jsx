@@ -53,7 +53,8 @@ function Mapastores({ onSelectStore }) {
                 lat: store.location.latitude,
                 lng: store.location.longitude,
                 address: store.formattedAddress || "Sin dirección",
-                placeUri:store.googleMapsLinks.placeUri
+                placeUri:store.googleMapsLinks.placeUri,
+                writeReview:store.googleMapsLinks.writeAReviewUri
               };
             }
             return null; // Ignorar si lat o lng no son válidos
@@ -95,7 +96,7 @@ function Mapastores({ onSelectStore }) {
       >
         {/* User's current position marker */}
         <AdvancedMarker position={currentPosition} title="Mi ubicación actual">
-          <Pin background="#1073c5" borderColor="#ffffff" glyphColor="#ffffff" />
+          <Pin background="#00acff" borderColor="#ffffff" glyphColor="#ffffff" />
         </AdvancedMarker>
 
         {/* Store markers */}
@@ -105,7 +106,8 @@ function Mapastores({ onSelectStore }) {
             position={{ lat: store.lat, lng: store.lng }}
             onClick={() => handleStoreSelect(store)}
           >
-            <Pin background="#df7eb2" borderColor="#ffffff" glyphColor="#ffffff" />
+
+              <Pin background="#df7eb2" borderColor="#ffffff" glyphColor="#ffffff" />
           </AdvancedMarker>
         ))}
 

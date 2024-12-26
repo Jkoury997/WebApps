@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { QrCode, Coins, MapPin } from "lucide-react";
+import { QrCode, Star } from "lucide-react";
 import React, { useState,useEffect,useRef } from "react";
 import LoyaltyPoint from "@/components/component/client/components/loyalty-point";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -13,8 +13,7 @@ export default function HomeView({ setShowAllLocations, userData}) {
   const [loading, setLoading] = useState(false);
   const [userPoints, setUserPoints] = useState(null);
   const [store, setStore] = useState(null);
-
-
+  const storeInfoRef = useRef(null);
 
 
 
@@ -46,6 +45,17 @@ export default function HomeView({ setShowAllLocations, userData}) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleStoreSelection = (selectedStore) => {
+    setStore(selectedStore)
+    setTimeout(() => {
+      if(storeInfoRef.current){
+        storeInfoRef.current.scrollIntoView({ behavior: 'smooth',block:"center" });
+      }
+    },100)
+    
+    
   };
 
   if (!userData || !userPoints || loading) {
@@ -81,6 +91,8 @@ export default function HomeView({ setShowAllLocations, userData}) {
           )}
           
         </div>
+
+        
         <LoyaltyPoint Point={userPoints.Puntos || 0} />
 
 
@@ -88,18 +100,29 @@ export default function HomeView({ setShowAllLocations, userData}) {
           <h3 className="text-lg font-semibold mb-2 text-gray-800">Locales Cercanos</h3>
           <div className="aspect-video relative rounded-md overflow-hidden">
 
-          <MapaStores onSelectStore={setStore}></MapaStores>
+          <MapaStores onSelectStore={handleStoreSelection}></MapaStores>
            {/* Info Card at the bottom */}
        
           </div>
           <div>
            {store && (
             
-            <Card className="border-none">
+            <Card className="border-none" ref={storeInfoRef}>
               <CardHeader className="pb-2">
                 <CardTitle className="text-md font-bold text-gray-800">{store.name}</CardTitle>
                 <CardDescription className="text-gray-600 mb-2 text-sm">{store.address}</CardDescription>
+                
               </CardHeader>
+              <CardContent className="pb-1">
+              <Button className="w-full bg-white text-gray border-none hover:bg-white hover:text-brand"
+                onClick={() => window.open(store.writeReview)}>
+                  <Star></Star>
+                  <Star></Star>
+                  <Star></Star>
+                  <Star></Star>
+                  <Star></Star>
+                </Button>
+              </CardContent>
               <CardFooter className="pb-3">
               <Button
               className=" bg-brand text-white px-4 py-2 rounded hover:bg-black transition w-full"

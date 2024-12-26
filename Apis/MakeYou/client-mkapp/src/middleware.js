@@ -28,12 +28,7 @@ export async function middleware(request) {
         return NextResponse.next();
     } catch (error) {
         // Si el token ha expirado, intentamos obtener uno nuevo usando el refreshToken
-        if (error.message === 'JWTExpired') {
             return await refreshAccessToken(refreshToken, request);
-        } else {
-            console.error('Error de verificación del token:', error);
-            return redirectToLogin(request);
-        }
     }
 }
 

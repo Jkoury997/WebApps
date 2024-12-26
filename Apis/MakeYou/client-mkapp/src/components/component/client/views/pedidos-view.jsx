@@ -65,7 +65,7 @@ export default function PedidosView({ userData }) {
                 <CardContent className="flex justify-between items-center p-4">
                   <div>
                     <h3 className="font-semibold text-gray-800">Pedido #{pedido.Numero}</h3>
-                    <p className="text-sm text-gray-500">Estado: {pedido.Estado || "Terminado"}</p>
+                    <p className="text-sm text-gray-500">Tienda: {pedido.Tienda || "Web"}</p>
                   </div>
                   <Badge variant="secondary" className="bg-brand text-white">
                     Ver detalles
@@ -120,13 +120,6 @@ export default function PedidosView({ userData }) {
                     <Home className="w-4 h-4 mr-2" />
                     <span>Entregado</span>
                   </div>
-                </div>
-                <div className="flex items-center justify-between text-sm text-gray-600">
-                  <div className="flex items-center">
-                    <StoreIcon className="w-4 h-4 mr-2" />
-                    <span>Tienda</span>
-                  </div>
-                  <span>{pedido.Tienda}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm text-gray-600 hidden">
                   <div className="flex items-center">

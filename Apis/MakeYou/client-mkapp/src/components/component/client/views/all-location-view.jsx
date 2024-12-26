@@ -1,8 +1,8 @@
 import { useState,useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { MapPin, Clock, ChevronLeft } from 'lucide-react'
+import { MapPin, Clock, ChevronLeft, Star } from 'lucide-react'
 
 export default function AllLocationsView({ setShowAllLocations }) {
   const [stores, setStores] = useState([]); // Estado para las stores
@@ -27,7 +27,9 @@ export default function AllLocationsView({ setShowAllLocations }) {
                   lat: store.location.latitude,
                   lng: store.location.longitude,
                   address: store.formattedAddress || "Sin dirección",
-                  placeUri:store.googleMapsLinks.placeUri
+                  placeUri:store.googleMapsLinks.placeUri,
+                  writeReview:store.googleMapsLinks.writeAReviewUri,
+                  
                 };
               }
               return null; // Ignorar si lat o lng no son válidos
@@ -63,11 +65,20 @@ export default function AllLocationsView({ setShowAllLocations }) {
                   <MapPin className="w-6 h-6 mr-2" />
                   <span>{store.address}</span>
                 </div>
+                <Button variant="outline"  className="w-full mt-2 bg-white text-gray border-none"
+                onClick={() => window.open(store.writeReview)}>
+                  <Star></Star>
+                  <Star></Star>
+                  <Star></Star>
+                  <Star></Star>
+                  <Star></Star>
+                </Button>
                 <Button variant="outline"  className="w-full mt-2 bg-brand text-white"
                 onClick={() => window.open(store.placeUri)}>
                   Ver en Mapa
                 </Button>
               </CardContent>
+
             </Card>
           ))}
         </ScrollArea>

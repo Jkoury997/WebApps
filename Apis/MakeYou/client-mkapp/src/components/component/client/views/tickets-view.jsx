@@ -92,6 +92,7 @@ export default function TicketsView({userData}) {
                   </div>
                 </div>
                 <Button className="w-full bg-pink-100 text-pink-700 hover:bg-pink-200 hidden">Descargar Ticket</Button>
+                
               </div>
             </DialogContent>
           </Dialog>
