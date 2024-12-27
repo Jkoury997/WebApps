@@ -8,11 +8,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import QRCode from "react-qr-code";
 import MapaStores from "../components/maps-store";
 
+
 export default function HomeView({ setShowAllLocations, userData}) {
 
   const [loading, setLoading] = useState(false);
   const [userPoints, setUserPoints] = useState(null);
   const [store, setStore] = useState(null);
+  const [qr,setQr] = useState(null);
+
   const storeInfoRef = useRef(null);
 
 
@@ -20,8 +23,17 @@ export default function HomeView({ setShowAllLocations, userData}) {
   useEffect(() => {
     if (userData?.dni) {
       fetchPoints(userData.dni);
+      const qrJson = {Id:userData.dni}
+
+      setQr(JSON.stringify(qrJson))
+      console.log(qr)
+    
     }
   }, [userData]);
+
+  
+
+
 
 
   const fetchPoints = async (dni) => {
@@ -81,9 +93,10 @@ export default function HomeView({ setShowAllLocations, userData}) {
       <CardContent className="space-y-6">
         <div className="flex justify-center">
 
-          {userData.dni ? (
+          {qr ? (
             <div className="bg-white p-4 rounded-3xl shadow-sm">
-                <QRCode  className=" text-gray-600 " size={150} value={userData.dni}  level="M"  bgColor="#fff" ></QRCode>
+                <QRCode  className=" text-gray-600 " size={150} value={qr}   level="H"  bgColor="#fff" ></QRCode>
+                
             </div>
             
           ):(

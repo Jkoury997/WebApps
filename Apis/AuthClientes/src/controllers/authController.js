@@ -5,8 +5,6 @@ const jwtService = require('../services/jwtService');
 const register = async (req, res) => {
     try {
         const userData = req.body;
-
-
         // Intentar registrar el usuario
         const newUser = await authService.registerUser(userData);
         res.status(201).json({ message: 'Usuario registrado exitosamente', user: newUser });

@@ -4,7 +4,6 @@ const mainRoute = require('./routes/mainRoute');
 const morgan = require('morgan');
 const cors = require('cors');
 require('dotenv').config();
-
 const { errorHandler } = require('./middlewares/errorMiddleware');
 
 

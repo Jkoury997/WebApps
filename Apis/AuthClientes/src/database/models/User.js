@@ -12,7 +12,8 @@ const userSchema = new mongoose.Schema({
     failedLoginAttempts: { type: Number, default: 0 },
     lockUntil: { type: Date },
     sex: { type: String, enum: ['Male', 'Female', 'Other'], required: true },
-    birthDate:{type:Date,required: true}
+    birthDate:{type:Date,required: true},
+    mobile:{type:String ,required: true}
     
 });
 

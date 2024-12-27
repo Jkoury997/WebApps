@@ -30,7 +30,8 @@ export default function Page() {
     birthDate: "",
     password: "",
     confirmPassword: "",
-    sex: ""
+    sex: "",
+    mobile:""
   });
 
   const router = useRouter();
@@ -60,6 +61,7 @@ export default function Page() {
 
   useEffect(() => {
     generateAverageFingerprint();
+    fetchLoginExternal()
   }, []);
 
   const handleChange = (e) => {
@@ -99,6 +101,8 @@ export default function Page() {
 
     try {
 
+      await handleAlta()
+
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
@@ -118,6 +122,8 @@ export default function Page() {
         body: JSON.stringify({ fingerprint })
       });
 
+      
+
       router.push("/auth/login");
     } catch (error) {
       console.error("Error durante el registro:", error);
@@ -127,6 +133,73 @@ export default function Page() {
       setIsLoading(false);
     }
   };
+
+
+  const handleAlta = async () => {
+    setIsLoading(true);
+    setShowError(false);
+    setErrorMessage("");
+
+    try {
+
+      const response = await fetch('/api/nasus/cliente/alta', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+      const data = await response.json();
+      
+
+      console.log("Registration successful:", data);
+
+      router.push("/auth/login");
+    } catch (error) {
+      console.error("Error durante el registro:", error);
+      setErrorMessage(error.message || "Error en el registro");
+      setShowError(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchLoginExternal = async () => {
+    setIsLoading(true);
+    try {
+      // Primera solicitud al endpoint `Login`
+      const responseLogin = await fetch(`/api/jinx/Login`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!responseLogin.ok) {
+        throw new Error(`Error en la solicitud Login: ${responseLogin.status} ${responseLogin.statusText}`);
+      }
+
+      // Segunda solicitud al endpoint `UserAccess`
+      const responseUserAccess = await fetch(`/api/jinx/UserAccess`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!responseUserAccess.ok) {
+        throw new Error(`Error en la solicitud UserAccess: ${responseUserAccess.status} ${responseUserAccess.statusText}`);
+      }
+
+      // Simular retraso (opcional, solo para pruebas visuales)
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    } catch (error) {
+      console.error("Error al obtener datos:", error);
+    } finally {
+      setIsLoading(false); // Finaliza el estado de carga
+    }
+  };
+
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-50 p-4">
@@ -213,10 +286,22 @@ export default function Page() {
                   <SelectContent>
                     <SelectItem value="Male">Masculino</SelectItem>
                     <SelectItem value="Female">Femenino</SelectItem>
-                    <SelectItem value="Other">Otro</SelectItem>
-                    <SelectItem value="Other">Prefiero no decir</SelectItem>
+                    <SelectItem value="Other">No Binario</SelectItem>
+
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="mobile">Telefono</Label>
+                <Input
+                  id="mobile"
+                  type="number"
+                  inputMode="numeric"
+                  placeholder="Número de telefono"
+                  required
+                  value={formData.mobile}
+                  onChange={handleChange}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Contraseña</Label>
