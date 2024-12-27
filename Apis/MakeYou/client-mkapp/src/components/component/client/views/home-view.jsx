@@ -23,10 +23,7 @@ export default function HomeView({ setShowAllLocations, userData}) {
   useEffect(() => {
     if (userData?.dni) {
       fetchPoints(userData.dni);
-      const qrJson = {Id:userData.dni}
-
-      setQr(JSON.stringify(qrJson))
-      console.log(qr)
+      setQr(`Id${userData.dni}Id`)
     
     }
   }, [userData]);
