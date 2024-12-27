@@ -24,7 +24,6 @@ export default function HomeView({ setShowAllLocations, userData}) {
     if (userData?.dni) {
       fetchPoints(userData.dni);
       setQr(`Id${userData.dni}Id`)
-    
     }
   }, [userData]);
 

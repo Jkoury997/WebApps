@@ -12,9 +12,11 @@ export default function PedidosView({ userData }) {
   const [userCompras, setUserCompras] = useState(null);
 
   useEffect(() => {
+
     if (userData?.dni) {
       fetchCompras(userData.dni);
     }
+
   }, []);
 
   const fetchCompras = async (dni) => {
