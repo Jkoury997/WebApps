@@ -60,7 +60,8 @@ export default function PedidosView({ userData }) {
         <CardTitle className="text-gray-800">Mis Pedidos</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {userCompras.Lista.map((pedido) => (
+      {userCompras.Lista?.length > 0 ? (
+        userCompras.Lista.map((pedido) => (
           <Dialog key={pedido.Numero}>
             <DialogTrigger asChild>
               <Card className="bg-white cursor-pointer hover:bg-gray-50 transition-colors shadow-sm">
@@ -133,7 +134,10 @@ export default function PedidosView({ userData }) {
               </div>
             </DialogContent>
           </Dialog>
-        ))}
+        ))
+      ) : (
+        <p className="text-gray-500 text-center">No hay pedidos realizadas.</p>
+      )}
       </CardContent>
     </Card>
   );
