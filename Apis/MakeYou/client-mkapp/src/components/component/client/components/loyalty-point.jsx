@@ -5,7 +5,7 @@ export default function LoyaltyPoint({ Point }) {
   const formattedPoint = Point.toLocaleString('en-US'); // Ajustar el locale si lo deseas
 
   return (
-    <div className="bg-white p-6 rounded-lg flex items-center justify-between shadow-sm">
+    <div className="bg-white p-6 rounded-lg flex items-center justify-between shadow-sm" id="PUNTOS">
       <div className="flex items-center">
         <Coins className="w-8 h-8 text-brand mr-3" />
         <div>
