@@ -64,6 +64,7 @@ export default function Page() {
         prevBtnText: "Volver",
         doneBtnText: "Terminar",
         animate: true, // Animaciones entre pasos
+        allowClose: false,
         steps:[
           {
             
@@ -107,13 +108,6 @@ export default function Page() {
           },
         ],
       
-        onDestroyStarted: () => {
-            if (!driverObj.hasNextStep() || confirm("Seguro que desea abandonar la introduccion?")) {
-                localStorage.setItem("tutorialCompletedInicio", "true");
-            setIsTutorialCompletedInicio(true);
-              driverObj.destroy();
-            }
-          },
         onClick:() => {
             if(driverObj.isLastStep()){
                 localStorage.setItem("tutorialCompletedInicio", "true");
