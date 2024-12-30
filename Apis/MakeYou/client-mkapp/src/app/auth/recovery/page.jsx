@@ -1,5 +1,4 @@
 "use client";
-
 import { useState,useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -19,13 +18,14 @@ import {
 import Link from "next/link";
 
 
-export default function Page() {
-  const searchParams = useSearchParams(); // Inicializa el hook
+export default function Page( { searchParams }) {
+
   const router = useRouter();
+  const emailParam = searchParams?.email || "";
+  const otpParam = searchParams?.otp || "";
 
-
-  const [email, setEmail] = useState("");
-  const [otp, setOtp] = useState("");
+  const [email, setEmail] = useState(emailParam || "");
+  const [otp, setOtp] = useState(otpParam || "");
   const [step, setStep] = useState(1)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState("");
@@ -35,22 +35,16 @@ export default function Page() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  useEffect(() => {
-    // Obtiene los parámetros desde la URL
-    const emailParam = searchParams.get("email");
-    const otpParam = searchParams.get("otp");
 
+
+  useEffect(() => {
     if (emailParam) {
-      setEmail(emailParam);
       setStep(otpParam ? 3 : 2); // Si hay OTP, pasa directamente al paso 3
     }
-
-    if (otpParam) {
-      
-      setOtp(otpParam);
-
+    if(otpParam) {
+      handleVerifyOtp()
     }
-  }, [searchParams]);
+  }, [emailParam, otpParam]);
 
 
   const handleSendCode = async (e) => {
@@ -161,7 +155,6 @@ export default function Page() {
   }
 
   return (
-
     <div className="flex justify-center items-center min-h-screen bg-gray-50 p-4">
     <Card className="w-full max-w-md">
       <CardHeader className="space-y-1">
@@ -337,5 +330,6 @@ export default function Page() {
       </CardFooter>
     </Card>
   </div>
+
 )
 }
