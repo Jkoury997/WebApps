@@ -60,6 +60,7 @@ export default function Page() {
 
     const startTourInicio = () => {
       const driverObj = driver({
+        popoverClass: 'driverjs-theme',
         nextBtnText: "Siguiente",
         prevBtnText: "Volver",
         doneBtnText: "Terminar",
@@ -69,8 +70,8 @@ export default function Page() {
           {
             
             popover: {
-              title: "Bienvenido a MK!",
-              description: "Esto es una breve introducción",
+              title: "Bienvenido a MK",
+              description: "Te daremos un breve recorrido",
               position: "top",
             },
           },
