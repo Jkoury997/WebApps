@@ -216,8 +216,8 @@ const sendOTPByEmail = async (email, otpCode) => {
                 <div class="content">
                     <p>Has solicitado un código de verificación para acceder a tu cuenta. Utiliza el siguiente código OTP:</p>
                     <div class="otp-code">${otpCode}</div>
-                    <p>Este código expirará en 10 minutos. Si no has solicitado este código, por favor ignora este correo.</p>
-                    <a href="${loginURL}" class="button">Ir a iniciar sesión</a>
+                    <p>Este código expirará en 5 minutos. Si no has solicitado este código, por favor ignora este correo.</p>
+                    <a href="${loginURL}" class="button">Restablecer contraseña</a>
                 </div>
                 <div class="footer">
                     <p>Este es un correo electrónico automático, por favor no respondas a este mensaje.</p>
