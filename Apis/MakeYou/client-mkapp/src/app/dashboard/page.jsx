@@ -107,12 +107,14 @@ export default function Page() {
             },
           },
         ],
-      
-        onClick:() => {
+        
+        onNextClick:() => {
             if(driverObj.isLastStep()){
+              console.log("Hola")
                 localStorage.setItem("tutorialCompletedInicio", "true");
-            setIsTutorialCompletedInicio(true);
+                setIsTutorialCompletedInicio(true);
             }
+            driverObj.moveNext()
         }
      
 
