@@ -106,10 +106,10 @@ export default function Page( { searchParams }) {
         setStep(3)
       } else {
         const data = await response.json();
-        setError(data.error || "Error al enviar el código de restablecimiento.");
+        setError(data.message || "El codigo no es correcto o ya se uso.");
       }
     } catch (error) {
-      setError("Error al enviar el código de restablecimiento.");
+      setError("El codigo no es correcto o ya se uso.");
     } finally {
       setLoading(false);
     }
@@ -258,9 +258,12 @@ export default function Page( { searchParams }) {
                       <Input
                         id="password"
                         type={showPassword ? "text" : "password"}
+                        placeholder="Introduzca su contraseña"
                         required
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
+                        autoCapitalize="none"
+                        autoComplete="current-password"
                       />
                       <Button
                         type="button"
@@ -283,9 +286,12 @@ export default function Page( { searchParams }) {
                       <Input
                         id="confirmPassword"
                         type={showConfirmPassword ? "text" : "password"}
+                        placeholder="Confirme su contraseña"
                         required
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
+                        autoCapitalize="none"
+                        autoComplete="current-password"
                       />
                       <Button
                         type="button"

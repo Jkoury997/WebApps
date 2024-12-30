@@ -118,11 +118,12 @@ return (
               <Input
                 id="email"
                 type="email"
-                placeholder="tu@ejemplo.com"
+                placeholder="Introduzca su email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 autoComplete="email"
+                inputMode="email"
               />
             </div>
             <div className="space-y-2">
@@ -130,11 +131,13 @@ return (
               <div className="relative">
                 <Input
                   id="password"
+                  placeholder="Introduzca su contraseña"
                   type={showPassword ? "text" : "password"}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   autoComplete="current-password"
+                  autoCapitalize="none"
                 />
                 <Button
                   type="button"
