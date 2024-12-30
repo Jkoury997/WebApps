@@ -66,28 +66,27 @@ export default function Page() {
         doneBtnText: "Terminar",
         animate: true, // Animaciones entre pasos
         allowClose: false,
-        steps:[
+        steps: [
           {
-            
             popover: {
-              title: "Bienvenido a MK",
-              description: "Te daremos un breve recorrido",
+              title: "¡Bienvenido a MK!",
+              description: "Te guiaremos en un breve recorrido para que descubras todas las funcionalidades.",
               position: "top",
             },
           },
           {
             element: "#step1",
             popover: {
-              title: "Esto es el Inicio",
-              description: "Ahora te mostrare lo que puedes encontrar",
+              title: "Inicio",
+              description: "Aquí encontrarás un resumen de las principales opciones disponibles.",
               position: "top",
             },
           },
           {
             element: "#QR",
             popover: {
-              title: "Codigo QR",
-              description: "Aquí puedes ver tu QR para las tiendas.",
+              title: "Código QR",
+              description: "Accede a tu código QR para utilizarlo en nuestras tiendas afiliadas.",
               position: "top",
             },
           },
@@ -95,15 +94,15 @@ export default function Page() {
             element: "#PUNTOS",
             popover: {
               title: "Puntos MK",
-              description: "Aquí puedes ver tus puntos acumulados.",
+              description: "Consulta aquí la cantidad de puntos que has acumulado por tus compras.",
               position: "top",
             },
           },
           {
             element: "#TIENDAS",
             popover: {
-              title: "Locales Cercanos",
-              description: "Aquí puedes explorar las tiendas cercanas.",
+              title: "Tiendas Cercanas",
+              description: "Explora las tiendas más cercanas a tu ubicación y sus beneficios.",
               position: "top",
             },
           },
