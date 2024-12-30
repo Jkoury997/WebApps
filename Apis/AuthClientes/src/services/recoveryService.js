@@ -127,25 +127,115 @@ const changePasswordWithOTP = async (email, otpCode, newPassword) => {
     return { message: 'Contraseña cambiada correctamente.' };
 };
 
-// Función para enviar el OTP por correo
 const sendOTPByEmail = async (email, otpCode) => {
+
+    const loginURL = `https://puntos.mkapp.com.ar/auth/recovery?email=${email}&otp=${otpCode}`
     const transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST,
         port: process.env.SMTP_PORT,
-        secure: true,  // Usar SSL
+        secure: true, // Usar SSL
         auth: {
             user: process.env.SMTP_USERNAME,
-            pass: process.env.SMTP_PASSWORD
-        }
+            pass: process.env.SMTP_PASSWORD,
+        },
     });
+
+    // Plantilla HTML con reemplazo dinámico
+    const htmlTemplate = `
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Tu código de verificación</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    line-height: 1.6;
+                    color: #333333;
+                    margin: 0;
+                    padding: 0;
+                    background-color: #f4f4f4;
+                }
+                .container {
+                    max-width: 600px;
+                    margin: 20px auto;
+                    background-color: #ffffff;
+                    border-radius: 8px;
+                    overflow: hidden;
+                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                }
+                .header {
+                    background-color: #ec4899;
+                    color: #ffffff;
+                    text-align: center;
+                    padding: 20px;
+                }
+                .content {
+                    padding: 30px;
+                    text-align: center;
+                }
+                .otp-code {
+                    font-size: 32px;
+                    font-weight: bold;
+                    color: #ec4899;
+                    letter-spacing: 5px;
+                    margin: 20px 0;
+                }
+                .button {
+                    display: inline-block;
+                    background-color: #ec4899;
+                    color: #ffffff;
+                    text-decoration: none;
+                    padding: 12px 24px;
+                    border-radius: 4px;
+                    font-weight: bold;
+                    margin-top: 20px;
+                }
+                .footer {
+                    background-color: #f9fafb;
+                    text-align: center;
+                    padding: 20px;
+                    font-size: 12px;
+                    color: #6b7280;
+                }
+                @media only screen and (max-width: 600px) {
+                    .container {
+                        width: 100%;
+                        margin: 0;
+                        border-radius: 0;
+                    }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>Tu código de verificación</h1>
+                </div>
+                <div class="content">
+                    <p>Has solicitado un código de verificación para acceder a tu cuenta. Utiliza el siguiente código OTP:</p>
+                    <div class="otp-code">${otpCode}</div>
+                    <p>Este código expirará en 10 minutos. Si no has solicitado este código, por favor ignora este correo.</p>
+                    <a href="${loginURL}" class="button">Ir a iniciar sesión</a>
+                </div>
+                <div class="footer">
+                    <p>Este es un correo electrónico automático, por favor no respondas a este mensaje.</p>
+                    <p>&copy; 2024 Sistema de Puntos y Descuentos. Todos los derechos reservados.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+    `;
 
     const mailOptions = {
         from: process.env.SMTP_USERNAME,
         to: email,
         subject: 'Recuperación de contraseña - OTP',
-        text: `Tu OTP es: ${otpCode}. Este código es válido por 10 minutos.`
+        html: htmlTemplate, // Plantilla HTML aquí
     };
 
+    // Envía el correo
     await transporter.sendMail(mailOptions);
 };
 

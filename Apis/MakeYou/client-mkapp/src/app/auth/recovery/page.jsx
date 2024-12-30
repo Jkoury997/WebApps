@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 import { Loader2,ArrowLeft,Eye,EyeOff } from 'lucide-react'
+import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert,AlertTitle,AlertDescription } from "@/components/ui/alert";
@@ -17,7 +18,12 @@ import {
 } from "@/components/ui/input-otp"
 import Link from "next/link";
 
+
 export default function Page() {
+  const searchParams = useSearchParams(); // Inicializa el hook
+  const router = useRouter();
+
+
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState(1)
@@ -28,7 +34,24 @@ export default function Page() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const router = useRouter();
+
+  useEffect(() => {
+    // Obtiene los parámetros desde la URL
+    const emailParam = searchParams.get("email");
+    const otpParam = searchParams.get("otp");
+
+    if (emailParam) {
+      setEmail(emailParam);
+      setStep(otpParam ? 3 : 2); // Si hay OTP, pasa directamente al paso 3
+    }
+
+    if (otpParam) {
+      
+      setOtp(otpParam);
+
+    }
+  }, [searchParams]);
+
 
   const handleSendCode = async (e) => {
     e.preventDefault();
