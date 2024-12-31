@@ -82,7 +82,7 @@ function Mapastores({ onSelectStore }) {
   };
 
   return (
-    <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}>
+    <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY} loading="lazy">
       
       <Map
         

@@ -30,7 +30,7 @@ export default function TicketsView({userData}) {
       allowClose: false,
       steps: [
         {
-          element: "#step2",
+          element: "#buttomTickets",
           popover: {
             title: "Bienvenido a Mis Tickets",
             description: "Aquí podrás acceder a todas las funcionalidades relacionadas con tus compras.",

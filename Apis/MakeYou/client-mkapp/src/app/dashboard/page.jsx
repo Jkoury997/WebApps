@@ -75,7 +75,7 @@ export default function Page() {
             },
           },
           {
-            element: "#step1",
+            element: "#buttomHome",
             popover: {
               title: "Inicio",
               description: "Aquí encontrarás un resumen de las principales opciones disponibles.",
@@ -148,21 +148,21 @@ export default function Page() {
             >
               <TabsList className="grid w-full grid-cols-3 bg-white">
                 <TabsTrigger
-                  id="step1"
+                  id="buttomHome"
                   value="home"
                   className="data-[state=active]:bg-brand data-[state=active]:text-white"
                 >
                   <Home className="w-5 h-5" />
                 </TabsTrigger>
                 <TabsTrigger
-                  id="step2"
+                  id="buttomTickets"
                   value="tickets"
                   className="data-[state=active]:bg-brand data-[state=active]:text-white"
                 >
                   <ReceiptText className="w-5 h-5" />
                 </TabsTrigger>
                 <TabsTrigger
-                  id="step3"
+                  id="buttomPedidos"
                   value="pedidos"
                   className="data-[state=active]:bg-brand data-[state=active]:text-white"
                 >

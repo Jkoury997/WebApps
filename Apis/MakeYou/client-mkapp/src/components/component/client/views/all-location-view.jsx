@@ -3,6 +3,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { MapPin, Clock, ChevronLeft, Star } from 'lucide-react'
+import Link from "next/link"
 
 export default function AllLocationsView({ setShowAllLocations }) {
   const [stores, setStores] = useState([]); // Estado para las stores
@@ -65,6 +66,7 @@ export default function AllLocationsView({ setShowAllLocations }) {
                   <MapPin className="w-6 h-6 mr-2" />
                   <span>{store.address}</span>
                 </div>
+                
                 <Button variant="outline"  className="w-full mt-2 bg-white text-gray border-none"
                 onClick={() => window.open(store.writeReview)}>
                   <Star></Star>
