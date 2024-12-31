@@ -3,7 +3,6 @@ const WorkGroup = require('../database/models/WorkGroup');
 const UserExtra = require('../database/models/UserExtra');
 const { userDetails } = require('../utils/authUtils');
 
-// Obtener detalles de asistencia diaria para un usuario en un rango de fechas
 const obtenerDetalleAsistenciaPorDia = async (userId, fechaInicio, fechaFin) => {
     // Obtener datos básicos del usuario
     const user = await userDetails(userId);
@@ -34,7 +33,7 @@ const obtenerDetalleAsistenciaPorDia = async (userId, fechaInicio, fechaFin) => 
     const detalleAsistencia = {};
     asistencias.forEach(asistencia => {
         const fecha = asistencia.timestamp.toISOString().split('T')[0]; // Formato YYYY-MM-DD
-        
+
         if (!detalleAsistencia[fecha]) {
             detalleAsistencia[fecha] = {
                 primeraEntrada: null,
@@ -56,18 +55,40 @@ const obtenerDetalleAsistenciaPorDia = async (userId, fechaInicio, fechaFin) => 
 
         // Asignar última salida, lugar de salida y verificar si fue automática
         if (asistencia.type === 'salida') {
-            detalleAsistencia[fecha].ultimaSalida = asistencia.timestamp;
-            detalleAsistencia[fecha].lugarSalida = asistencia.zoneId;
-            detalleAsistencia[fecha].salidaAutomatica = asistencia.automatic || false;
+            if (
+                !detalleAsistencia[fecha].ultimaSalida ||
+                asistencia.timestamp > detalleAsistencia[fecha].ultimaSalida
+            ) {
+                detalleAsistencia[fecha].ultimaSalida = asistencia.timestamp;
+                detalleAsistencia[fecha].lugarSalida = asistencia.zoneId;
+                detalleAsistencia[fecha].salidaAutomatica = asistencia.automatic || false;
+            }
         }
     });
 
     // Calcular horas trabajadas por día y verificar cumplimiento
     for (const fecha in detalleAsistencia) {
         const { primeraEntrada, ultimaSalida, horasAsignadas } = detalleAsistencia[fecha];
+
         if (primeraEntrada && ultimaSalida) {
-            const horasTrabajadas = (ultimaSalida - primeraEntrada) / (1000 * 60 * 60); // Convertir a horas
-            detalleAsistencia[fecha].horasTrabajadas = parseFloat(horasTrabajadas.toFixed(2)); // Convertir a número con 2 decimales
+            let horasTrabajadas;
+
+            // Calcular diferencia si la salida es al día siguiente
+            if (ultimaSalida > primeraEntrada) {
+                horasTrabajadas = (ultimaSalida - primeraEntrada) / (1000 * 60 * 60); // Convertir a horas
+            } else {
+                // Si la salida es al día siguiente
+                const finDia = new Date(primeraEntrada);
+                finDia.setHours(23, 59, 59, 999);
+                const inicioDiaSiguiente = new Date(ultimaSalida);
+                inicioDiaSiguiente.setHours(0, 0, 0, 0);
+
+                const horasPrimerDia = (finDia - primeraEntrada) / (1000 * 60 * 60);
+                const horasDiaSiguiente = (ultimaSalida - inicioDiaSiguiente) / (1000 * 60 * 60);
+                horasTrabajadas = horasPrimerDia + horasDiaSiguiente;
+            }
+
+            detalleAsistencia[fecha].horasTrabajadas = parseFloat(horasTrabajadas.toFixed(2)); // Redondear a 2 decimales
             detalleAsistencia[fecha].cumplimiento = horasTrabajadas >= horasAsignadas; // Verificar cumplimiento
         }
     }
