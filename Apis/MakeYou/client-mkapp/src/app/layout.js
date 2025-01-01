@@ -40,7 +40,7 @@ export const metadata = {
   },
 };
 
-
+import { GoogleAnalytics } from "@/utils/googleAnlytics/google-analytics";
 
 
 
@@ -49,6 +49,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="es">
+      <GoogleAnalytics></GoogleAnalytics>
       <body className={inter.className}>{children}</body>
     </html>
   );

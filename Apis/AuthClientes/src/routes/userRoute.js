@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
+const verifyTokenWithRoles = require('../middlewares/verifyTokenWithRoles');
 
 // Obtener todos los usuarios
 router.get('/', userController.getAllUsers);
@@ -13,10 +14,10 @@ router.get('/:id', userController.getUserById);
 router.get('/email/:email', userController.getUserByEmail);
 
 // Modificar un usuario por ID
-router.put('/:id', userController.updateUser);
+router.put('/:id',verifyTokenWithRoles(['admin',"usuario"]), userController.updateUser);
 
 // Eliminar un usuario por ID
-router.delete('/:id', userController.deleteUser);
+router.delete('/:id',verifyTokenWithRoles(['admin']), userController.deleteUser);
 
 
 

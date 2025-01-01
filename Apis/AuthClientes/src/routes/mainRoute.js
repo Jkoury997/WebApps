@@ -6,6 +6,7 @@ const userRoute = require("./userRoute")
 const trustDeviceRoute = require("./trusteDeviceRoute")
 const verifyRoute = require("./verifyRoute")
 const roleRoute = require("./roleRoute")
+const verifyTokenWithRoles = require('../middlewares/verifyTokenWithRoles');
 
 const express = require("express")
 
@@ -18,6 +19,6 @@ router.use('/recovery',recoveryRoute)
 router.use('/user',userRoute)
 router.use("/trust-device",trustDeviceRoute)
 router.use("/verify",verifyRoute)
-router.use("/role",roleRoute)
+router.use("/role",verifyTokenWithRoles(['admin']),roleRoute)
 
 module.exports = router

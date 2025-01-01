@@ -29,8 +29,6 @@ export async function GET(req) {
         });
 
         const responseData = await response.json();
-        console.log(responseData)
-
 
         if (responseData.Estado) {
             // Guardar tokens en cookies solo si Estado es true

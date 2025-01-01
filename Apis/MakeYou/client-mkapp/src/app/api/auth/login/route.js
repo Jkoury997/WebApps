@@ -11,7 +11,6 @@ export async function POST(req) {
         
         // Supongamos que el cuerpo de la solicitud incluye el email y password
         const { email, password } = body;
-        console.log(body.email, body.password)
         // Enviar la solicitud de inicio de sesión al backend
         const response = await fetch(`${URL_API_AUTH}/api/auth/login`, {
             method: 'POST',
