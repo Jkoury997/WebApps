@@ -26,6 +26,8 @@ export default function Page() {
     return result.visitorId;
   };
 
+
+
   const fetchUserDetails = async () => {
     setLoading(true);
     try {
@@ -55,10 +57,18 @@ export default function Page() {
 
   useEffect(() => {
     fetchUserDetails();
+
+    // Forzar scroll al inicio de la página
+    const mainElement = document.getElementById("mainContainer");
+    if (mainElement) {
+      mainElement.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   }, []);
 
 
     const startTourInicio = () => {
+
+      
       const driverObj = driver({
         popoverClass: 'driverjs-theme',
         nextBtnText: "Siguiente",
@@ -71,7 +81,18 @@ export default function Page() {
             popover: {
               title: "¡Bienvenido a MK!",
               description: "Te guiaremos en un breve recorrido para que descubras todas las funcionalidades.",
-              position: "top",
+              onNextClick: () => {
+                setTimeout(() => {
+                  const element = document.getElementById("HomeBar");
+                  if (element) {
+                    console.log("Elemento encontrado:", element);
+                    element.scrollIntoView({ behavior: "smooth", block: "start" });
+                  } else {
+                    console.error("Elemento no encontrado: HomeBar");
+                  }
+                }, 100);
+                driverObj.moveNext()
+              },
             },
           },
           {
@@ -122,19 +143,19 @@ export default function Page() {
   
       driverObj.drive();
     };
-
     useEffect(() => {
-        // Verifica si el tutorial ya fue completado al cargar la página
-        const tutorialCompletedInicio = localStorage.getItem("tutorialCompletedInicio");
-        setIsTutorialCompletedInicio(tutorialCompletedInicio);
+      const tutorialCompletedInicio = localStorage.getItem("tutorialCompletedInicio");
+      setIsTutorialCompletedInicio(tutorialCompletedInicio);
     
-        if (!tutorialCompletedInicio && !loading) {
+      if (!tutorialCompletedInicio && !loading ) {
+        setTimeout(() => {
           startTourInicio();
-        }
-      }, [loading]);
-
+        }, 500); // Espera 500ms para asegurarte de que el DOM está listo
+      }
+    }, [loading]);
+    
   return (
-    <div className="flex justify-center min-h-screen bg-gray-50 p-4">
+    <div className="flex justify-center min-h-screen bg-gray-50 p-4 overflow-auto" id="mainContainer">
       <div className="w-full max-w-md space-y-4">
         {showAllLocations ? (
           <AllLocationsView setShowAllLocations={setShowAllLocations} />
@@ -145,8 +166,9 @@ export default function Page() {
               value={activeView}
               onValueChange={setActiveView}
               className="w-full"
+              
             >
-              <TabsList className="grid w-full grid-cols-3 bg-white">
+              <TabsList className="grid w-full grid-cols-3 bg-white" id="HomeBar">
                 <TabsTrigger
                   id="buttomHome"
                   value="home"

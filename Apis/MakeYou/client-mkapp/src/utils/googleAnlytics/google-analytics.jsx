@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect } from 'react';
-import { usePathname,} from 'next/navigation';
+import Script from 'next/script'; // Importa Script para manejar los scripts de terceros
+import { usePathname } from 'next/navigation';
 
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
-
-export function GoogleAnalytics({searchParams}) {
+export function GoogleAnalytics({ searchParams }) {
   const pathname = usePathname();
 
   useEffect(() => {
@@ -18,15 +18,22 @@ export function GoogleAnalytics({searchParams}) {
 
   return (
     <>
-      {/* Agrega el script de gtag.js */}
-      <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}></script>
-      <script
+      {/* Script de gtag.js */}
+      <Script
+        src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+        strategy="afterInteractive" // Asegura que el script se carga después de la interacción inicial
+      />
+      <Script
+        id="google-analytics"
+        strategy="afterInteractive" // Asegura que el script se ejecuta después de que el DOM esté listo
         dangerouslySetInnerHTML={{
           __html: `
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            gtag('config', '${GA_MEASUREMENT_ID}');
+            gtag('config', '${GA_MEASUREMENT_ID}', {
+              page_path: window.location.pathname,
+            });
           `,
         }}
       />

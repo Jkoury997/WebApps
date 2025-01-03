@@ -188,7 +188,7 @@ export default function TicketsView({userData}) {
           </Card>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]" id="TICKET-INFO">
-          <DialogClose id="TICKET-INFO-CLOSE"></DialogClose>
+          
           <DialogHeader>
             <DialogTitle className="text-gray-800">Detalles del Ticket #{ticket.Numero}</DialogTitle>
           </DialogHeader>
@@ -209,6 +209,7 @@ export default function TicketsView({userData}) {
             </div>
             <Button className="w-full bg-pink-100 text-pink-700 hover:bg-pink-200 hidden">Descargar Ticket</Button>
           </div>
+          <DialogClose id="TICKET-INFO-CLOSE" className="hidden"></DialogClose>
         </DialogContent>
       </Dialog>
     ))

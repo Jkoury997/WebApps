@@ -13,24 +13,42 @@ function Mapastores({ onSelectStore }) {
   const [stores, setStores] = useState([]); // Estado para las stores
 
   useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setCurrentPosition({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
+    const getLocation = async () => {
+      try {
+        const permission = await navigator.permissions.query({ name: "geolocation" });
+        if (permission.state === "granted") {
+          navigator.geolocation.getCurrentPosition((position) => {
+            setCurrentPosition({
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
+            });
           });
-        },
-        (error) => {
-          console.error("Error obteniendo la ubicación:", error);
+        } else if (permission.state === "prompt") {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              setCurrentPosition({
+                lat: position.coords.latitude,
+                lng: position.coords.longitude,
+              });
+            },
+            (error) => {
+              console.error("Error obteniendo la ubicación:", error);
+              setCurrentPosition({ lat: -34.64039930091608, lng: -58.52714949271773 });
+            }
+          );
+        } else {
+          console.error("Permiso de ubicación denegado");
           setCurrentPosition({ lat: -34.64039930091608, lng: -58.52714949271773 });
         }
-      );
-    } else {
-      console.error("Geolocalización no soportada por el navegador");
-      setCurrentPosition({ lat: -34.64039930091608, lng: -58.52714949271773 });
-    }
+      } catch (error) {
+        console.error("Error verificando permisos:", error);
+        setCurrentPosition({ lat: -34.64039930091608, lng: -58.52714949271773 });
+      }
+    };
+  
+    getLocation();
   }, []);
+  
 
   // Cargar datos de stores desde el archivo JSON
   useEffect(() => {
