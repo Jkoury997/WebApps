@@ -9,6 +9,7 @@ export async function middleware(request) {
     const cookieStore = cookies();
     const accessToken = cookieStore.get("accessToken");
     const refreshToken = cookieStore.get("refreshToken");
+    const { pathname } = request.nextUrl; // Obtiene la ruta actual
 
     // Si no hay refreshToken, redirigir al login inmediatamente
     if (!refreshToken) {
@@ -23,6 +24,24 @@ export async function middleware(request) {
     try {
         // Verificar el accessToken usando jose
         await jwtVerify(accessToken.value, new TextEncoder().encode(JWT_SECRET));
+         // Verificar y decodificar el accessToken usando jose
+         const { payload } = await jwtVerify(accessToken.value, new TextEncoder().encode(JWT_SECRET));
+
+
+                    // Verifica roles según la ruta
+        if (pathname.startsWith('/dashboard/admin')) {
+            // Rutas de administrador, verificar rol
+            if (payload.role !== 'admin') {
+                return redirectToUnauthorized(request);
+            }
+        } else if (pathname.startsWith('/dashboard')) {
+            // Rutas de usuario normal o administrador
+            if (!['usuario', 'admin'].includes(payload.role)) {
+                return redirectToUnauthorized(request);
+            }
+            
+        }
+
         
         // Si el token es válido, permitir el acceso
         return NextResponse.next();
@@ -72,6 +91,13 @@ function redirectToLogin(request) {
     newResponse.cookies.delete("refreshToken");
     return newResponse;
 }
+
+
+// Función auxiliar para redirigir a la página no autorizada
+function redirectToUnauthorized(request) {
+    return NextResponse.redirect(new URL('/dashboard/unauthorized', request.url));
+}
+
 
 export const config = {
     matcher: [

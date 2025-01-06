@@ -2,6 +2,7 @@
 const nextConfig = {
   reactStrictMode: true, // Habilitar el modo estricto de React
   swcMinify: true,       // Minificación con SWC
+
 };
 
 // Importar el módulo de PWA

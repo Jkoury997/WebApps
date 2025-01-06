@@ -14,7 +14,6 @@ export async function GET(req) {
 
         // Verificar si la cookie existe y no está vencida
         if (TokenCookie) {
-            console.log("Token")
             return NextResponse.json({ message: 'Token is still valid' });
         }
 

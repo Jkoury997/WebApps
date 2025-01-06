@@ -91,50 +91,33 @@ const data = {
     navMain: [
         {
           title: "Inicio",
-          url: "/dashboard",
+          url: "/dashboard/admin",
           icon: TerminalSquare,
           isActive: true,
-          roles: ["admin", "usuario", "recursos_humanos"], // Roles permitidos
+          roles: ["admin"], // Roles permitidos
           items: [
             {
-              title: "Qr",
-              url: "/dashboard",
-              roles: ["admin", "recursos_humanos", "usuario"], // Roles permitidos para el sublink
+              title: "Metricas",
+              url: "/dashboard/metrics",
+              roles: ["admin"], // Roles permitidos para el sublink
             },
           ],
         },
         {
-          title: "Personal",
+          title: "Clientes",
           url: "#",
           icon: Bot,
-          roles: ["admin", "recursos_humanos"], // Solo para admin y usuario
+          roles: ["admin"], // Solo para admin y usuario
           items: [
             {
               title: "Lista",
-              url: "/dashboard/recursoshumanos/employed/list",
-              roles: ["admin", "recursos_humanos"],
+              url: "/dashboard/client/list",
+              roles: ["admin"],
             },
 
           ],
         },
-        {
-          title: "Configuracion",
-          url: "#",
-          icon: BookOpen,
-          roles: ["admin"],
-          items: [
-            {
-              title: "Zonas",
-              url: "/dashboard/admin/zone",
-              roles: ["admin"],
-            },
-            {
-              title: "Crear zona",
-              url: "/dashboard/admin/zone/create",
-              roles: ["admin"],
-            },
-          ],
-        },
+
       ],
     navSecondary: [
       {
@@ -171,52 +154,42 @@ const data = {
 
 
   export default function SideBarLinks() {
-    const [role, setRole] = useState(null)
     const [user, setUser] = useState(null)
-    const [userId, setUserId] = useState(null)
     const router = useRouter()
   
-    const fetchUserDetails = async (userId) => {
+    const fetchUserDetails = async () => {
       try {
-        const response = await fetch(`/api/auth/info/user?userId=${userId}`)
+        const response = await fetch(`/api/auth/user/info`)
         if (!response.ok) throw new Error("Failed to fetch user details")
-        const employeeData = await response.json()
-        setUser(employeeData)
+        const user = await response.json()
+      console.log(user)
+        setUser(user)
       } catch (error) {
         console.error("Error:", error.message)
       }
     }
   
     useEffect(() => {
-      const token = Cookies.get("accessToken")
-      const storedUserId = Cookies.get("userId")
-      if (token) {
-        const decodedToken = decode(token)
-        setRole(decodedToken?.role)
-      }
-      if (storedUserId) {
-        setUserId(storedUserId)
-        fetchUserDetails(storedUserId)
-      }
+
+        fetchUserDetails()
     }, [])
   
-    if (!role) return null;
   
     // Filtra los enlaces y subenlaces según el rol del usuario
     const filteredNavMain = data.navMain
-      .filter((link) => link.roles.includes(role)) // Solo los enlaces principales con el rol del usuario
+      .filter((link) => link.roles.includes("admin")) // Solo los enlaces principales con el rol del usuario
       .map((link) => ({
         ...link,
-        items: link.items?.filter((subItem) => subItem.roles.includes(role)), // Filtra subenlaces
+        items: link.items?.filter((subItem) => subItem.roles.includes("admin")), // Filtra subenlaces
       }));
-  
+
 
 
       const handleLogout = async () => {
         try {
           const response = await fetch('/api/auth/logout');
           const data = await response.json();
-          disconnectSocket()
+          //disconnectSocket()
           window.location.href = "/auth/login";
         } catch (error) {
           console.error("Error during logout:", error);
@@ -225,7 +198,7 @@ const data = {
 
       const handleProfile = () => {
         if (userId) {
-          router.push(`/dashboard/profile?userId=${userId}`)
+          router.push(`/dashboard/admin/profile?userId=${userId}`)
         }
       }
     return (

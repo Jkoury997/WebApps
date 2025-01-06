@@ -123,7 +123,8 @@ export default function Page() {
       });
 
       
-
+      await handleSignIn(formData.email,formData.password)
+      
       router.push("/auth/login");
     } catch (error) {
       console.error("Error durante el registro:", error);
@@ -133,6 +134,8 @@ export default function Page() {
       setIsLoading(false);
     }
   };
+
+
 
 
   const handleAlta = async () => {
@@ -154,7 +157,6 @@ export default function Page() {
 
       console.log("Registration successful:", data);
 
-      router.push("/auth/login");
     } catch (error) {
       console.error("Error durante el registro:", error);
       setErrorMessage(error.message || "Error en el registro");
@@ -199,6 +201,51 @@ export default function Page() {
       setIsLoading(false); // Finaliza el estado de carga
     }
   };
+
+
+  const handleSignIn = async (email,password) => {
+    
+    setIsLoading(true);
+    setErrorMessage("")
+    setShowError(false)
+
+    try {
+        // Paso 1: Autenticación del usuario
+        const response = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                email: email,
+                password: password,
+            }),
+        });
+
+        // Verifica si la respuesta es correcta, de lo contrario arroja un error
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Error en el login");
+        }
+
+        // Paso 2: Obtener los datos de la respuesta (ej. tokens)
+        const data = await response.json();
+
+        // Paso 3: Verificación y redirección
+        if (data.accessToken) {
+            router.push("/dashboard"); // Redirigir al dashboard si la autenticación es exitosa
+        } else {
+            throw new Error("Token de acceso no disponible.");
+        }
+    } catch (error) {
+        console.error("Error en el login:", error);
+        setErrorMessage(error.message || "Error al iniciar sesión");
+        setShowError(true);
+    } finally {
+      setIsLoading(false);
+    }
+};
+
 
 
   return (
