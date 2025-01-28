@@ -1,35 +1,32 @@
-const { NextResponse } = require('next/server');
-const { cookies } = require('next/headers');
-const { jwtVerify } = require('jose');
+import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import { jwtVerify } from 'jose';
 
 const URL_API_AUTH = process.env.NEXT_PUBLIC_URL_API_AUTH;
 const JWT_SECRET = process.env.JWT_SECRET;
 
 export async function middleware(request) {
     const cookieStore = cookies();
-    const accessToken = cookieStore.get("accessToken");
-    const refreshToken = cookieStore.get("refreshToken");
-    const { pathname } = request.nextUrl; // Obtiene la ruta actual
+    const accessToken = cookieStore.get("accessToken")?.value;
+    const refreshToken = cookieStore.get("refreshToken")?.value;
+    const { pathname } = request.nextUrl;
 
-    // Si no hay refreshToken, redirigir al login inmediatamente
+    // Si no hay refreshToken, redirigir al login
     if (!refreshToken) {
         return redirectToLogin(request);
     }
 
-    // Si no hay accessToken, intentamos usar el refreshToken para obtener un nuevo accessToken
+    // Si no hay accessToken, intentar renovarlo
     if (!accessToken) {
         return await refreshAccessToken(refreshToken, request);
     }
 
     try {
-        // Verificar el accessToken usando jose
-        await jwtVerify(accessToken.value, new TextEncoder().encode(JWT_SECRET));
-         // Verificar y decodificar el accessToken usando jose
-         const { payload } = await jwtVerify(accessToken.value, new TextEncoder().encode(JWT_SECRET));
+        // Verificar el accessToken
+        const { payload } = await jwtVerify(accessToken, new TextEncoder().encode(JWT_SECRET));
 
-
-                    // Verifica roles según la ruta
-        if (pathname.startsWith('/dashboard/admin')) {
+        // Verificar roles según la ruta
+        if (pathname.startsWith('/admin')) {
             // Rutas de administrador, verificar rol
             if (payload.role !== 'admin') {
                 return redirectToUnauthorized(request);
@@ -39,43 +36,33 @@ export async function middleware(request) {
             if (!['usuario', 'admin'].includes(payload.role)) {
                 return redirectToUnauthorized(request);
             }
-            
         }
 
-        
-        // Si el token es válido, permitir el acceso
+        // Permitir el acceso
         return NextResponse.next();
     } catch (error) {
-        // Si el token ha expirado, intentamos obtener uno nuevo usando el refreshToken
-            return await refreshAccessToken(refreshToken, request);
+        // Si el token es inválido, intentar renovarlo
+        return await refreshAccessToken(refreshToken, request);
     }
 }
 
-// Función auxiliar para intentar renovar el accessToken usando el refreshToken
 async function refreshAccessToken(refreshToken, request) {
     try {
-        // Solicitar un nuevo accessToken con el refreshToken
         const response = await fetch(`${URL_API_AUTH}/api/auth/refresh-token`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ refreshToken: refreshToken.value }),
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refreshToken }),
         });
 
         if (!response.ok) {
-            // Si falla la solicitud de refresh, eliminar los tokens y redirigir al login
             return redirectToLogin(request);
         }
 
-        const data = await response.json();
-        const newAccessToken = data.accessToken;
+        const { accessToken } = await response.json();
 
         // Establecer el nuevo accessToken en las cookies
         const newResponse = NextResponse.next();
-        newResponse.cookies.set("accessToken", newAccessToken, {
-            path: '/',
-        });
+        newResponse.cookies.set("accessToken", accessToken, { path: '/' });
 
         return newResponse;
     } catch (error) {
@@ -84,7 +71,6 @@ async function refreshAccessToken(refreshToken, request) {
     }
 }
 
-// Función auxiliar para redirigir al login
 function redirectToLogin(request) {
     const newResponse = NextResponse.redirect(new URL('/auth/login', request.url));
     newResponse.cookies.delete("accessToken");
@@ -92,15 +78,13 @@ function redirectToLogin(request) {
     return newResponse;
 }
 
-
-// Función auxiliar para redirigir a la página no autorizada
 function redirectToUnauthorized(request) {
     return NextResponse.redirect(new URL('/dashboard/unauthorized', request.url));
 }
 
-
 export const config = {
     matcher: [
-        '/dashboard/:path*', // Rutas protegidas
+        '/admin/:path*', // Rutas de administración
+        '/dashboard/:path*', // Rutas de dashboard
     ],
 };

@@ -150,7 +150,7 @@ export default function Page() {
       if (!tutorialCompletedInicio && !loading ) {
         setTimeout(() => {
           startTourInicio();
-        }, 500); // Espera 500ms para asegurarte de que el DOM está listo
+        }, 1000); // Espera 500ms para asegurarte de que el DOM está listo
       }
     }, [loading]);
     

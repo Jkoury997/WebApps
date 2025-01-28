@@ -91,14 +91,14 @@ const data = {
     navMain: [
         {
           title: "Inicio",
-          url: "/dashboard/admin",
+          url: "/admin",
           icon: TerminalSquare,
           isActive: true,
           roles: ["admin"], // Roles permitidos
           items: [
             {
               title: "Metricas",
-              url: "/dashboard/metrics",
+              url: "/admin/metrics",
               roles: ["admin"], // Roles permitidos para el sublink
             },
           ],
@@ -111,7 +111,7 @@ const data = {
           items: [
             {
               title: "Lista",
-              url: "/dashboard/client/list",
+              url: "/admin/client/list",
               roles: ["admin"],
             },
 
