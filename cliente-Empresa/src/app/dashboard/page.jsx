@@ -5,6 +5,7 @@ import {
   EggIcon,
   PackageIcon,
   WarehouseIcon,
+  ClipboardList,
 } from "lucide-react";
 
 import { useEffect, useState } from "react";
@@ -44,6 +45,7 @@ export default function Page() {
     { name: "Cajones", icon: EggIcon, url: "/dashboard/stock/cajones/create" },
     { name: "Paquetes", icon: PackageIcon, url: "/dashboard/stock/pallets/move" },
     { name: "Almacenes", icon: WarehouseIcon, url: "/dashboard/stock/warehouse" },
+    { name: "Despachos", icon: ClipboardList, url: "/dashboard/stock/despachos" },
   ];
 
   return (

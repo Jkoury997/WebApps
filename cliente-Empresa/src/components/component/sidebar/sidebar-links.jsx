@@ -21,7 +21,7 @@ import {
   SidebarMenuSubItem,
   SidebarMenuAction
 } from "@/components/ui/sidebar";
-import { BoxIcon, ChevronRight, HomeIcon, Store } from "lucide-react";
+import { BoxIcon, ChevronRight, ClipboardList, HomeIcon, Store } from "lucide-react";
 
 const data = {
   navMain: [
@@ -29,6 +29,15 @@ const data = {
       title: "Inicio",
       url: "/dashboard",
       icon:HomeIcon,
+      roles: ["admin", "usuario", "recursos_humanos"],
+      items: [
+,
+      ],
+    },
+    {
+      title: "Despachos",
+      url: "/dashboard/stock/despachos",
+      icon:ClipboardList,
       roles: ["admin", "usuario", "recursos_humanos"],
       items: [
 ,
@@ -48,7 +57,7 @@ const data = {
       ],
     },
     {
-      title: "Prodcutos",
+      title: "Productos",
       url: "#",
       icon: BoxIcon,
       roles: ["admin"],
