@@ -47,6 +47,7 @@ export async function GET(req) {
 
 
 export async function POST(req) {
+    
     try {
         const body = await req.json();
         const cookieStore = cookies();
@@ -57,30 +58,31 @@ export async function POST(req) {
         const Id = searchParams.get('Id');
         const Almacen = searchParams.get('Almacen');
 
+        const {productos } = body;
+
+        console.log(productos)
+
         if (!Id || !Almacen) {
             return NextResponse.json({ error: 'Id y Almacen son obligatorios' }, { status: 400 });
         }
-
-        // Validar que el cuerpo de la solicitud contenga "Lista" con productos
-        if (!body.productos || !Array.isArray(body.productos) || body.productos.length === 0) {
+        if (!productos || !Array.isArray(productos) || productos.length === 0) {
             return NextResponse.json({ error: 'Lista de productos es requerida' }, { status: 400 });
         }
 
-        // Construcción del payload para la API externa
-        const payload = {
-            Asignacion: Id,
-            Almacen:Almacen,
-            Lista: body.productos.map(producto => ({
-                IdArtciulo: producto.IdArticulo, 
-                Codigo: producto.Codigo || "",
-                Descripcion: producto.Descripcion || "",
-                Cantidad: producto.Cantidad || 0,
+
+        
+         // Construcción del payload para la API externa
+         const payload = {
+            Asignacion: Id, // Convertimos a número
+            Almacen: Almacen,
+            Lista: productos.map(producto => ({
+                IdArticulo: producto.IdArticulo, 
                 Retira: producto.Retira || 0
             }))
         };
-
+         console.log(payload)
         // Llamada a la API externa
-        const response = await fetch("http://190.216.66.210:10294/api/Agro/ServicioDespachar", {
+        const response = await fetch(`${NEXT_PUBLIC_URL_API_AVICOLA}/api/Agro/ServicioDespachar`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -93,6 +95,7 @@ export async function POST(req) {
         const responseData = await response.json();
 
         if (!response.ok) {
+            console.log(responseData)
             return NextResponse.json(
                 { error: responseData.Mensaje || "Error al procesar el retiro" },
                 { status: response.status }

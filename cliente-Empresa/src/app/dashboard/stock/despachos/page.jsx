@@ -71,9 +71,11 @@ export default function Page() {
 
     const handleRetiro = async (retiroData) => {
         setIsLoading(true);
+        console.log(retiroData)
         try {
             console.log("Enviando retiro:", retiroData);
             const { Id, CodAlmacen } = despacho;
+            
 
             if (!Id || !CodAlmacen) {
                 throw new Error("Faltan campos requeridos (Id o Almacen) en los datos del QR.");

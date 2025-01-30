@@ -33,10 +33,11 @@ export default function ProductList({ listProducts, despachoInfo, onRetiraSubmit
   // Manejar impresión en consola de los valores de "Retira"
   const handlePrintRetira = () => {
     const result = productos.map((producto) => ({
-      IdArtciulo: producto.IdArtciulo,
+      IdArticulo: producto.IdArticulo,
+      Codigo:producto.Codigo,
       Cantidad: producto.Cantidad,
       Descripcion: producto.Descripcion,
-      Retira: retiroValues.current[producto.IdArtciulo] || 0, // Si no se ha modificado, asumir 0
+      Retira: retiroValues.current[producto.IdArticulo] || 0, // Si no se ha modificado, asumir 0
     }));
     console.log("Productos con Retira:", result);
     onRetiraSubmit(result); // Llamamos la función que recibimos como prop
@@ -63,15 +64,15 @@ export default function ProductList({ listProducts, despachoInfo, onRetiraSubmit
         <div className="space-y-4">
           {productos.map((producto) => (
             <Card
-              key={producto.IdArtciulo}
+              key={producto.IdArticulo}
               className="w-full cursor-pointer"
-              onClick={() => setSelectedProductId(producto.IdArtciulo)} // Seleccionar producto al hacer clic
+              onClick={() => setSelectedProductId(producto.IdArticulo)} // Seleccionar producto al hacer clic
             >
               <CardContent className="p-4">
                 <div className="space-y-2">
                   <p className="font-semibold text-lg">{producto.Descripcion}</p>
                   <div className="text-sm text-gray-600">
-                    <p>ID: {producto.IdArtciulo}</p>
+                    <p>ID: {producto.IdArticulo}</p>
                     <p>Código: {producto.Codigo}</p>
                   </div>
                   <div className="flex justify-between items-center mt-2">
@@ -80,18 +81,18 @@ export default function ProductList({ listProducts, despachoInfo, onRetiraSubmit
                       <p className="text-lg font-semibold">{producto.Cantidad}</p>
                     </div>
                     <div className="flex flex-col items-end">
-                      <label htmlFor={`retira-${producto.IdArtciulo}`} className="text-sm font-medium text-gray-500">
+                      <label htmlFor={`retira-${producto.IdArticulo}`} className="text-sm font-medium text-gray-500">
                         Retira:
                       </label>
                       <Input
-                        id={`retira-${producto.IdArtciulo}`}
+                        id={`retira-${producto.IdArticulo}`}
                         type="number"
-                        ref={(el) => (inputRefs.current[producto.IdArtciulo] = el)} // Asignar la referencia al producto correspondiente
-                        onChange={(e) => handleRetiraChange(producto.IdArtciulo, Number(e.target.value))}
+                        ref={(el) => (inputRefs.current[producto.IdArticulo] = el)} // Asignar la referencia al producto correspondiente
+                        onChange={(e) => handleRetiraChange(producto.IdArticulo, Number(e.target.value))}
                         min={0}
                         max={producto.Cantidad}
                         className="w-20 text-right"
-                        autoFocus={selectedProductId === producto.IdArtciulo} // Enfocar automáticamente si es el producto seleccionado
+                        autoFocus={selectedProductId === producto.IdArticulo} // Enfocar automáticamente si es el producto seleccionado
                       />
                     </div>
                   </div>
