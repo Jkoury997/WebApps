@@ -212,7 +212,7 @@ const data = {
                     <Store className="size-4" />
                   </div>
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">Fichaqui</span>
+                    <span className="truncate font-semibold">MK Puntos</span>
                     <span className="truncate text-xs">Make You S.R.L.</span>
                   </div>
                 </a>

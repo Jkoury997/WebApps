@@ -7,6 +7,7 @@ import LoyaltyPoint from "@/components/component/client/components/loyalty-point
 import { Skeleton } from "@/components/ui/skeleton";
 import QRCode from "react-qr-code";
 import MapaStores from "../components/maps-store";
+import withAdminAuth from "@/utils/auth/withAdminAuth";
 
 
 
@@ -52,6 +53,7 @@ export default function HomeView({ setShowAllLocations, userData }) {
 
   const handleStoreSelection = (selectedStore) => {
     setStore(selectedStore);
+    
     setTimeout(() => {
       if (storeInfoRef.current) {
         storeInfoRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -68,6 +70,15 @@ export default function HomeView({ setShowAllLocations, userData }) {
       </div>
     );
   }
+
+  const AdminButton = withAdminAuth(() => (
+    <Button
+      className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition w-full"
+      onClick={() => window.open("/admin-console", "_blank")}
+    >
+      Ir a la consola del admin
+    </Button>
+  ));
 
   return (
     <Card className="w-full max-w-md border-none shadow-none bg-transparent">
@@ -102,20 +113,9 @@ export default function HomeView({ setShowAllLocations, userData }) {
               <Card className="border-none" ref={storeInfoRef}>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-md font-bold text-gray-800">{store.name}</CardTitle>
-                  <CardDescription className="text-gray-600 mb-2 text-sm">{store.address}</CardDescription>
+                  <CardDescription className="text-gray-600 mb-2 text-sm">{store.addressShort[1].shortText + " "+store.addressShort[0].shortText+ ", "+store.addressShort[2].shortText + ", " +store.addressShort[3].shortText}</CardDescription>
                 </CardHeader>
-                <CardContent className="pb-1">
-                  <Button
-                    className="w-full bg-white text-gray border-none hover:bg-white hover:text-brand"
-                    onClick={() => window.open(store.writeReview)}
-                  >
-                    <Star />
-                    <Star />
-                    <Star />
-                    <Star />
-                    <Star />
-                  </Button>
-                </CardContent>
+
                 <CardFooter className="pb-3">
                   <Button
                     className="bg-brand text-white px-4 py-2 rounded hover:bg-black transition w-full"
@@ -135,6 +135,8 @@ export default function HomeView({ setShowAllLocations, userData }) {
             Ver todos los locales
           </Button>
         </div>
+          {/* Botón para ir a la consola del admin en una nueva pestaña */}
+          <AdminButton />
       </CardContent>
     </Card>
   );

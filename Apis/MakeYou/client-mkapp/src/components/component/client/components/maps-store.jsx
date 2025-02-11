@@ -59,7 +59,6 @@ function Mapastores({ onSelectStore }) {
           throw new Error(`Error al cargar el archivo JSON: ${response.statusText}`);
         }
         const data = await response.json();
-        
 
         const storesArray = Object.keys(data)
           .map((key) => {
@@ -71,6 +70,7 @@ function Mapastores({ onSelectStore }) {
                 lat: store.location.latitude,
                 lng: store.location.longitude,
                 address: store.formattedAddress || "Sin dirección",
+                addressShort:store.addressComponents,
                 placeUri:store.googleMapsLinks.placeUri,
                 writeReview:store.googleMapsLinks.writeAReviewUri
               };
@@ -80,6 +80,7 @@ function Mapastores({ onSelectStore }) {
           .filter((store) => store !== null); // Eliminar stores inválidas
 
         setStores(storesArray);
+        
       } catch (error) {
         console.error("Error cargando stores:", error);
       }

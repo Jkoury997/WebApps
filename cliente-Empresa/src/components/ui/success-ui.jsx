@@ -20,7 +20,7 @@ export default function SuccessUI() {
       }
     }, [contador])
   return (
-      <Card className="w-full max-w-md shadow-none border-none ">
+      <Card className="w-full max-w-md shadow-none border-none justify-center">
         <CardContent className="flex flex-col items-center justify-center p-6">
           <div className="w-24 h-24 rounded-full bg-green-500 flex items-center justify-center mb-4">
             <Check className="w-16 h-16 text-white" />

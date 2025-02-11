@@ -7,15 +7,26 @@ import { useToast } from "@/hooks/use-toast";
 import ProductList from "@/components/component/stock/despacho/product-list";
 import Signature from "@/components/component/stock/despacho/signature";
 import SuccessUI from "@/components/ui/success-ui";
+import OrdenDespacho from "@/components/component/stock/despacho/pdf-despacho";
+import { Button } from "@/components/ui/button";
+import PrintOrden from "@/components/component/stock/despacho/print-order";
+
 
 export default function Page() {
     const [activeStep, setActiveStep] = useState(1);
     const [productos, setProductos] = useState([]);
     const [despacho, setDespacho] = useState([]);
+    const [retiro, setRetiro] = useState([]);
     const [completeTask, setCompleteTask] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [firma, setFirma] = useState(null);
     const { toast } = useToast();
-    const Steps = [1, 2];
+    const Steps = [1, 2,3,4];
+
+    const empresa = {
+        nombre: "Zalei Agropecuaria S.A",
+        direccion:"RP50 10000, B6005 Gral. Arenales, Provincia de Buenos Aires"
+    }
 
     // Efecto para manejar la alerta al recargar la página
     useEffect(() => {
@@ -72,6 +83,7 @@ export default function Page() {
     const handleRetiro = async (retiroData) => {
         setIsLoading(true);
         console.log(retiroData)
+        setRetiro(retiroData)
         try {
             console.log("Enviando retiro:", retiroData);
             const { Id, CodAlmacen } = despacho;
@@ -94,7 +106,8 @@ export default function Page() {
             setCompleteTask(true);
 
             setTimeout(() => {
-                handleReset();
+                setActiveStep(3)
+                setCompleteTask(false);
             }, 3000); // Pausa de 3 segundos (3000 milisegundos)
             
         } catch (error) {
@@ -113,9 +126,17 @@ export default function Page() {
         setActiveStep(1);
         setProductos([]);
         setDespacho([]);
+        setRetiro([])
+        setFirma(null)
         setIsLoading(false);
         setCompleteTask(false);
     };
+
+      // Función que se ejecuta cuando se guarda la firma
+  const handleSignatureSave = (dataURL) => {
+    setFirma(dataURL);
+    setActiveStep(4)
+  };
 
     const renderStepContent = () => {
         switch (activeStep) {
@@ -130,6 +151,27 @@ export default function Page() {
                 return (
                     <ProductList listProducts={productos} despachoInfo={despacho} onRetiraSubmit={handleRetiro} />
                 );
+            case 3:
+                return (
+                    <Signature onSave={handleSignatureSave}/>
+                );
+            case 4:
+                return (
+                    <div>
+                    <PrintOrden
+                      firma={firma}
+                      cliente={despacho.cliente || ""}
+                      despacho={despacho}
+                      productos={retiro}
+                      empresa={empresa}
+                    />
+                    <div className="flex justify-center mt-4">
+                      <Button onClick={handleReset} variant="outline" className="bg-black text-white">
+                        Realizar otro despacho
+                      </Button>
+                    </div>
+                  </div>
+                )
             default:
                 return <div>Contenido del paso desconocido</div>;
         }
