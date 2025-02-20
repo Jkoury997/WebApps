@@ -1,4 +1,5 @@
 "use client";
+import { es } from "date-fns/locale";
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { format } from "date-fns";
+import { format , subMonths } from "date-fns";
 import {
   Calendar as CalendarIcon,
   Clock,
@@ -296,34 +297,39 @@ const newDate = new Date(year, month - 1, 1);
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <Card className="col-span-1 md:col-span-2 lg:col-span-1">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Mes</CardTitle>
-            <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <Select
-              value={format(selectedMonth, "yyyy-MM")}
-              onValueChange={(value) => handleMonthChange(value)}
+      <Card className="col-span-1 md:col-span-2 lg:col-span-1">
+  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+    <CardTitle className="text-sm font-medium">Mes</CardTitle>
+    <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+  </CardHeader>
+  <CardContent>
+    <Select
+      // Se formatea el mes seleccionado en el formato deseado
+      value={format(selectedMonth, "yyyy-MM", { locale: es })}
+      onValueChange={(value) => handleMonthChange(value)}
+    >
+      <SelectTrigger>
+        <SelectValue>
+          {format(selectedMonth, "MMMM yyyy", { locale: es })}
+        </SelectValue>
+      </SelectTrigger>
+      <SelectContent>
+        {Array.from({ length: 16 }, (_, i) => subMonths(new Date(), i))
+          // Opcional: si deseas mostrar los meses en orden cronológico (de más antiguo a más reciente)
+          .reverse()
+          .map((date) => (
+            <SelectItem
+              key={date.toISOString()}
+              value={format(date, "yyyy-MM", { locale: es })}
             >
-              <SelectTrigger>
-                <SelectValue>{format(selectedMonth, "MMMM yyyy")}</SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {Array.from({ length: 12 }, (_, i) => new Date(2024, i, 1)).map(
-                  (date) => (
-                    <SelectItem
-                      key={date.toISOString()}
-                      value={format(date, "yyyy-MM")}
-                    >
-                      {format(date, "MMMM yyyy")}
-                    </SelectItem>
-                  )
-                )}
-              </SelectContent>
-            </Select>
-          </CardContent>
-        </Card>
+              {format(date, "MMMM yyyy", { locale: es })}
+            </SelectItem>
+          ))}
+      </SelectContent>
+    </Select>
+  </CardContent>
+</Card>
+
         {estadisticasTrabajo ? (
             <>
             

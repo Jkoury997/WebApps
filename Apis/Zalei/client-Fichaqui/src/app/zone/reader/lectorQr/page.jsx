@@ -3,6 +3,47 @@ import { useState, useEffect, useRef } from "react";
 import CardEmployed from "@/components/component/card-employed";
 import { useRouter } from "next/navigation";
 import { Alert } from "@/components/component/alert";
+import { ExpandIcon } from "lucide-react";
+
+// Componente Spinner usando SVG y Tailwind
+function Spinner() {
+  return (
+    <svg
+      className="animate-spin h-5 w-5 text-gray-600"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+      ></circle>
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+      ></path>
+    </svg>
+  );
+}
+
+
+function openFullscreen() {
+  const elem = document.documentElement; // Puedes cambiar a un elemento específico
+  if (elem.requestFullscreen) {
+    elem.requestFullscreen();
+  } else if (elem.webkitRequestFullscreen) { /* Safari */
+    elem.webkitRequestFullscreen();
+  } else if (elem.msRequestFullscreen) { /* IE11 */
+    elem.msRequestFullscreen();
+  }
+}
+
+
 
 export default function Page() {
   const [zoneId, setZoneId] = useState(null);
@@ -15,6 +56,7 @@ export default function Page() {
   const router = useRouter();
   const successSound = useRef(null);
   const inputRef = useRef(null);
+
 
   useEffect(() => {
     successSound.current = new Audio('/sounds/success.mp3'); // Cargar el sonido de éxito
@@ -90,7 +132,7 @@ export default function Page() {
       setAlertMessage({
         type: "error",
         message: error.message,
-      }); // Actualiza el estado del error
+      });
       throw error;
     }
   }
@@ -105,7 +147,7 @@ export default function Page() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json(); // Obtener los detalles del error del servidor
+        const errorData = await response.json();
         throw new Error(errorData.message || 'Error al obtener los detalles del empleado');
       }
       const data = await response.json();
@@ -119,7 +161,6 @@ export default function Page() {
 
   const handleScan = async (scannedCode) => {
     scannedCode = scannedCode.replace(/[´_,’'–—\s]/g, '-'); // Reemplazar caracteres no válidos
-
 
     if (scannedCode && !scanning) {
       setScanning(true);
@@ -145,9 +186,12 @@ export default function Page() {
         });
       } finally {
         setScanning(false);
-        inputRef.current.value = ''; // Asegura que el campo se limpia después del escaneo
-        inputRef.current.focus(); // Asegura que el campo de entrada mantenga el enfoque
+        inputRef.current.value = '';
+        setTimeout(() => {
+          inputRef.current.focus();
+        }, 100); // Retardo de 100ms
       }
+      
     }
   };
 
@@ -162,6 +206,13 @@ export default function Page() {
       className="flex flex-col md:flex-row items-center justify-center h-screen bg-gray-100 dark:bg-gray-900 p-4"
       onClick={handleClick} // Enfocar el input al hacer clic en cualquier parte de la pantalla
     >
+          {/* Botón para pantalla completa */}
+    <button
+      onClick={openFullscreen}
+      className="absolute top-4 right-4 bg-blue-500 text-white py-2 px-4 rounded"
+    >
+     <ExpandIcon></ExpandIcon>
+    </button>
       {!pageVisible && (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-white p-4 rounded shadow-md">
@@ -178,20 +229,26 @@ export default function Page() {
       <div className="max-w-md w-full p-6 bg-white rounded-lg shadow-md dark:bg-gray-800 space-y-4 md:mr-4">
         <h1 className="text-2xl font-bold">Fichada</h1>
         <p className="text-gray-500 dark:text-gray-400">Escanea tu QR para poder fichar.</p>
-        <div className="flex items-center justify-center p-1 bg-gray-100 rounded-lg dark:bg-gray-700">
-        <input
-  ref={inputRef}
-  type="text"
-  className="w-full p-2 bg-white rounded dark:bg-gray-800"
-  placeholder="Escanea el código QR aquí"
-  autoFocus // Asegura que el input esté enfocado al cargar la página
-  onKeyDown={(e) => {
-    if (e.key === "Enter") {
-      handleScan(e.target.value); // Llamar a handleScan solo si se presiona Enter
-    }
-  }}
-/>
-
+        <div className="relative flex items-center justify-center p-1 bg-gray-100 rounded-lg dark:bg-gray-700">
+          <input
+            ref={inputRef}
+            inputMode="none" 
+            type="text"
+            disabled={scanning} // Deshabilitar el input mientras se procesa el escaneo
+            className="w-full p-2 bg-white rounded dark:bg-gray-800"
+            placeholder="Escanea el código QR aquí"
+            autoFocus
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleScan(e.target.value); // Llamar a handleScan solo si se presiona Enter
+              }
+            }}
+          />
+          {scanning && (
+            <div className="absolute right-2">
+              <Spinner />
+            </div>
+          )}
         </div>
         {alertMessage && (
           <Alert

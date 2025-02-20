@@ -3,6 +3,19 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import QRScanner from "@/components/component/QRScanner";
 import FingerprintJS from "@fingerprintjs/fingerprintjs"; // Importar FingerprintJS
+import { ExpandIcon } from 'lucide-react';
+
+function openFullscreen() {
+  const elem = document.documentElement; // Puedes cambiar a un elemento específico
+  if (elem.requestFullscreen) {
+    elem.requestFullscreen();
+  } else if (elem.webkitRequestFullscreen) { /* Safari */
+    elem.webkitRequestFullscreen();
+  } else if (elem.msRequestFullscreen) { /* IE11 */
+    elem.msRequestFullscreen();
+  }
+}
+
 
 export default function Page() {
   const [message, setMessage] = useState('');
@@ -94,6 +107,12 @@ export default function Page() {
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-100 dark:bg-gray-900">
+                    <button
+            onClick={openFullscreen}
+            className="absolute top-4 right-4 bg-blue-500 text-white py-2 px-4 rounded"
+          >
+           <ExpandIcon></ExpandIcon>
+          </button>
       <div className="max-w-md w-full p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
         <div className="space-y-4">
           <h1 className="text-2xl font-bold">Configure la zona</h1>

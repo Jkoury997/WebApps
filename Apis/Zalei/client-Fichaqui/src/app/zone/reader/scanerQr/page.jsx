@@ -5,6 +5,19 @@ import { useRouter } from "next/navigation";
 import QRScanner from "@/components/component/QRScanner";
 import { Alert } from "@/components/component/alert";
 import useGeolocation from "@/hooks/useGeolocation";
+import { ExpandIcon } from "lucide-react";
+
+function openFullscreen() {
+  const elem = document.documentElement; // Puedes cambiar a un elemento específico
+  if (elem.requestFullscreen) {
+    elem.requestFullscreen();
+  } else if (elem.webkitRequestFullscreen) { /* Safari */
+    elem.webkitRequestFullscreen();
+  } else if (elem.msRequestFullscreen) { /* IE11 */
+    elem.msRequestFullscreen();
+  }
+}
+
 
 
 export default function Page() {
@@ -167,6 +180,12 @@ export default function Page() {
 
   return (
     <div className="flex flex-col md:flex-row items-center justify-center h-screen bg-gray-100 dark:bg-gray-900 p-4">
+          <button
+            onClick={openFullscreen}
+            className="absolute top-4 right-4 bg-blue-500 text-white py-2 px-4 rounded"
+          >
+           <ExpandIcon></ExpandIcon>
+          </button>
       <div className="max-w-md w-full p-6 bg-white rounded-lg shadow-md dark:bg-gray-800 space-y-4 md:mr-4">
         <h1 className="text-2xl font-bold">Fichada</h1>
         <p className="text-gray-500 dark:text-gray-400">Escanea tu QR para poder fichar.</p>

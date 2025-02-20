@@ -9,69 +9,68 @@ const {sendNotification} = require("../utils/socketHandler");
 const MorganaApiService = require("./MorganaApiService")
 
 // Servicio para crear un nuevo registro de asistencia (deducir entrada o salida)
-const createAttendance = async (attendanceData,io) => {
+const createAttendance = async (attendanceData, io) => {
     const { uuid, zoneId } = attendanceData;
-    let message = ""
+    let message = "";
 
     // Verificar si el UUID es válido y obtener el userId del QR code
     const qrCode = await verifyUUID(uuid);
-    const userId = qrCode.userId; // Obtener el userId del código QR
+    const userId = qrCode.userId;
 
-    const user = await userDetails(userId); // Obtener la empresa del usuario
+    // Obtener los detalles del usuario y la zona
+    const user = await userDetails(userId);
+    const zone = await getZonesById(zoneId);
+    const zoneEmpresaId = zone.empresaId;
 
-    // Obtener los detalles de la zona para verificar la empresa
-    const zone = await getZonesById(zoneId)
-
-    const zoneEmpresaId = zone.empresaId; // Obtener la empresa de la zona
-
-    // Verificar si el usuario pertenece a la misma empresa que la zona
+    // Verificar que el usuario pertenece a la misma empresa que la zona
     if (user.empresa._id !== zoneEmpresaId) {
-        throw new Error('El usuario no puede registrar asistencia en una zona de otra empresa.');
+        throw new Error("El usuario no puede registrar asistencia en una zona de otra empresa.");
     }
 
     // Buscar la última asistencia del usuario en la misma zona
-    const lastAttendance = await Attendance.findOne({
-        userId,
-        zoneId
-    }).sort({ timestamp: -1 });
+    const lastAttendance = await Attendance.findOne({ userId, zoneId }).sort({ timestamp: -1 });
 
-    // Deducir si es entrada o salida
+    // Determinar si se trata de una entrada o salida
     let type;
     const now = new Date();
-    if (!lastAttendance || lastAttendance.type === 'salida') {
-        type = 'entrada'; // Si no hay registros o el último registro es una salida, entonces es una entrada
-    } else if (lastAttendance.type === 'entrada') {
-        // Verificar si han pasado al menos 5 minutos desde la última entrada
+    if (!lastAttendance || lastAttendance.type === "salida") {
+        type = "entrada";
+    } else if (lastAttendance.type === "entrada") {
         const lastAttendanceTime = new Date(lastAttendance.timestamp);
-        const timeDifference = (now - lastAttendanceTime) / 1000 / 60; // Convertir a minutos
+        const timeDifference = (now - lastAttendanceTime) / 1000 / 60; // minutos
 
         if (timeDifference < 5) {
-            message = 'Debe esperar al menos 5 minutos antes de marcar una salida.'
-            sendNotification(userId, {message,type:"error"} , io);
+            message = "Debe esperar al menos 5 minutos antes de marcar una salida.";
+            sendNotification(userId, { message, type: "error" }, io);
             throw new Error(message);
         }
-
-        type = 'salida'; // Si han pasado más de 5 minutos, entonces es una salida
+        type = "salida";
     }
 
+    // Enviar datos a Morgana y solo proceder si la respuesta es exitosa
+    try {
+        const morganaResponse = await MorganaApiService.sendAttendanceData(user);
+        
+        if (!morganaResponse.success) {
+            throw new Error("Error al registrar asistencia en Morgana.");
+        }
+        
+        // Crear el registro de asistencia si Morgana respondió correctamente
+        const newAttendance = new Attendance({
+            userId,
+            zoneId,
+            type
+        });
 
-    // Crear la nueva asistencia
-    const newAttendance = new Attendance({
-        userId,
-        zoneId,
-        type
-    });
+        await newAttendance.save();
+        message = `${type} registrada correctamente`;
+        sendNotification(userId, { message, type: "success" }, io);
 
-    message = `${type} registrada correctamente`;
-    sendNotification(userId, { message,type:"success" }, io);
-
-    await newAttendance.save();
-
-    //Se crear la asistencia en la base de datos
-    const Morgana = await MorganaApiService.sendAttendanceData(user)
-
-    console.log(Morgana)
-    return newAttendance;
+        return newAttendance;
+    } catch (error) {
+        console.error("Error al enviar datos a Morgana:", error.message);
+        throw new Error("No se pudo registrar la asistencia.");
+    }
 };
 
 // Servicio para obtener asistencias por usuario

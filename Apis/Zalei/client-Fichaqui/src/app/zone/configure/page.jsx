@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { VideoIcon,ScanBarcodeIcon } from 'lucide-react';
 
+
 export default function Page() {
     const router = useRouter();
     const [message, setMessage] = useState('');
