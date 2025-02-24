@@ -71,7 +71,6 @@ const createAttendance = async (attendanceData, io) => {
     } catch (error) {
         message = "Error al enviar datos a Morgana:", error;
         sendNotification(userId, { message, type: "error" }, io);
-        throw new Error("No se pudo registrar la asistencia.");
     }
 };
 
