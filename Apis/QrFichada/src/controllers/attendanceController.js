@@ -9,6 +9,7 @@ const createAttendance = async (req, res) => {
         const newAttendance = await attendanceService.createAttendance({ uuid, zoneId },io);
         res.status(201).json(newAttendance);
     } catch (error) {
+        
         res.status(500).json({ message: error.message });
     }
 };
@@ -20,6 +21,7 @@ const getAttendanceByUser = async (req, res) => {
         const attendances = await attendanceService.getAttendanceByUser(userId);
         res.status(200).json(attendances);
     } catch (error) {
+        
         res.status(500).json({ message: error.message });
     }
 };

@@ -51,6 +51,13 @@ export default function Page() {
   const [isLinkingNewQR, setIsLinkingNewQR] = useState(false);
   const [scanning, setScanning] = useState(false);
 
+  useEffect(() => {
+    // Enfocar automáticamente el input al cargar la página
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, []);
+
   // Cargar el fingerprint si no existe en localStorage
   const generateFingerprint = async () => {
     const fp = await FingerprintJS.load();
@@ -136,13 +143,6 @@ export default function Page() {
     setError("Error al escanear el código QR. Por favor, intenta nuevamente.");
   };
 
-  const handleKeyDown = (event) => {
-    if (event.key === "Enter") {
-      // Ejecuta handleScan con el valor actual del input
-      handleScan(event.target.value);
-    }
-  };
-
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-100 dark:bg-gray-900">
                 {/* Botón para pantalla completa */}
@@ -161,7 +161,11 @@ export default function Page() {
             <input
               ref={inputRef}
               type="text"
-              onKeyDown={handleKeyDown}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleScan(e.target.value); // Llamar a handleScan solo si se presiona Enter
+                }
+              }}
               disabled={scanning}
               placeholder="Escanea el código QR aquí"
               className="w-full p-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:text-white"

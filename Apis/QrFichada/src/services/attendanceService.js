@@ -11,6 +11,7 @@ const MorganaApiService = require("./MorganaApiService")
 // Servicio para crear un nuevo registro de asistencia (deducir entrada o salida)
 const createAttendance = async (attendanceData, io) => {
     const { uuid, zoneId } = attendanceData;
+    console.log(attendanceData)
     let message = "";
 
     // Verificar si el UUID es válido y obtener el userId del QR code
