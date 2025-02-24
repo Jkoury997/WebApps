@@ -14,6 +14,32 @@ function openFullscreen() {
   }
 }
 
+// Componente Spinner usando SVG y Tailwind
+function Spinner() {
+  return (
+    <svg
+      className="animate-spin h-5 w-5 text-gray-600"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+      ></circle>
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+      ></path>
+    </svg>
+  );
+}
+
 
 export default function Page() {
   const [message, setMessage] = useState('');
@@ -23,6 +49,7 @@ export default function Page() {
   const inputRef = useRef(null);
   const qrLinkSectionRef = useRef(null);
   const [isLinkingNewQR, setIsLinkingNewQR] = useState(false);
+  const [scanning, setScanning] = useState(false);
 
   // Cargar el fingerprint si no existe en localStorage
   const generateFingerprint = async () => {
@@ -60,10 +87,12 @@ export default function Page() {
   }, [isLinkingNewQR]);
 
   const handleScan = async (value) => {
+    setScanning(true);
     // Eliminar espacios y caracteres innecesarios
     const qrGeneralUUID = value.trim().replace(/[´_,’'–—\s]/g, '-');
     if (qrGeneralUUID) {
       setZoneUUID(qrGeneralUUID);
+      
       try {
         // Generar el trustdevice
         const trustdevice = await generateFingerprint();
@@ -93,8 +122,11 @@ export default function Page() {
 
         // Redirigir a la página de configuración
         router.push('/zone/reader'); 
+        
       } catch (err) {
         setError("Error al realizar la acción con el UUID. Por favor, intenta nuevamente.");
+      } finally {
+        setScanning(false);
       }
     }
   };
@@ -130,10 +162,17 @@ export default function Page() {
               ref={inputRef}
               type="text"
               onKeyDown={handleKeyDown}
+              disabled={scanning}
               placeholder="Escanea el código QR aquí"
               className="w-full p-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:text-white"
               inputMode="none" 
+              autoFocus
             />
+            {scanning && (
+            <div className="absolute right-2">
+              <Spinner />
+            </div>
+          )}
           </div>
           {message && (
             <div className="text-center mt-4">

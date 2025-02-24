@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Home, Ticket, ShoppingBag, Percent, ReceiptText, ArrowBigLeft } from "lucide-react";
+import { Home, Ticket, ShoppingBag, Percent, ReceiptText, ArrowBigLeft, PercentDiamond } from "lucide-react";
 
 import HomeView from "@/components/component/client/views/home-view";
 import TicketsView from "@/components/component/client/views/tickets-view";
@@ -168,7 +168,7 @@ export default function Page() {
               className="w-full"
               
             >
-              <TabsList className="grid w-full grid-cols-3 bg-white" id="HomeBar">
+              <TabsList className="grid w-full grid-cols-4 bg-white" id="HomeBar">
                 <TabsTrigger
                   id="buttomHome"
                   value="home"
@@ -189,6 +189,13 @@ export default function Page() {
                   className="data-[state=active]:bg-brand data-[state=active]:text-white"
                 >
                   <ShoppingBag className="w-5 h-5" />
+                </TabsTrigger>
+                <TabsTrigger
+                  id="buttomDescuentos"
+                  value="descuentos"
+                  className="data-[state=active]:bg-brand data-[state=active]:text-white"
+                >
+                  <PercentDiamond className="w-5 h-5" />
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="home">

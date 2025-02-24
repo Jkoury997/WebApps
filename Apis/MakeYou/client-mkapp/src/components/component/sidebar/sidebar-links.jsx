@@ -94,7 +94,7 @@ const data = {
           url: "/admin",
           icon: TerminalSquare,
           isActive: true,
-          roles: ["admin"], // Roles permitidos
+          roles: ["admin","comercio"], // Roles permitidos
           items: [
             {
               title: "Metricas",

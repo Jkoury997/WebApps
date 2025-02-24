@@ -1,16 +1,42 @@
-import React from "react";
-import { getUserRoleFromCookie } from "@/utils/auth";
+import React, { useState, useEffect } from "react";
+
 
 const withAdminAuth = (WrappedComponent) => {
   return (props) => {
-    const role = getUserRoleFromCookie();
+    const [isAdmin, setIsAdmin] = useState(null); // null indica estado de carga
 
-    try {
-      const response =await fetch("/api/auth/user/token")
+    useEffect(() => {
+      const checkRole = async () => {
+        try {
+
+          // Opción 2: Realizar una llamada a la API para validar el token/rol
+           const res = await fetch("/api/auth/user/token");
+           const data = await res.json();
+
+           const role = data.role;
+           console.log(role)
+
+          if (role === "admin") {
+            setIsAdmin(true);
+          } else {
+            setIsAdmin(false);
+          }
+        } catch (error) {
+          setIsAdmin(false);
+        }
+      };
+
+      checkRole();
+    }, []);
+
+    if (isAdmin === null) {
+      // Mientras se verifica el rol, se puede mostrar un indicador de carga
+      return <div>Cargando...</div>;
     }
 
-    if (role !== "admin") {
-      return null; // No renderiza nada si el usuario no es admin
+    if (!isAdmin) {
+      // No se renderiza nada o se puede redirigir a otra página
+      return null;
     }
 
     return <WrappedComponent {...props} />;

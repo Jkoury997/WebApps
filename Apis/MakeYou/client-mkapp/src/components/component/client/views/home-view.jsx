@@ -74,7 +74,7 @@ export default function HomeView({ setShowAllLocations, userData }) {
   const AdminButton = withAdminAuth(() => (
     <Button
       className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition w-full"
-      onClick={() => window.open("/admin-console", "_blank")}
+      onClick={() => window.open("/admin", "_blank")}
     >
       Ir a la consola del admin
     </Button>
