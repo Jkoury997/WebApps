@@ -8,6 +8,6 @@ const qrCodeSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Índice TTL para eliminar el documento 30 segundos después de que expire
-qrCodeSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 30 });
+qrCodeSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 60 });
 
 module.exports = mongoose.model('QrCode', qrCodeSchema);

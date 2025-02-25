@@ -11,19 +11,20 @@ const MorganaApiService = require("./MorganaApiService")
 // Servicio para crear un nuevo registro de asistencia (deducir entrada o salida)
 const createAttendance = async (attendanceData, io) => {
     const { uuid, zoneId } = attendanceData;
-    console.log(attendanceData)
     let message = "";
 
     // Verificar si el UUID es válido y obtener el userId del QR code
     const qrCode = await verifyUUID(uuid);
+    console.log(qrCode)
     const userId = qrCode.userId;
 
     // Obtener los detalles del usuario y la zona
     const user = await userDetails(userId);
+    console.log(user)
     const zone = await getZonesById(zoneId);
     const zoneEmpresaId = zone.empresaId;
 
-    // Verificar que el usuario pertenece a la misma empresa que la zona
+     // Verificar que el usuario pertenece a la misma empresa que la zona
     if (user.empresa._id !== zoneEmpresaId) {
         throw new Error("El usuario no puede registrar asistencia en una zona de otra empresa.");
     }
@@ -52,7 +53,8 @@ const createAttendance = async (attendanceData, io) => {
     try {
         const morganaResponse = await MorganaApiService.sendAttendanceData(user);
         
-        if (!morganaResponse.success) {
+        if (!morganaResponse.Estado) {
+            console.log("Error morgana")
             throw new Error("Error al registrar asistencia en Morgana.");
         }
         
@@ -72,7 +74,7 @@ const createAttendance = async (attendanceData, io) => {
         message = "No existe en el sistema";
         sendNotification(userId, { message, type: "error" }, io);
         throw new Error("No se pudo registrar la asistencia.");
-    }
+    } 
 };
 
 // Servicio para obtener asistencias por usuario

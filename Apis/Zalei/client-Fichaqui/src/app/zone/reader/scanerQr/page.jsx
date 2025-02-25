@@ -83,6 +83,7 @@ export default function Page() {
   }, []);
 
   async function registerAttendance(uuid) {
+    console.log(uuid)
     setAlertMessage(""); // Limpiar mensaje antes de registrar nueva asistencia
     try {
       const response = await fetch('/api/qrfichaqui/attendance/create', {

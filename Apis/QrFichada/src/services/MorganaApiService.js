@@ -1,6 +1,7 @@
 const apiTokens = require("../utils/tokenManager");
 
 const sendAttendanceData = async (user) => {
+  console.log(user)
   // Convertir el valor de sexo a formato requerido
   const sexo = user.sex === "Male" ? "M" : "F";
   
