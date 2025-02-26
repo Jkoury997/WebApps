@@ -1,78 +1,44 @@
-"use client"
-import React, { useEffect, useState } from 'react';
+"use client";
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { VideoIcon,ScanBarcodeIcon } from 'lucide-react';
+import { VideoIcon, ScanBarcodeIcon } from 'lucide-react';
+import { useConfigurationRedirect } from '@/hooks/zone/useConfigurationRedirect';
 
 export default function Page() {
-    const router = useRouter();
-    const [message, setMessage] = useState('');
-  
-    useEffect(() => {
-      const checkTrustDevice = async () => {
-        const trustdevice= localStorage.getItem('trustdevice');
-        if (!trustdevice) {
-          router.push('/zone/configure');
-          return;
-        }
-  
-        try {
-          const response = await fetch(`/api/qrfichaqui/zones/find?trustdevice=${trustdevice}`);
-          if (!response.ok) {
-            throw new Error('Zona no encontrada');
-          }
-          const data = await response.json();
-          if (data.error) {
-            throw new Error(data.error);
-          }
-        } catch (error) {
-          console.error('Error al obtener la zona:', error);
-          localStorage.removeItem('trustdevice');
-          router.push('/zone/configure');
-        }
-      };
+  const router = useRouter();
+  const [message, setMessage] = useState('');
 
-      const checkModo = async () => {
-        const readingMode = localStorage.getItem('readingMode');
-        if (!readingMode) {
-          router.push('/zone/configure');
-          return;
-        }
-  
-        if(readingMode === 'camera'){
-            router.push('/zone/reader/scanerQr');
-        }
-        if(readingMode === 'reader'){
-            router.push('/zone/reader/lectorQr');
-          }
-      };
-  
-      checkTrustDevice ();
-      checkModo()
-    }, [router]);
-  
-    const handleModeSelect = (mode) => {
-      localStorage.setItem('readingMode', mode);
+  // Ejecuta las comprobaciones de configuración al montar
+  useConfigurationRedirect();
+
+  const handleModeSelect = (mode) => {
+    localStorage.setItem('readingMode', mode);
     setMessage(`Modo ${mode === 'camera' ? 'Cámara' : 'Lector'} seleccionado y guardado.`);
-    if(mode === 'camera'){
+    if (mode === 'camera') {
       router.push('/zone/reader/scanerQr');
-    }
-    if(mode === 'reader'){
+    } else if (mode === 'reader') {
       router.push('/zone/reader/lectorQr');
     }
   };
-  
-    return (
-        <div className="flex flex-col items-center justify-center h-screen bg-gray-100 dark:bg-gray-900">
+
+  return (
+    <div className="flex flex-col items-center justify-center h-screen bg-gray-100 dark:bg-gray-900">
       <div className="max-w-md w-full p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
         <div className="space-y-4">
           <h1 className="text-2xl font-bold">Configurar Lectura</h1>
           <p className="text-gray-500 dark:text-gray-400">Seleccione el modo de lectura.</p>
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-8 bg-gray-100 rounded-lg dark:bg-gray-700">
-            <Button onClick={() => handleModeSelect('camera')} className="w-full md:w-full flex items-center justify-center">
+            <Button
+              onClick={() => handleModeSelect('camera')}
+              className="w-full flex items-center justify-center"
+            >
               <VideoIcon className="mr-2" /> Cámara
             </Button>
-            <Button onClick={() => handleModeSelect('reader')} className="w-full md:w-full flex items-center justify-center">
+            <Button
+              onClick={() => handleModeSelect('reader')}
+              className="w-full flex items-center justify-center"
+            >
               <ScanBarcodeIcon className="mr-2" /> Lector
             </Button>
           </div>
@@ -84,5 +50,5 @@ export default function Page() {
         </div>
       </div>
     </div>
-    );
-  }
+  );
+}
