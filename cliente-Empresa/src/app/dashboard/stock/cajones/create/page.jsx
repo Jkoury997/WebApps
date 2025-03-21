@@ -11,6 +11,7 @@ import shortUUID from "short-uuid";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/hooks/use-toast"; // Importa el hook de toast
+import UltimoImpreso from "@/components/component/stock/cajones/ultimo-impreso";
 
 // Carga dinámica del componente QrPrinter
 const QrPrinter = dynamic(() => import("@/components/component/qr-pdf-generator"), { ssr: false });
@@ -25,6 +26,10 @@ export default function Page() {
     const [qrData, setQrData] = useState(null);
     const [isLoading, setIsLoading] = useState(false); // Estado para gestionar la carga
     const { toast } = useToast(); // Usa el hook para mostrar el toast
+    const [ultimoImpreso, setUltimoImpreso] = useState(null);
+    const [mostrarUltimoQR, setMostrarUltimoQR] = useState(false);
+
+
 
     const Steps = [1, 2, 3, 4];
 
@@ -102,8 +107,9 @@ export default function Page() {
             });
 
             const result = await response.json();
+            console.log(result)
 
-            if (response.ok) {
+            if (result.Estado) {
                 const uuid = shortUUID.generate();
                 const qrDataObject = {
                     uuid,
@@ -114,6 +120,8 @@ export default function Page() {
                     Fecha: new Date().toLocaleDateString("es-AR"),
                 };
 
+                console.log(qrDataObject)
+
                 setQrData(JSON.stringify(qrDataObject));
                 
                 toast({
@@ -121,18 +129,30 @@ export default function Page() {
                     description:"El cajón ha sido creado con éxito.",
                     variant: "success",
                   });
+                
+                  setUltimoImpreso({
+                    uuid,
+                    IdArticulo,
+                    Cantidad,
+                    Galpon: galpon,
+                    IdPaquete: result.IdPaquete,
+                    Fecha: new Date().toLocaleDateString("es-AR"),
+                    dataArticulo: dataArticulo
+                });
+                console.log(ultimoImpreso)
+
                 setActiveStep(4);
             } else {
                 toast({
                     title: "Error Cajon",
-                    description: result.error || "Error al crear el cajón.",
+                    description:"Error al crear el cajón 2.",
                     variant: "destructive",
                   }); // Muestra el toast de error
             }
         } catch (err) {
             toast({
                 title: "Error Api",
-                description: result.error || "Error al crear el cajón.",
+                description: "Error al crear el cajón. aca",
                 variant: "destructive",
               }); // Muestra el toast de error
 
@@ -154,7 +174,11 @@ export default function Page() {
 
     return (
         <div className="container mx-auto px-2 py-8">
-
+            {ultimoImpreso && activeStep !== 4  && (
+    <div className="mt-4 text-center">
+        <UltimoImpreso data={ultimoImpreso}></UltimoImpreso>
+    </div>
+)}
             <Card>
                 <CardHeader>
                     <CardTitle className="text-2xl font-bold text-center">Crear Cajón</CardTitle>
@@ -231,6 +255,7 @@ export default function Page() {
         </div>
                                 </>
                             )}
+
                         </>
                     )}
                 </CardContent>
