@@ -5,7 +5,7 @@ const URL_API_AUTH = process.env.NEXT_PUBLIC_URL_API_AUTH;
 
 export async function GET(req) {
     const url = req.nextUrl;
-  const userId = url.searchParams.get('userId');
+    const userId = url.searchParams.get('userId');
 
   try {
     const response = await fetch(`${URL_API_AUTH}/api/user/${userId}`, {

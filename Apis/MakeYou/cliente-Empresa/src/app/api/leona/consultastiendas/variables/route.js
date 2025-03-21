@@ -1,50 +1,59 @@
-import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
+import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
-const NEXT_PUBLIC_URL_API_LEONA = process.env.NEXT_PUBLIC_URL_API_LEONA;
+const URL_API_LEONA = process.env.NEXT_PUBLIC_URL_API_LEONA; // Si es solo backend, usa process.env.URL_API_LEONA
 
-function convertISOToDDMMYYYY(isoDate) {
-    const date = new Date(isoDate);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Los meses empiezan en 0, por eso sumamos 1
-    const year = date.getFullYear();
-    return `${year}/${month}/${day}`;
-  }
-  
-
-export async function POST(req) {
+export async function GET(req) {
+  try {
     const cookieStore = cookies();
-    const Token = cookieStore.get("Token");
-    const {startDate,endDate} = await req.json();
+    const token = cookieStore.get("Token");
 
-    if (!Token) {
-        return NextResponse.json({ error: "No token found" }, { status: 401 });
+    if (!token) {
+      return NextResponse.json({ error: "No token found" }, { status: 401 });
     }
 
-           // Enviar la solicitud al backend
-           const response = await fetch(`${NEXT_PUBLIC_URL_API_LEONA}/api/ConsultasTiendas/Variables?Desde=${convertISOToDDMMYYYY(startDate)}&Hasta=${convertISOToDDMMYYYY(endDate)}`, {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-                'Token': Token.value
-            }
-        });
+    // Obtener parámetros de la URL
+    const { searchParams } = new URL(req.url);
+    const startDate = searchParams.get("from");
+    const endDate = searchParams.get("to");
 
-        const responseData = await response.json();
-
-    try {
-
-        
-
-        if (response.ok) {
-            // Devolver la respuesta en caso de éxito
-            return NextResponse.json(responseData);
-        } else {
-            // Manejo de errores específicos de la API
-            return NextResponse.json({ error: responseData.Mensaje }, { status: response.status });
-        }
-    } catch (error) {
-        // Manejo de errores generales
-        return NextResponse.json({ error: error.message || 'Error during data retrieval' }, { status: 500 });
+    if (!startDate || !endDate) {
+      return NextResponse.json(
+        { error: "Missing required parameters: from and to" },
+        { status: 400 }
+      );
     }
+
+    // Construcción de la URL con las fechas convertidas
+    const apiUrl = `${URL_API_LEONA}/api/ConsultasTiendas/Variables?Desde=${
+      startDate
+    }&Hasta=${endDate}`;
+
+    // Realizar la consulta a la API
+    const response = await fetch(apiUrl, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        Token: token.value,
+      },
+    });
+
+    const responseData = await response.json();
+
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: responseData.Mensaje || "API error" },
+        { status: response.status }
+      );
+    }
+
+    // Respuesta exitosa
+    return NextResponse.json(responseData);
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    return NextResponse.json(
+      { error: error.message || "Internal Server Error" },
+      { status: 500 }
+    );
+  }
 }

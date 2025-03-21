@@ -1,7 +1,7 @@
 // src/routes/mainRoute.js
 const express = require('express');
 
-const chatRoute = require('./openia/chatRoute');
+const chatRoute = require('./openIA/chatRoute');
 
 const router = express.Router();
 

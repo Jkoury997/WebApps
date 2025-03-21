@@ -6,6 +6,7 @@ const cors = require('cors');
 const { startTokenRenewal,tokens} = require('./utils/tokenManager');
 require('dotenv').config();
 const cron = require('node-cron');
+const { logToFile } = require('./utils/logToFile');
 
 const { generarSalidaAutomatica } = require('./services/attendanceService');
 
@@ -24,8 +25,10 @@ const PORT = process.env.PORT || 3000;
 
 // Ejecutar cada hora
  cron.schedule('0 * * * *', () => {
-    console.log("Ejecutando tarea de cierre automático");
-    generarSalidaAutomatica();
+    const mensaje = "⏱ Ejecutando tarea de cierre automático";
+    console.log(mensaje);
+    logToFile(mensaje);
+    generarSalidaAutomatica(); // Asegurate de importar o definir esta función antes
 }); 
 
 // Middleware

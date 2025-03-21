@@ -1,9 +1,8 @@
-// src/routes/chatRoutes.js
 const express = require('express');
-const { handleChatRequest } = require('../../controllers/openia/chatController');
-
 const router = express.Router();
+const { sendMessage } = require('../../controllers/openIA/chatController');
 
-router.post('/chat', handleChatRequest);
+// Ruta POST para procesar mensajes del chat
+router.post('/', sendMessage);
 
 module.exports = router;

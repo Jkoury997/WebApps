@@ -82,78 +82,8 @@ import {
 } from "@/components/ui/sidebar"
 import { useRouter } from 'next/navigation';
 import { disconnectSocket } from '@/hooks/useSocket';
-const data = {
-    user: {
-      name: "shadcn",
-      email: "m@example.com",
-      avatar: "/avatars/shadcn.jpg",
-    },
-    navMain: [
-        {
-          title: "Inicio",
-          url: "/admin",
-          icon: TerminalSquare,
-          isActive: true,
-          roles: ["admin","comercio"], // Roles permitidos
-          items: [
-            {
-              title: "Metricas",
-              url: "/admin/metrics",
-              roles: ["admin"], // Roles permitidos para el sublink
-            },
-          ],
-        },
-        {
-          title: "Clientes",
-          url: "#",
-          icon: Bot,
-          roles: ["admin"], // Solo para admin y usuario
-          items: [
-            {
-              title: "Lista",
-              url: "/admin/client/list",
-              roles: ["admin"],
-            },
 
-          ],
-        },
-
-      ],
-    navSecondary: [
-      {
-        title: "Support",
-        url: "#",
-        icon: LifeBuoy,
-      },
-      {
-        title: "Feedback",
-        url: "#",
-        icon: Send,
-      },
-    ],
-    projects: [
-      {
-        name: "Design Engineering",
-        url: "#",
-        icon: Frame,
-      },
-      {
-        name: "Sales & Marketing",
-        url: "#",
-        icon: PieChart,
-      },
-      {
-        name: "Travel",
-        url: "#",
-        icon: Map,
-      },
-    ],
-  }
-
-
-
-
-  export default function SideBarLinks() {
+  export default function SideBarLinks({name,navLinks}) {
     const [user, setUser] = useState(null)
     const router = useRouter()
   
@@ -176,13 +106,7 @@ const data = {
   
   
     // Filtra los enlaces y subenlaces según el rol del usuario
-    const filteredNavMain = data.navMain
-      .filter((link) => link.roles.includes("admin")) // Solo los enlaces principales con el rol del usuario
-      .map((link) => ({
-        ...link,
-        items: link.items?.filter((subItem) => subItem.roles.includes("admin")), // Filtra subenlaces
-      }));
-
+    const filteredNavMain = navLinks.navMain
 
 
       const handleLogout = async () => {
@@ -212,7 +136,7 @@ const data = {
                     <Store className="size-4" />
                   </div>
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">MK Puntos</span>
+                    <span className="truncate font-semibold">{name}</span>
                     <span className="truncate text-xs">Make You S.R.L.</span>
                   </div>
                 </a>

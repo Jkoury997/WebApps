@@ -1,32 +1,45 @@
-// src/services/chatService.js
-require('dotenv').config();
+const axios = require('axios');
+const Chat = require('../../database/models/Chat');
+const { OPENAI_API_KEY } = require('../../config/config');
 
-const { Configuration, OpenAIApi } = require('openai');
-
-// Configurar el cliente de OpenAI con tu API Key
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-const openai = new OpenAIApi(configuration);
-
-async function getChatResponse(userMessage) {
-  try {
-    const completion = await openai.createChatCompletion({
-      model: 'gpt-3.5-turbo',
-      messages: [{ role: 'user', content: userMessage }]
-    });
-
-    const answer = completion.data.choices && completion.data.choices[0] && completion.data.choices[0].message
-      ? completion.data.choices[0].message.content
-      : 'No tengo una respuesta en este momento.';
-
-    return answer;
-  } catch (error) {
-    console.error(error);
-    throw new Error('Error al obtener respuesta de OpenAI');
+exports.getChatReply = async (sessionId, newMessage) => {
+  // Recupera el historial de mensajes usando el sessionId
+  let messages = [];
+  const chatHistory = await Chat.findOne({ sessionId });
+  if (chatHistory) {
+    // Convierte cada mensaje del historial al formato esperado por la API
+    messages = chatHistory.messages.map(m => ({
+      role: m.role,
+      content: m.content
+    }));
   }
-}
 
-module.exports = {
-  getChatResponse
+  // Agrega el nuevo mensaje del usuario al final del historial
+  messages.push({ role: "user", content: newMessage });
+
+  // Opcional: Agrega un mensaje de sistema que defina el comportamiento del asistente
+  const fullMessages = [
+    { role: "system", content: "Eres un asistente útil para ecommerce." },
+    ...messages
+  ];
+
+  try {
+    const response = await axios.post(
+      'https://api.openai.com/v1/chat/completions',
+      {
+        model: "gpt-3.5-turbo",
+        messages: fullMessages
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${OPENAI_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    return response.data.choices[0].message.content;
+  } catch (error) {
+    throw new Error('Error al conectar con la IA');
+  }
 };
