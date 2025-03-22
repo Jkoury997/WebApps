@@ -50,7 +50,7 @@ export function AppSidebar({ ...props }) {
         items: [
           {
             title: "Ventas",
-            url: "/gerencia/tiendas/variables",
+            url: "/gerencia/ventas",
           },
 
         ],
