@@ -5,7 +5,7 @@ import OrdenAImprimir from "@/components/component/stock/despacho/orden-al-impri
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
 
-export default function PrintOrden({ firma, despacho, productos, empresa, cliente }) {
+export default function PrintOrden({ firma, despacho, productos, empresa, proveedor }) {
   const componentRef = useRef();
 
   return (
@@ -30,7 +30,7 @@ export default function PrintOrden({ firma, despacho, productos, empresa, client
         despacho={despacho}
         productos={productos}
         empresa={empresa}
-        cliente={cliente}
+        proveedor={proveedor}
       />
     </div>
   );

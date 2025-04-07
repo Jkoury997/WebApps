@@ -15,7 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-const OrdenAImprimir = forwardRef(({ firma, despacho, productos, empresa, cliente }, ref) => {
+const OrdenAImprimir = forwardRef(({ firma, despacho, productos, empresa, proveedor }, ref) => {
   return (
     <>
       <div ref={ref}>
@@ -34,15 +34,15 @@ const OrdenAImprimir = forwardRef(({ firma, despacho, productos, empresa, client
 
         {/* Contenido principal */}
         <div className="print-content">
-          {/* Sección de Cliente y Detalles */}
+          {/* Sección de proveedor y Detalles */}
           <Card className="w-full max-w-4xl mx-auto print:shadow-none">
             <CardContent className="p-6 space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <h3 className="font-semibold">Cliente:</h3>
-                  <p>{cliente.nombre || " "}</p>
-                  <p>{cliente.direccion || " "}</p>
-                  <p>{cliente.ciudad || " "}</p>
+                  <h3 className="font-semibold">Proveedor:</h3>
+                  <p>{proveedor.Nombre || " "}</p>
+                  <p>{proveedor.Direccion || " "}</p>
+                  <p>{proveedor.Cuit || " "}</p>
                 </div>
                 <div className="text-right">
                   <h3 className="font-semibold">Detalles de la orden:</h3>

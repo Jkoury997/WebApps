@@ -16,6 +16,7 @@ export default function Page() {
     const [activeStep, setActiveStep] = useState(1);
     const [productos, setProductos] = useState([]);
     const [despacho, setDespacho] = useState([]);
+    const [proveedor, setProveedor] = useState({});
     const [retiro, setRetiro] = useState([]);
     const [completeTask, setCompleteTask] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -63,6 +64,7 @@ export default function Page() {
             const data = await response.json();
             console.log(data);
             setDespacho(data.Despacho);
+            setProveedor(data.Proveedor)
 
             if (data.Despacho.Lista.length > 0) {
                 setProductos(data.Despacho.Lista);
@@ -126,6 +128,7 @@ export default function Page() {
         setActiveStep(1);
         setProductos([]);
         setDespacho([]);
+        setProveedor({})
         setRetiro([])
         setFirma(null)
         setIsLoading(false);
@@ -160,7 +163,7 @@ export default function Page() {
                     <div>
                     <PrintOrden
                       firma={firma}
-                      cliente={despacho.cliente || ""}
+                      proveedor={proveedor}
                       despacho={despacho}
                       productos={retiro}
                       empresa={empresa}
