@@ -1,3 +1,5 @@
+// RootLayout.js o layout.js
+
 import { Inter } from "next/font/google";
 import "./globals.css";
 
@@ -35,12 +37,15 @@ export const metadata = {
     title: APP_DEFAULT_TITLE,
     description: APP_DESCRIPTION,
   },
-  // Se han agregado keywords, icons y themeColor para usarlos en el head
   keywords: ["pwa", "nextjs", "awesome app"],
   icons: [
     { rel: "icon", url: "/favicon.ico" },
     { rel: "apple-touch-icon", url: "/apple-icon.png" },
   ],
+};
+
+// ✅ Esto es lo nuevo que hay que agregar:
+export const viewport = {
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#FFFFFF" },
     { media: "(prefers-color-scheme: dark)", color: "#000000" },
@@ -51,14 +56,10 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        {/* Incluimos el manifest y definimos los meta tags necesarios */}
         <title>{metadata.title.default}</title>
         <meta name="description" content={metadata.description} />
         <link rel="manifest" href={metadata.manifest} />
         <meta name="keywords" content={metadata.keywords.join(", ")} />
-        {metadata.themeColor.map(({ media, color }, index) => (
-          <meta key={index} name="theme-color" media={media} content={color} />
-        ))}
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         {metadata.icons.map(({ rel, url }, index) => (
           <link key={index} rel={rel} href={url} />

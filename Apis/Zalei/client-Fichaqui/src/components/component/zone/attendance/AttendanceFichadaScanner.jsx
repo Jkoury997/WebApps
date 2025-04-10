@@ -62,6 +62,7 @@ export default function AttendanceFichadaScanner() {
 
   // Función para manejar el escaneo del QR
   const handleScan = async (data) => {
+    
     if (data && data.text !== lastScannedCode && !scanning) {
       setScanning(true);
       const scannedCode = data.text;

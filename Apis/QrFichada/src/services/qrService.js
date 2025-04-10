@@ -4,7 +4,7 @@ const QrCode = require('../database/models/QRCode');
 const generateUUID = async (userId) => {
     // Verificar si el userId existe
 
-    const expirationTime = new Date(Date.now() + 30 * 1000); // Expira en 20 segundos
+    const expirationTime = new Date(Date.now() + 30 * 1000); // 30 segundos
 
     // Crear el nuevo código QR en la base de datos con el UUID generado automáticamente
     const qrCode = new QrCode({
@@ -25,7 +25,6 @@ const verifyUUID = async (uuid) => {
     const qrCode = await QrCode.findOne({ uuid });
 
     
-
     if (!qrCode) {
         
         throw new Error('UUID no encontrado');
