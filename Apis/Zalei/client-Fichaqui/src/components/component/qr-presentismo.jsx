@@ -41,7 +41,7 @@ export function QRPresentismo() {
   useEffect(() => {
     if (isVisible) {
       fetchQrCode(); // Fetch QR code when the component first renders and is visible
-      const interval = setInterval(fetchQrCode, 20000); // Fetch QR code every 20 seconds when visible
+      const interval = setInterval(fetchQrCode, 10000); // Fetch QR code every 20 seconds when visible
 
       return () => clearInterval(interval); // Cleanup interval on component unmount or visibility change
     }
