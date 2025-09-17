@@ -45,6 +45,9 @@ export default function Page() {
         empresa: process.env.NEXT_PUBLIC_EMPRESA,
       });
       if (userAccessResponse.Estado) {
+                    if (userAccessResponse.Empresa) {
+                localStorage.setItem("EMPRESA_NAME", userAccessResponse.Empresa);
+            }
         setTimeout(() => {
           router.push("/dashboard");
         }, 500);

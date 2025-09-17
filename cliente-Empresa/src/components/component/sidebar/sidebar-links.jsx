@@ -1,5 +1,5 @@
 "use client";
-
+import { useState,useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Collapsible,
@@ -79,8 +79,21 @@ const data = {
 
 export default function SideBarLinks() {
   const router = useRouter();
-  const title = process.env.NEXT_PUBLIC_EMPRESA_NAME || "Mi Empresa";
+   const [title, setTitle] = useState(process.env.NEXT_PUBLIC_EMPRESA_NAME || "Mi Empresa");
+  const [suffix, setSuffix] = useState(""); // para mostrar al lado del título
 
+   useEffect(() => {
+    // Buscar nombre en localStorage
+    const empresaName = localStorage.getItem("EMPRESA_NAME");
+    if (empresaName) {
+      setTitle(empresaName);
+
+      // Detectar si es sistema de prueba por el nombre
+      if (/prueba|test|qa|staging/i.test(empresaName)) {
+        setSuffix(" (Prueba)");
+      }
+    }
+  }, []);
   const handleLogout = async () => {
     try {
       const response = await fetch("/api/jinx/Logout");
@@ -104,7 +117,7 @@ export default function SideBarLinks() {
                   <Store className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">{title}</span>
+                  <span className="truncate font-semibold">{title}{suffix}</span>
                   <span className="truncate text-xs">Zalei Agropecuaria S.A.</span>
                 </div>
               </a>

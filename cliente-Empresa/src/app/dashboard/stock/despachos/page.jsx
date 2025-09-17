@@ -15,7 +15,7 @@ import PrintOrden from "@/components/component/stock/despacho/print-order";
 export default function Page() {
     const [activeStep, setActiveStep] = useState(1);
     const [productos, setProductos] = useState([]);
-    const [despacho, setDespacho] = useState([]);
+    const [despacho, setDespacho] = useState({}); 
     const [proveedor, setProveedor] = useState({});
     const [retiro, setRetiro] = useState([]);
     const [completeTask, setCompleteTask] = useState(false);
@@ -69,6 +69,9 @@ export default function Page() {
             if (data.Despacho.Lista.length > 0) {
                 setProductos(data.Despacho.Lista);
             }
+
+
+            setActiveStep(2);
         } catch (error) {
             console.error("Error al procesar los datos del QR:", error.message || error.Mensaje);
             toast({
@@ -78,7 +81,7 @@ export default function Page() {
             });
         } finally {
             setIsLoading(false);
-            setActiveStep(2);
+            
         }
     };
 
@@ -127,8 +130,9 @@ export default function Page() {
     const handleReset = () => {
         setActiveStep(1);
         setProductos([]);
-        setDespacho([]);
+        setDespacho({});  
         setProveedor({})
+
         setRetiro([])
         setFirma(null)
         setIsLoading(false);
@@ -152,7 +156,7 @@ export default function Page() {
                 );
             case 2:
                 return (
-                    <ProductList listProducts={productos} despachoInfo={despacho} onRetiraSubmit={handleRetiro} />
+                    <ProductList  listProducts={productos} despachoInfo={despacho} onRetiraSubmit={handleRetiro} />
                 );
             case 3:
                 return (
@@ -160,20 +164,20 @@ export default function Page() {
                 );
             case 4:
                 return (
-                    <div>
-                    <PrintOrden
-                      firma={firma}
-                      proveedor={proveedor}
-                      despacho={despacho}
-                      productos={retiro}
-                      empresa={empresa}
-                    />
-                    <div className="flex justify-center mt-4">
-                      <Button onClick={handleReset} variant="outline" className="bg-black text-white">
-                        Realizar otro despacho
-                      </Button>
-                    </div>
-                  </div>
+                    <div className="w-full max-w-full overflow-x-hidden">
+      <PrintOrden
+        firma={firma}
+        proveedor={proveedor}
+        despacho={despacho}
+        productos={retiro}
+        empresa={empresa}
+      />
+      <div className="flex justify-center mt-4">
+        <Button onClick={handleReset} variant="outline" className="bg-black text-white">
+          Realizar otro despacho
+        </Button>
+      </div>
+    </div>
                 )
             default:
                 return <div>Contenido del paso desconocido</div>;
