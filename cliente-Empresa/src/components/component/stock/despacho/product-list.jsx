@@ -140,25 +140,28 @@ export default function ProductList({ listProducts, despachoInfo, onRetiraSubmit
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productos, retiro, almacen, despachoInfo?.CodAlmacen]);
 
-  // Submit (incluye CodAlmacen y DescAlmacen cuando Retira > 0)
-  const handleGenerate = () => {
-    const result = productos.map(p => {
-      const Retira = Number(retiro[p.IdArticulo] ?? 0);
-      const cod = getSelectedDepot(p);
-      const desc = getDepotNameForCode(cod, p);
-      return {
-        IdArticulo: p.IdArticulo,
-        Codigo: p.Codigo,
-        Descripcion: p.Descripcion,
-        Cantidad: p.Cantidad,
-        Retira,
-        ...(Retira > 0 ? { CodAlmacen: cod, DescAlmacen: desc } : {}),
-      };
-    });
+// Submit (incluye CodAlmacen y DescAlmacen cuando Retira > 0)
+const handleGenerate = () => {
+  const result = productos.map(p => {
+    const Retira = Number(retiro[p.IdArticulo] ?? 0);
+    const cod = getSelectedDepot(p);
+    const desc = getDepotNameForCode(cod, p);
+    return {
+      IdArticulo: p.IdArticulo,
+      Codigo: p.Codigo,
+      Descripcion: p.Descripcion,
+      Cantidad: p.Cantidad,
+      Retira,
+      ...(Retira > 0 ? { CodAlmacen: cod, DescAlmacen: desc } : {}),
+    };
+  });
 
-    console.log("Productos con Retira + Depósito:", result);
-    onRetiraSubmit?.(result);
-  };
+  // ✅ Enviar sólo los que tienen Retira > 0
+  const onlyWithRetira = result.filter(item => Number(item.Retira) > 0);
+
+  console.log("Productos a enviar (Retira > 0):", onlyWithRetira);
+  onRetiraSubmit?.(onlyWithRetira);
+};
 
   // Deshabilitar submit si: errores por ítem, todo en 0 o hay conflicto de depósitos
   const disableSubmit = invalidItems.length > 0 || allZero || crossDepotError;

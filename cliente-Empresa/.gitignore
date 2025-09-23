@@ -36,3 +36,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+
+# Carpeta donde se guardan los PDFs subidos/generados
+/uploads
+
+
+# Ignorar cualquier PDF en cualquier parte (opcional)
+/*.pdf
+*.pdf

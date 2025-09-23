@@ -23,6 +23,7 @@ export default function Page() {
     const [firma, setFirma] = useState(null);
     const { toast } = useToast();
     const Steps = [1, 2,3,4];
+    const [orderRun, setOrderRun] = useState(0);
 
     const empresa = {
         nombre: "Zalei Agropecuaria S.A",
@@ -137,6 +138,14 @@ export default function Page() {
         setFirma(null)
         setIsLoading(false);
         setCompleteTask(false);
+
+          // Limpia el guard global (por las dudas)
+  if (typeof window !== "undefined" && window.__savedOrders) {
+    window.__savedOrders = new Set();
+  }
+
+  // Y forza nueva “corrida” para la próxima orden
+  setOrderRun((n) => n + 1);
     };
 
       // Función que se ejecuta cuando se guarda la firma
@@ -171,6 +180,7 @@ export default function Page() {
         despacho={despacho}
         productos={retiro}
         empresa={empresa}
+        runKey={orderRun}
       />
       <div className="flex justify-center mt-4">
         <Button onClick={handleReset} variant="outline" className="bg-black text-white">
