@@ -94,6 +94,8 @@ export async function POST(req) {
 
         const responseData = await response.json();
 
+        console.log("OK = ", responseData)
+
         if (!response.ok) {
             console.log(responseData)
             return NextResponse.json(

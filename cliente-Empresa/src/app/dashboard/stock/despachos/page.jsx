@@ -92,14 +92,17 @@ export default function Page() {
         setRetiro(retiroData)
         try {
             console.log("Enviando retiro:", retiroData);
-            const { Id, CodAlmacen } = despacho;
             
 
-            if (!Id || !CodAlmacen) {
-                throw new Error("Faltan campos requeridos (Id o Almacen) en los datos del QR.");
-            }
+    // Tomar el CodAlmacen desde retiroData si existe, si no desde despacho
+    const codAlmacenFromRetiro = retiroData?.[0]?.CodAlmacen || despacho?.CodAlmacen;
+    const { Id } = despacho;
 
-            const response = await fetch(`/api/syndra/agro/servicioDespacho?Id=${Id}&Almacen=${CodAlmacen}`, {
+    if (!Id || !codAlmacenFromRetiro) {
+        throw new Error("Faltan campos requeridos (Id o CodAlmacen) en los datos del QR o retiroData.");
+    }
+
+            const response = await fetch(`/api/syndra/agro/servicioDespacho?Id=${Id}&Almacen=${codAlmacenFromRetiro}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ productos: retiroData }),
