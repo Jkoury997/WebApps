@@ -72,11 +72,22 @@ export default function ProductList({ listProducts, despachoInfo, onRetiraSubmit
   }, [selectedProductId]);
 
   // Cambios controlados
-  const handleRetiraChange = (producto, rawValue) => {
-    const n = Number(rawValue);
-    const safe = Number.isFinite(n) ? Math.max(0, Math.min(n, producto.Cantidad)) : 0;
-    setRetiro(prev => ({ ...prev, [producto.IdArticulo]: safe }));
-  };
+ const handleRetiraChange = (producto, rawValue) => {
+  const n = Number(rawValue);
+
+  // ✅ ahora el máximo es la cantidad + 30%
+  const maxPermitido = Math.floor(producto.Cantidad * 1.3);
+
+  const safe = Number.isFinite(n)
+    ? Math.max(0, Math.min(n, maxPermitido))
+    : 0;
+
+  setRetiro(prev => ({
+    ...prev,
+    [producto.IdArticulo]: safe
+  }));
+};
+
 
   const handleAlmacenChange = (idArticulo, codigo) => {
     setAlmacen(prev => ({ ...prev, [idArticulo]: codigo }));
@@ -240,7 +251,7 @@ const handleGenerate = () => {
                           value={valueRetira}
                           onChange={(e) => handleRetiraChange(p, e.target.value)}
                           min={0}
-                          max={p.Cantidad}
+                          max={Math.floor(p.Cantidad * 1.3)}  // ✅ stock + 30%
                           className="w-28 text-right"
                           placeholder="Cantidad"
                           autoFocus={selectedProductId === p.IdArticulo}
