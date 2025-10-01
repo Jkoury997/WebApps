@@ -17,8 +17,9 @@ export default function ProductList({ listProducts, despachoInfo, onRetiraSubmit
   const [selectedProductId, setSelectedProductId] = useState(null);
 
   // Estado controlado
-  const [retiro, setRetiro] = useState({});     // { [IdArticulo]: number }
-  const [almacen, setAlmacen] = useState({});   // { [IdArticulo]: string }
+  const [retiro, setRetiro] = useState({});      // { [IdArticulo]: number | NaN }
+  const [retiroStr, setRetiroStr] = useState({}); // { [IdArticulo]: string (lo que escribe el usuario) }
+  const [almacen, setAlmacen] = useState({});    // { [IdArticulo]: string }
 
   const inputRefs = useRef({});
 
@@ -28,17 +29,46 @@ export default function ProductList({ listProducts, despachoInfo, onRetiraSubmit
 
   const getDepotNameForCode = (code, p) => {
     if (!code) return "";
-    // Si es el del despacho, usar su nombre
     if (code === despachoInfo?.CodAlmacen) return despachoInfo?.Almacen || code;
-    // Buscar en la lista de almacenes del ítem
     const hit = (Array.isArray(p?.Almacenes) ? p.Almacenes : []).find(a => a?.Codigo === code);
     if (hit?.Descripcion) return hit.Descripcion;
-    // Fallback
     return code;
   };
 
-  // Máximo permitido: stock + 30% (redondeado hacia abajo)
+  // Sugerencia: stock + 30% (no se valida contra esto, solo info)
   const getMaxRetira = (p) => Math.floor(Number(p?.Cantidad ?? 0) * 1.3);
+
+  // Parse flexible: acepta "12,5", "12.5", "1.234,5", "1,234.5"
+  const parseFlexibleNumber = (val) => {
+    if (val === null || val === undefined) return NaN;
+    const s = String(val).trim();
+    if (s === "") return NaN;
+
+    const hasComma = s.includes(",");
+    const hasDot = s.includes(".");
+    let normalized = s;
+
+    if (hasComma && hasDot) {
+      const lastComma = s.lastIndexOf(",");
+      const lastDot = s.lastIndexOf(".");
+      if (lastComma > lastDot) {
+        // coma como decimal -> remover puntos (miles) y cambiar coma por punto
+        normalized = s.replace(/\./g, "").replace(",", ".");
+      } else {
+        // punto como decimal -> remover comas (miles)
+        normalized = s.replace(/,/g, "");
+      }
+    } else if (hasComma) {
+      // solo coma -> decimal
+      normalized = s.replace(",", ".");
+    } else {
+      // solo punto o solo dígitos
+      normalized = s;
+    }
+
+    const n = Number(normalized);
+    return n;
+  };
 
   // Sync props -> estado + defaults (default SIEMPRE el del despacho)
   useEffect(() => {
@@ -63,6 +93,14 @@ export default function ProductList({ listProducts, despachoInfo, onRetiraSubmit
       }
       return next;
     });
+
+    setRetiroStr(prev => {
+      const next = { ...prev };
+      for (const p of arr) {
+        if (typeof next[p.IdArticulo] === "undefined") next[p.IdArticulo] = "0";
+      }
+      return next;
+    });
   }, [listProducts, despachoInfo?.CodAlmacen]);
 
   // Foco + scroll al seleccionar tarjeta
@@ -74,12 +112,11 @@ export default function ProductList({ listProducts, despachoInfo, onRetiraSubmit
     }
   }, [selectedProductId]);
 
-  // Cambios controlados (clamp al máximo permitido)
+  // Cambios controlados (sin tope, acepta coma/punto)
   const handleRetiraChange = (producto, rawValue) => {
-    const n = Number(rawValue);
-    const maxPermitido = getMaxRetira(producto);
-    const safe = Number.isFinite(n) ? Math.max(0, Math.min(n, maxPermitido)) : 0;
-    setRetiro(prev => ({ ...prev, [producto.IdArticulo]: safe }));
+    setRetiroStr(prev => ({ ...prev, [producto.IdArticulo]: rawValue }));
+    const parsed = parseFlexibleNumber(rawValue);
+    setRetiro(prev => ({ ...prev, [producto.IdArticulo]: Number.isFinite(parsed) ? parsed : NaN }));
   };
 
   const handleAlmacenChange = (idArticulo, codigo) => {
@@ -103,7 +140,9 @@ export default function ProductList({ listProducts, despachoInfo, onRetiraSubmit
 
     // 1) Encontrar depósito "enforced" (del primer ítem con Retira > 0)
     for (const p of productos) {
-      const r = Number(retiro[p.IdArticulo] ?? 0);
+      const raw = retiroStr[p.IdArticulo] ?? "";
+      const parsed = parseFlexibleNumber(raw);
+      const r = Number.isFinite(parsed) ? parsed : 0;
       if (r > 0) {
         enforced = getSelectedDepot(p);
         enforcedDesc = getDepotNameForCode(enforced, p);
@@ -114,17 +153,21 @@ export default function ProductList({ listProducts, despachoInfo, onRetiraSubmit
     // 2) Validar por ítem + detectar conflicto global
     let conflict = false;
     for (const p of productos) {
-      const r = Number(retiro[p.IdArticulo] ?? 0);
-      total += r;
+      const raw = retiroStr[p.IdArticulo] ?? "";
+      const parsed = parseFlexibleNumber(raw);
+      const isEmpty = raw.trim() === "";
+      const r = Number.isFinite(parsed) ? parsed : 0;
+
+      // total solo suma números válidos y >= 0
+      if (Number.isFinite(parsed) && r >= 0) total += r;
 
       const depotCode = getSelectedDepot(p);
       const hasDepot = String(depotCode || "").length > 0;
 
       const inval =
-        !Number.isFinite(r) ||
-        r < 0 ||
-        r > getMaxRetira(p) ||          // ← tope unificado: stock + 30%
-        (r > 0 && !hasDepot);
+        (!isEmpty && !Number.isFinite(parsed)) || // escribió algo inválido
+        r < 0 ||                                   // negativos no
+        (r > 0 && !hasDepot);                      // si retira, debe haber depósito
 
       if (inval) invalid.push(p.IdArticulo);
 
@@ -142,12 +185,14 @@ export default function ProductList({ listProducts, despachoInfo, onRetiraSubmit
       crossDepotError: Boolean(enforced) && conflict,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [productos, retiro, almacen, despachoInfo?.CodAlmacen]);
+  }, [productos, retiroStr, almacen, despachoInfo?.CodAlmacen]);
 
   // Submit (incluye CodAlmacen y DescAlmacen cuando Retira > 0)
   const handleGenerate = () => {
     const result = productos.map(p => {
-      const Retira = Number(retiro[p.IdArticulo] ?? 0);
+      const raw = retiroStr[p.IdArticulo] ?? "";
+      const parsed = parseFlexibleNumber(raw);
+      const Retira = Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
       const cod = getSelectedDepot(p);
       const desc = getDepotNameForCode(cod, p);
       return {
@@ -160,7 +205,6 @@ export default function ProductList({ listProducts, despachoInfo, onRetiraSubmit
       };
     });
 
-    // Enviar sólo los que tienen Retira > 0
     const onlyWithRetira = result.filter(item => Number(item.Retira) > 0);
 
     console.log("Productos a enviar (Retira > 0):", onlyWithRetira);
@@ -199,10 +243,12 @@ export default function ProductList({ listProducts, despachoInfo, onRetiraSubmit
 
         <div className="space-y-4">
           {productos.map(p => {
-            const valueRetira = retiro[p.IdArticulo] ?? 0;
+            const valueRetiraStr = retiroStr[p.IdArticulo] ?? "";
             const selectedAlmacenCode = getSelectedDepot(p);
             const inval = invalidItems.includes(p.IdArticulo);
-            const mismatch = Boolean(enforcedDepot) && valueRetira > 0 && selectedAlmacenCode !== enforcedDepot;
+            const parsed = parseFlexibleNumber(valueRetiraStr);
+            const r = Number.isFinite(parsed) ? parsed : 0;
+            const mismatch = Boolean(enforcedDepot) && r > 0 && selectedAlmacenCode !== enforcedDepot;
 
             const itemOptions = Array.isArray(p.Almacenes)
               ? p.Almacenes.filter(a => a.Codigo !== despachoInfo?.CodAlmacen)
@@ -231,26 +277,24 @@ export default function ProductList({ listProducts, despachoInfo, onRetiraSubmit
                         <p className="text-lg font-semibold">{p.Cantidad}</p>
                       </div>
 
-                      {/* Retira (controlado) */}
+                      {/* Retira (controlado sin tope, coma/punto) */}
                       <div className="flex flex-col">
                         <label htmlFor={`retira-${p.IdArticulo}`} className="text-sm font-medium text-gray-500">
                           Retira:
                         </label>
                         <Input
                           id={`retira-${p.IdArticulo}`}
-                          type="number"
+                          type="text"                 // ← texto para permitir coma y punto libremente
+                          inputMode="decimal"         // ← teclado decimal en mobile
                           ref={(el) => (inputRefs.current[p.IdArticulo] = el)}
-                          value={valueRetira}
+                          value={valueRetiraStr}
                           onChange={(e) => handleRetiraChange(p, e.target.value)}
-                          min={0}
-                          max={getMaxRetira(p)}  // stock + 30%
                           className="w-28 text-right"
                           placeholder="Cantidad"
                           autoFocus={selectedProductId === p.IdArticulo}
-                          inputMode="numeric"
                         />
                         <span className="text-xs text-gray-500 mt-1">
-                          Stock: {p.Cantidad} · Máx retiro: {getMaxRetira(p)}
+                          Formato: 12,5 o 12.5 · Sugerido máx: {getMaxRetira(p)}
                         </span>
                       </div>
 
@@ -294,7 +338,7 @@ export default function ProductList({ listProducts, despachoInfo, onRetiraSubmit
                     {(inval || mismatch) && (
                       <p className="text-sm text-destructive">
                         {inval ? (
-                          <>Revisá “Retira” (0 a {getMaxRetira(p)}){valueRetira > 0 ? " y seleccioná un depósito válido." : ""}</>
+                          <>Revisá “Retira” (número válido ≥ 0){r > 0 ? " y seleccioná un depósito válido." : ""}</>
                         ) : (
                           <>Este ítem debe usar el depósito <strong>{enforcedDepotDesc || enforcedDepot}</strong> porque ya hay otros con retiro en ese depósito.</>
                         )}
@@ -328,7 +372,7 @@ export default function ProductList({ listProducts, despachoInfo, onRetiraSubmit
         </Button>
         {disableSubmit && (
           <p className="text-xs text-center text-muted-foreground mt-2">
-            No puede haber cantidades fuera de rango, todos en 0, <strong>ni depósitos distintos</strong> entre ítems con retiro.
+            No puede haber valores inválidos o negativos, todos en 0, <strong>ni depósitos distintos</strong> entre ítems con retiro.
           </p>
         )}
       </div>
