@@ -37,6 +37,9 @@ export default function ProductList({ listProducts, despachoInfo, onRetiraSubmit
     return code;
   };
 
+  // Máximo permitido: stock + 30% (redondeado hacia abajo)
+  const getMaxRetira = (p) => Math.floor(Number(p?.Cantidad ?? 0) * 1.3);
+
   // Sync props -> estado + defaults (default SIEMPRE el del despacho)
   useEffect(() => {
     const arr = Array.isArray(listProducts) ? listProducts : [];
@@ -71,23 +74,13 @@ export default function ProductList({ listProducts, despachoInfo, onRetiraSubmit
     }
   }, [selectedProductId]);
 
-  // Cambios controlados
- const handleRetiraChange = (producto, rawValue) => {
-  const n = Number(rawValue);
-
-  // ✅ ahora el máximo es la cantidad + 30%
-  const maxPermitido = Math.floor(producto.Cantidad * 1.3);
-
-  const safe = Number.isFinite(n)
-    ? Math.max(0, Math.min(n, maxPermitido))
-    : 0;
-
-  setRetiro(prev => ({
-    ...prev,
-    [producto.IdArticulo]: safe
-  }));
-};
-
+  // Cambios controlados (clamp al máximo permitido)
+  const handleRetiraChange = (producto, rawValue) => {
+    const n = Number(rawValue);
+    const maxPermitido = getMaxRetira(producto);
+    const safe = Number.isFinite(n) ? Math.max(0, Math.min(n, maxPermitido)) : 0;
+    setRetiro(prev => ({ ...prev, [producto.IdArticulo]: safe }));
+  };
 
   const handleAlmacenChange = (idArticulo, codigo) => {
     setAlmacen(prev => ({ ...prev, [idArticulo]: codigo }));
@@ -130,7 +123,7 @@ export default function ProductList({ listProducts, despachoInfo, onRetiraSubmit
       const inval =
         !Number.isFinite(r) ||
         r < 0 ||
-        r > Number(p.Cantidad) ||
+        r > getMaxRetira(p) ||          // ← tope unificado: stock + 30%
         (r > 0 && !hasDepot);
 
       if (inval) invalid.push(p.IdArticulo);
@@ -151,28 +144,28 @@ export default function ProductList({ listProducts, despachoInfo, onRetiraSubmit
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productos, retiro, almacen, despachoInfo?.CodAlmacen]);
 
-// Submit (incluye CodAlmacen y DescAlmacen cuando Retira > 0)
-const handleGenerate = () => {
-  const result = productos.map(p => {
-    const Retira = Number(retiro[p.IdArticulo] ?? 0);
-    const cod = getSelectedDepot(p);
-    const desc = getDepotNameForCode(cod, p);
-    return {
-      IdArticulo: p.IdArticulo,
-      Codigo: p.Codigo,
-      Descripcion: p.Descripcion,
-      Cantidad: p.Cantidad,
-      Retira,
-      ...(Retira > 0 ? { CodAlmacen: cod, DescAlmacen: desc } : {}),
-    };
-  });
+  // Submit (incluye CodAlmacen y DescAlmacen cuando Retira > 0)
+  const handleGenerate = () => {
+    const result = productos.map(p => {
+      const Retira = Number(retiro[p.IdArticulo] ?? 0);
+      const cod = getSelectedDepot(p);
+      const desc = getDepotNameForCode(cod, p);
+      return {
+        IdArticulo: p.IdArticulo,
+        Codigo: p.Codigo,
+        Descripcion: p.Descripcion,
+        Cantidad: p.Cantidad,
+        Retira,
+        ...(Retira > 0 ? { CodAlmacen: cod, DescAlmacen: desc } : {}),
+      };
+    });
 
-  // ✅ Enviar sólo los que tienen Retira > 0
-  const onlyWithRetira = result.filter(item => Number(item.Retira) > 0);
+    // Enviar sólo los que tienen Retira > 0
+    const onlyWithRetira = result.filter(item => Number(item.Retira) > 0);
 
-  console.log("Productos a enviar (Retira > 0):", onlyWithRetira);
-  onRetiraSubmit?.(onlyWithRetira);
-};
+    console.log("Productos a enviar (Retira > 0):", onlyWithRetira);
+    onRetiraSubmit?.(onlyWithRetira);
+  };
 
   // Deshabilitar submit si: errores por ítem, todo en 0 o hay conflicto de depósitos
   const disableSubmit = invalidItems.length > 0 || allZero || crossDepotError;
@@ -194,7 +187,6 @@ const handleGenerate = () => {
           </div>
         </CardContent>
       </Card>
-
 
       {/* Lista de Productos */}
       <div>
@@ -251,13 +243,15 @@ const handleGenerate = () => {
                           value={valueRetira}
                           onChange={(e) => handleRetiraChange(p, e.target.value)}
                           min={0}
-                          max={Math.floor(p.Cantidad * 1.3)}  // ✅ stock + 30%
+                          max={getMaxRetira(p)}  // stock + 30%
                           className="w-28 text-right"
                           placeholder="Cantidad"
                           autoFocus={selectedProductId === p.IdArticulo}
                           inputMode="numeric"
                         />
-                        <span className="text-xs text-gray-500 mt-1">Máx: {p.Cantidad}</span>
+                        <span className="text-xs text-gray-500 mt-1">
+                          Stock: {p.Cantidad} · Máx retiro: {getMaxRetira(p)}
+                        </span>
                       </div>
 
                       {/* Almacén por ítem */}
@@ -300,7 +294,7 @@ const handleGenerate = () => {
                     {(inval || mismatch) && (
                       <p className="text-sm text-destructive">
                         {inval ? (
-                          <>Revisá “Retira” (0 a {p.Cantidad}){valueRetira > 0 ? " y seleccioná un depósito válido." : ""}</>
+                          <>Revisá “Retira” (0 a {getMaxRetira(p)}){valueRetira > 0 ? " y seleccioná un depósito válido." : ""}</>
                         ) : (
                           <>Este ítem debe usar el depósito <strong>{enforcedDepotDesc || enforcedDepot}</strong> porque ya hay otros con retiro en ese depósito.</>
                         )}
@@ -314,8 +308,7 @@ const handleGenerate = () => {
         </div>
       </div>
 
-
- {/* Banner de regla global */}
+      {/* Banner de regla global */}
       {enforcedDepot && (
         <div className={`rounded-md border p-3 ${crossDepotError ? "border-destructive/50 bg-destructive/10 text-destructive" : "border-emerald-500/30 bg-emerald-50 text-emerald-700"}`}>
           {crossDepotError ? (
@@ -327,6 +320,7 @@ const handleGenerate = () => {
           )}
         </div>
       )}
+
       {/* Botón enviar */}
       <div className="mt-6">
         <Button onClick={handleGenerate} className="w-full" disabled={disableSubmit}>
