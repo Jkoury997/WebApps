@@ -168,7 +168,7 @@ export default function Page() {
               className="w-full"
               
             >
-              <TabsList className="grid w-full grid-cols-4 bg-white" id="HomeBar">
+              <TabsList className="grid w-full grid-cols-3 bg-white" id="HomeBar">
                 <TabsTrigger
                   id="buttomHome"
                   value="home"
@@ -193,7 +193,7 @@ export default function Page() {
                 <TabsTrigger
                   id="buttomDescuentos"
                   value="descuentos"
-                  className="data-[state=active]:bg-brand data-[state=active]:text-white"
+                  className="data-[state=active]:bg-brand data-[state=active]:text-white hidden"
                 >
                   <PercentDiamond className="w-5 h-5" />
                 </TabsTrigger>
