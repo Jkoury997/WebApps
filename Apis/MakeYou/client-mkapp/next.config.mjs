@@ -2,7 +2,7 @@
 const nextConfig = {
   reactStrictMode: true, // Habilitar el modo estricto de React
   swcMinify: true,       // Minificación con SWC
-
+output: "standalone", // ✅ SSR con server listo para deploy
 };
 
 // Importar el módulo de PWA
