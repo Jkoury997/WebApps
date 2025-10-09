@@ -3,7 +3,6 @@
 import ClienteCard from "@/components/component/admin/client/card-cliente"
 import SearchClient from "@/components/component/admin/client/search-client"
 import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
 
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'

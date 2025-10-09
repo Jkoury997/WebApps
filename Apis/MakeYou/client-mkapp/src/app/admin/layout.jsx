@@ -1,17 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import SideBarLinks from "@/components/component/sidebar/sidebar-links";
-import { initializeSocket, disconnectSocket } from "@/hooks/useSocket";
-import Cookies from "js-cookie"; 
+
 import { Toaster } from "@/components/ui/toaster";
-import { useToast } from "@/hooks/use-toast"; 
+
 
 export default function DashboardLayout({ children }) {
-  const { toast } = useToast();
-  const [userInteracted, setUserInteracted] = useState(false);
+
 
 
   return (
