@@ -135,8 +135,7 @@ export default function HomeView({ setShowAllLocations, userData }) {
             Ver todos los locales
           </Button>
         </div>
-          {/* Botón para ir a la consola del admin en una nueva pestaña */}
-          <AdminButton />
+
       </CardContent>
     </Card>
   );
